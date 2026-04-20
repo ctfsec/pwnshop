@@ -6,6 +6,7 @@
 Pwnshop is an intentionally vulnerable Nigerian e-commerce platform built for hands-on web application penetration testing training. It covers 41 vulnerabilities mapped to the OWASP Top 10 (2025) and OWASP LLM Top 10, including SQL injection, stored XSS, SSRF, SSTI leading to RCE, prototype pollution, path traversal, and AI/LLM-specific attack chains.
 
 ---
+<img width="1920" height="1001" alt="image" src="https://github.com/user-attachments/assets/72f39af3-503b-4f96-ab04-a0ce0ea7c4cf" />
 
 ## Tech Stack
 
