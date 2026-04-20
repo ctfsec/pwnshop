@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Edit Product - Pwnshop</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --purple-deep:  #3B0764;
+            --purple-mid:   #6D28D9;
+            --purple-light: #A855F7;
+            --purple-pale:  #F3E8FF;
+            --black:        #0D0D0D;
+            --white:        #FFFFFF;
+            --gray-100:     #F8F5FF;
+            --gray-200:     #EDE9F6;
+            --gray-500:     #6B7280;
+            --accent:       #C026D3;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: 'DM Sans', sans-serif; background: var(--gray-100); min-height: 100vh; }
+        .topbar { background: var(--purple-deep); padding: 0; position: sticky; top: 0; z-index: 1000; box-shadow: 0 2px 16px rgba(59,7,100,0.4); }
+        .topbar .inner { display: flex; align-items: center; gap: 16px; padding: 12px 24px; max-width: 1400px; margin: 0 auto; }
+        .navbar-brand { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 1.6rem; color: var(--white) !important; text-decoration: none; display: flex; align-items: center; gap: 6px; }
+        .navbar-brand .dot { width: 8px; height: 8px; background: var(--purple-light); border-radius: 50%; }
+        .nav-right { display: flex; align-items: center; gap: 8px; list-style: none; margin: 0 0 0 auto; padding: 0; }
+        .user-chip { background: rgba(168,85,247,0.2); border: 1px solid rgba(168,85,247,0.4); color: var(--white) !important; border-radius: 20px; padding: 5px 14px; font-size: 0.85rem; font-weight: 600; }
+        .btn-logout { background: transparent; border: 1px solid rgba(255,255,255,0.3); color: rgba(255,255,255,0.8) !important; border-radius: 8px; padding: 5px 12px; font-size: 0.83rem; text-decoration: none; }
+        .nav-link-plain { color: rgba(255,255,255,0.75) !important; font-size: 0.88rem; padding: 6px 12px; border-radius: 6px; text-decoration: none; }
+        .nav-link-plain:hover { background: rgba(255,255,255,0.1); color: var(--white) !important; }
+
+        .form-page { max-width: 720px; margin: 40px auto; padding: 0 20px 60px; }
+        .form-header { margin-bottom: 28px; }
+        .form-header .badge-tag { display: inline-flex; align-items: center; gap: 6px; background: var(--purple-pale); color: var(--purple-mid); font-size: 0.75rem; font-weight: 700; border-radius: 20px; padding: 4px 12px; letter-spacing: 0.4px; text-transform: uppercase; margin-bottom: 12px; }
+        .form-header h1 { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 1.8rem; color: var(--black); margin-bottom: 6px; }
+        .form-header p { color: var(--gray-500); font-size: 0.9rem; }
+
+        /* Preview card */
+        .product-preview { background: var(--white); border-radius: 14px; border: 1.5px solid var(--gray-200); padding: 20px; margin-bottom: 24px; display: flex; align-items: center; gap: 16px; }
+        .preview-img { width: 72px; height: 72px; object-fit: cover; border-radius: 10px; border: 1.5px solid var(--gray-200); flex-shrink: 0; }
+        .preview-img-ph { width: 72px; height: 72px; background: var(--gray-100); border-radius: 10px; display: flex; align-items: center; justify-content: center; color: var(--gray-500); font-size: 1.5rem; flex-shrink: 0; }
+        .preview-info .product-name { font-family: 'Syne', sans-serif; font-weight: 700; font-size: 1rem; color: var(--black); margin-bottom: 3px; }
+        .preview-info .product-meta { font-size: 0.8rem; color: var(--gray-500); }
+        .preview-info .product-price { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 1.2rem; color: var(--purple-mid); }
+
+        .form-card { background: var(--white); border-radius: 16px; border: 1.5px solid var(--gray-200); padding: 32px; }
+        .form-section-title { font-family: 'Syne', sans-serif; font-weight: 700; font-size: 0.78rem; text-transform: uppercase; letter-spacing: 1px; color: var(--purple-mid); margin-bottom: 16px; padding-bottom: 10px; border-bottom: 1px solid var(--gray-200); }
+        .f-label { font-size: 0.78rem; font-weight: 600; color: var(--black); margin-bottom: 6px; letter-spacing: 0.3px; text-transform: uppercase; display: block; }
+        .f-field { border: 1.5px solid var(--gray-200); border-radius: 10px; padding: 11px 14px; font-size: 0.9rem; font-family: 'DM Sans', sans-serif; width: 100%; outline: none; transition: border-color 0.2s, box-shadow 0.2s; color: var(--black); background: var(--white); }
+        .f-field:focus { border-color: var(--purple-mid); box-shadow: 0 0 0 3px rgba(109,40,217,0.08); }
+        .f-field::placeholder { color: #b0afc0; }
+        .f-field-file { border: 1.5px dashed var(--gray-200); border-radius: 10px; padding: 18px 14px; font-size: 0.88rem; font-family: 'DM Sans', sans-serif; width: 100%; outline: none; transition: border-color 0.2s; color: var(--gray-500); background: var(--gray-100); cursor: pointer; }
+        .f-field-file:hover { border-color: var(--purple-mid); }
+        .f-hint { font-size: 0.76rem; color: var(--gray-500); margin-top: 4px; }
+        .row-half { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+        .or-divider { display: flex; align-items: center; gap: 10px; color: var(--gray-500); font-size: 0.78rem; margin: 16px 0; }
+        .or-divider::before, .or-divider::after { content: ''; flex: 1; height: 1px; background: var(--gray-200); }
+        .alert-auth { background: #fef2f2; border: 1px solid #fecaca; color: #dc2626; border-radius: 8px; padding: 10px 14px; font-size: 0.83rem; display: flex; align-items: center; gap: 8px; margin-bottom: 20px; }
+        .alert-ok { background: #f0fdf4; border: 1px solid #86efac; color: #16a34a; border-radius: 8px; padding: 10px 14px; font-size: 0.83rem; display: flex; align-items: center; gap: 8px; margin-bottom: 20px; }
+        .btn-row { display: flex; gap: 12px; margin-top: 8px; }
+        .btn-submit { flex: 1; background: var(--purple-deep); color: var(--white); border: none; border-radius: 10px; padding: 13px; font-size: 0.92rem; font-weight: 700; font-family: 'DM Sans', sans-serif; cursor: pointer; transition: background 0.2s, transform 0.15s; display: flex; align-items: center; justify-content: center; gap: 8px; }
+        .btn-submit:hover { background: var(--purple-mid); transform: translateY(-1px); }
+        .btn-view-product { display: inline-flex; align-items: center; justify-content: center; gap: 8px; padding: 13px 24px; background: transparent; color: var(--purple-mid); border: 1.5px solid var(--purple-mid); border-radius: 10px; font-size: 0.92rem; font-weight: 700; font-family: 'DM Sans', sans-serif; text-decoration: none; transition: all 0.2s; }
+        .btn-view-product:hover { background: var(--purple-pale); color: var(--purple-deep); }
+        .btn-cancel { display: block; text-align: center; margin-top: 14px; color: var(--gray-500); font-size: 0.83rem; text-decoration: none; }
+        .btn-cancel:hover { color: var(--purple-mid); }
+    </style>
+</head>
+<body>
+
+<nav class="topbar">
+    <div class="inner">
+        <a class="navbar-brand" href="/">Pwnshop<span class="dot"></span></a>
+        <ul class="nav-right">
+            <% if (user) { %>
+                <li><a class="nav-link-plain" href="/seller/dashboard">My Dashboard</a></li>
+                <li><span class="user-chip"><%= user.username %></span></li>
+                <li><a href="/logout" class="btn-logout">Logout</a></li>
+            <% } %>
+        </ul>
+    </div>
+</nav>
+
+<div class="form-page">
+    <div class="form-header">
+        <div class="badge-tag"><i class="bi bi-pencil-square"></i> Edit Product</div>
+        <h1>Update Listing</h1>
+        <p>Edit your product details below. Changes go live immediately.</p>
+    </div>
+
+
+    <div class="product-preview">
+        <% if (product.image && product.image !== '') { %>
+            <img src="<%= product.image %>" alt="<%= product.name %>" class="preview-img">
+        <% } else { %>
+            <div class="preview-img-ph"><i class="bi bi-image"></i></div>
+        <% } %>
+        <div class="preview-info">
+            <div class="product-name"><%= product.name %></div>
+            <div class="product-meta"><%= product.category %> · ID #<%= product.id %></div>
+            <div class="product-price">₦<%= parseFloat(product.price).toLocaleString() %></div>
+        </div>
+    </div>
+
+    <div class="form-card">
+        <% if (error) { %>
+            <div class="alert-auth"><i class="bi bi-exclamation-circle-fill"></i> <%= error %></div>
+        <% } %>
+        <% if (success) { %>
+            <div class="alert-ok"><i class="bi bi-check-circle-fill"></i> <%= success %></div>
+        <% } %>
+
+        <form method="POST" action="/edit-product/<%= product.id %>" enctype="multipart/form-data">
+
+            <p class="form-section-title">Product Information</p>
+
+            <div class="mb-3">
+                <label class="f-label">Product Name</label>
+                <input type="text" class="f-field" name="name" value="<%= product.name %>" required>
+            </div>
+
+            <div class="row-half mb-3">
+                <div>
+                    <label class="f-label">Price (₦)</label>
+                    <input type="number" class="f-field" name="price" value="<%= product.price %>" min="0" step="0.01" required>
+                </div>
+                <div>
+                    <label class="f-label">Units in Stock</label>
+                    <input type="number" class="f-field" name="available" value="<%= product.stock || product.available || 0 %>" min="0">
+                </div>
+            </div>
+
+            <div class="mb-3">
+                <label class="f-label">Category</label>
+                <select class="f-field" name="category">
+                    <option value="computers"   <%=product.category==='computers'  ?'selected':''%>>Computers &amp; Accessories</option>
+                    <option value="phones"      <%=product.category==='phones'     ?'selected':''%>>Phones &amp; Tablets</option>
+                    <option value="electronics" <%=product.category==='electronics'?'selected':''%>>Electronics</option>
+                    <option value="fashion"     <%=product.category==='fashion'    ?'selected':''%>>Fashion</option>
+                    <option value="home"        <%=product.category==='home'       ?'selected':''%>>Home &amp; Kitchen</option>
+                    <option value="kids"        <%=product.category==='kids'       ?'selected':''%>>Kids &amp; Toys</option>
+                    <option value="beauty"      <%=product.category==='beauty'     ?'selected':''%>>Beauty &amp; Health</option>
+                </select>
+            </div>
+
+            <div class="mb-3">
+                <label class="f-label">Description</label>
+                <textarea class="f-field" name="description" rows="3"><%= product.description %></textarea>
+            </div>
+
+            <p class="form-section-title" style="margin-top:24px;">Product Image</p>
+
+            <div class="mb-3">
+                <label class="f-label">Image URL</label>
+                <input type="text" class="f-field" name="image" value="<%= product.image || '' %>" placeholder="https://example.com/image.jpg">
+                <p class="f-hint">Leave blank to keep current image.</p>
+            </div>
+
+            <div class="or-divider">or upload a new file</div>
+
+            <div class="mb-4">
+                <label class="f-label">Upload Image</label>
+                <input type="file" class="f-field-file" name="imageFile" accept="image/*">
+                <p class="f-hint">Uploading a file will replace the current image.</p>
+            </div>
+
+            <div class="btn-row">
+                <button type="submit" class="btn-submit">
+                    <i class="bi bi-check-circle-fill"></i> Save Changes
+                </button>
+                <a href="/product/<%= product.id %>" class="btn-view-product">
+                    <i class="bi bi-eye"></i> View Live
+                </a>
+            </div>
+        </form>
+
+        <a href="/seller/dashboard" class="btn-cancel"><i class="bi bi-arrow-left"></i> Back to Dashboard</a>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

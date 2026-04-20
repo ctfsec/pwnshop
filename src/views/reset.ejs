@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lab Reset - Pwnshop</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --purple-deep:  #3B0764;
+            --purple-mid:   #6D28D9;
+            --purple-light: #A855F7;
+            --purple-pale:  #F3E8FF;
+            --black:        #0D0D0D;
+            --white:        #FFFFFF;
+            --gray-100:     #F8F5FF;
+            --gray-200:     #EDE9F6;
+            --gray-500:     #6B7280;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: 'DM Sans', sans-serif; background: var(--gray-100); min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 24px; }
+
+        .shell { background: var(--white); border-radius: 20px; box-shadow: 0 8px 40px rgba(59,7,100,0.13); width: 100%; max-width: 980px; display: grid; grid-template-columns: 260px 1fr; overflow: hidden; min-height: 560px; }
+
+        /* LEFT */
+        .panel-left { background: linear-gradient(155deg, var(--purple-deep) 0%, var(--purple-mid) 100%); padding: 44px 36px; display: flex; flex-direction: column; justify-content: space-between; position: relative; overflow: hidden; }
+        .panel-left::before { content: ''; position: absolute; width: 280px; height: 280px; background: rgba(168,85,247,0.13); border-radius: 50%; top: -80px; right: -100px; }
+        .panel-left::after  { content: ''; position: absolute; width: 160px; height: 160px; background: rgba(192,38,211,0.10); border-radius: 50%; bottom: -40px; left: -40px; }
+        .brand { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 1.5rem; color: var(--white); text-decoration: none; display: flex; align-items: center; gap: 7px; position: relative; z-index: 1; }
+        .brand .dot { width: 7px; height: 7px; background: var(--purple-light); border-radius: 50%; }
+        .panel-mid { position: relative; z-index: 1; }
+        .panel-tag { font-size: 0.65rem; font-weight: 700; text-transform: uppercase; letter-spacing: 1.2px; color: var(--purple-light); margin-bottom: 10px; }
+        .panel-mid h2 { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 1.6rem; color: var(--white); line-height: 1.25; margin-bottom: 10px; }
+        .panel-mid p { color: rgba(255,255,255,0.62); font-size: 0.83rem; line-height: 1.6; }
+        .panel-perks { position: relative; z-index: 1; display: flex; flex-direction: column; gap: 10px; }
+        .perk { display: flex; align-items: center; gap: 9px; color: rgba(255,255,255,0.78); font-size: 0.8rem; }
+        .perk i { color: var(--purple-light); font-size: 0.95rem; flex-shrink: 0; }
+        .panel-back { position: relative; z-index: 1; }
+        .btn-back { display: inline-flex; align-items: center; gap: 6px; color: rgba(255,255,255,0.55); font-size: 0.78rem; text-decoration: none; transition: color 0.2s; }
+        .btn-back:hover { color: var(--white); }
+
+        /* RIGHT */
+        .panel-right { padding: 40px 44px; display: flex; flex-direction: column; justify-content: center; }
+
+        /* SUCCESS / ERROR */
+        .state-icon { width: 52px; height: 52px; border-radius: 14px; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; margin-bottom: 18px; }
+        .state-icon.ok  { background: #f0fdf4; color: #15803d; }
+        .state-icon.err { background: #fef2f2; color: #dc2626; }
+        .state-title { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 1.3rem; color: var(--black); margin-bottom: 8px; }
+        .state-body { font-size: 0.85rem; color: var(--gray-500); line-height: 1.65; margin-bottom: 24px; }
+        .state-body strong { color: var(--black); }
+
+        .btn-primary { display: flex; align-items: center; justify-content: center; gap: 7px; padding: 12px; background: var(--purple-deep); color: var(--white); border: none; border-radius: 10px; font-family: 'Syne', sans-serif; font-weight: 700; font-size: 0.88rem; text-decoration: none; cursor: pointer; transition: background 0.2s; width: 100%; margin-bottom: 10px; }
+        .btn-primary:hover { background: var(--purple-mid); color: var(--white); }
+        .btn-ghost { display: flex; align-items: center; justify-content: center; gap: 7px; padding: 11px; background: transparent; color: var(--gray-500); border: 1.5px solid var(--gray-200); border-radius: 10px; font-family: 'Syne', sans-serif; font-weight: 700; font-size: 0.88rem; text-decoration: none; cursor: pointer; transition: all 0.2s; width: 100%; }
+        .btn-ghost:hover { border-color: var(--purple-mid); color: var(--purple-mid); background: var(--purple-pale); }
+        .error-box { background: #fef2f2; border: 1.5px solid #fecaca; border-radius: 10px; padding: 12px 14px; font-size: 0.8rem; color: #991b1b; font-family: monospace; word-break: break-all; margin-bottom: 20px; }
+
+        /* CONFIRM */
+        .confirm-heading { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 1.2rem; color: var(--black); margin-bottom: 4px; }
+        .confirm-sub { font-size: 0.82rem; color: var(--gray-500); margin-bottom: 18px; }
+        .lists-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 20px; }
+        .list-label { font-size: 0.65rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.6px; margin-bottom: 8px; display: flex; align-items: center; gap: 5px; }
+        .label-del  { color: #dc2626; }
+        .label-keep { color: #15803d; }
+        .mini-list { list-style: none; display: flex; flex-direction: column; gap: 5px; }
+        .mini-item { display: flex; align-items: flex-start; gap: 7px; font-size: 0.78rem; color: #374151; line-height: 1.45; }
+        .mini-item i { flex-shrink: 0; margin-top: 2px; font-size: 0.68rem; }
+        .mini-item.del  i { color: #dc2626; }
+        .mini-item.keep i { color: #15803d; }
+        .divider { height: 1px; background: var(--gray-200); margin: 18px 0; }
+        .confirm-row { display: flex; align-items: center; gap: 10px; background: #fef2f2; border: 1.5px solid #fecaca; border-radius: 10px; padding: 12px 14px; margin-bottom: 16px; }
+        .confirm-row input { width: 15px; height: 15px; accent-color: #dc2626; cursor: pointer; flex-shrink: 0; }
+        .confirm-row label { font-size: 0.8rem; color: #991b1b; cursor: pointer; user-select: none; line-height: 1.4; }
+        .btn-reset { display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%; padding: 13px; background: #dc2626; color: var(--white); border: none; border-radius: 10px; font-family: 'Syne', sans-serif; font-weight: 700; font-size: 0.9rem; cursor: pointer; transition: background 0.2s, transform 0.15s; }
+        .btn-reset:hover:not(:disabled) { background: #b91c1c; transform: translateY(-1px); }
+        .btn-reset:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
+
+        @media (max-width: 700px) {
+            .shell { grid-template-columns: 1fr; }
+            .panel-left { display: none; }
+            .panel-right { padding: 32px 24px; }
+            .lists-grid { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+<div class="shell">
+
+
+    <div class="panel-left">
+        <a href="/" class="brand">Pwnshop<span class="dot"></span></a>
+        <div class="panel-mid">
+            <div class="panel-tag"><i class="bi bi-shield-lock"></i> &nbsp;Instructor Tool</div>
+            <% if (done) { %>
+                <h2>Lab is ready.</h2>
+                <p>All student data wiped. Seed accounts and demo products are intact.</p>
+            <% } else if (error) { %>
+                <h2>Something went wrong.</h2>
+                <p>The reset failed partway through. Check the error and try again.</p>
+            <% } else { %>
+                <h2>Reset the lab.</h2>
+                <p>Wipe all student-created data and restore Pwnshop to its original seeded state.</p>
+            <% } %>
+        </div>
+        <div class="panel-perks">
+            <div class="perk"><i class="bi bi-arrow-repeat"></i><span>Resets all student accounts &amp; orders</span></div>
+            <div class="perk"><i class="bi bi-shield-check"></i><span>Seed &amp; admin accounts always preserved</span></div>
+            <div class="perk"><i class="bi bi-lightning-charge"></i><span>IDs reset to clean starting values</span></div>
+        </div>
+        <div class="panel-back">
+            <a href="/" class="btn-back"><i class="bi bi-arrow-left"></i> Back to store</a>
+        </div>
+    </div>
+
+
+    <div class="panel-right">
+
+        <% if (done) { %>
+        <div class="state-icon ok"><i class="bi bi-check-lg"></i></div>
+        <div class="state-title">Reset complete</div>
+        <p class="state-body">All student accounts, orders, products, cart items, wishlists, reviews, OTPs and mail have been removed.<br><strong>Seed accounts and demo data are intact.</strong> The lab is ready for a new cohort.</p>
+        <a href="/" class="btn-primary"><i class="bi bi-house-fill"></i> Back to Pwnshop</a>
+        <a href="/reset" class="btn-ghost"><i class="bi bi-arrow-repeat"></i> Reset again</a>
+
+        <% } else if (error) { %>
+        <div class="state-icon err"><i class="bi bi-exclamation-triangle-fill"></i></div>
+        <div class="state-title">Reset failed</div>
+        <div class="error-box"><%= error %></div>
+        <a href="/reset" class="btn-ghost"><i class="bi bi-arrow-repeat"></i> Try again</a>
+
+        <% } else { %>
+        <div class="confirm-heading">Confirm lab reset</div>
+        <div class="confirm-sub">Review what gets wiped and what stays before continuing.</div>
+
+        <div class="lists-grid">
+            <div>
+                <div class="list-label label-del"><i class="bi bi-trash3-fill"></i> Deleted</div>
+                <ul class="mini-list">
+                    <li class="mini-item del"><i class="bi bi-x-circle-fill"></i><span>Student user accounts</span></li>
+                    <li class="mini-item del"><i class="bi bi-x-circle-fill"></i><span>Orders &amp; order items</span></li>
+                    <li class="mini-item del"><i class="bi bi-x-circle-fill"></i><span>Cart items &amp; wishlists</span></li>
+                    <li class="mini-item del"><i class="bi bi-x-circle-fill"></i><span>Product reviews</span></li>
+                    <li class="mini-item del"><i class="bi bi-x-circle-fill"></i><span>OTPs &amp; PwnMail</span></li>
+                    <li class="mini-item del"><i class="bi bi-x-circle-fill"></i><span>Student-added products</span></li>
+                    <li class="mini-item del"><i class="bi bi-x-circle-fill"></i><span>Tracking events</span></li>
+                    <li class="mini-item del"><i class="bi bi-x-circle-fill"></i><span>Student-created coupons</span></li>
+                    <li class="mini-item del"><i class="bi bi-x-circle-fill"></i><span>All coupon usage records</span></li>
+                </ul>
+            </div>
+            <div>
+                <div class="list-label label-keep"><i class="bi bi-shield-check-fill"></i> Preserved</div>
+                <ul class="mini-list">
+                    <li class="mini-item keep"><i class="bi bi-check-circle-fill"></i><span>Admin accounts</span></li>
+                    <li class="mini-item keep"><i class="bi bi-check-circle-fill"></i><span>Seeded demo users</span></li>
+                    <li class="mini-item keep"><i class="bi bi-check-circle-fill"></i><span>Seeded demo products</span></li>
+                    <li class="mini-item keep"><i class="bi bi-check-circle-fill"></i><span>Seed wallet balances</span></li>
+                    <li class="mini-item keep"><i class="bi bi-check-circle-fill"></i><span>Seed orders &amp; history</span></li>
+                    <li class="mini-item keep"><i class="bi bi-check-circle-fill"></i><span>Seeded demo coupons</span></li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="divider"></div>
+
+        <div class="confirm-row">
+            <input type="checkbox" id="confirmCheck" onchange="toggleReset(this)">
+            <label for="confirmCheck">I understand this permanently deletes all student data and cannot be undone.</label>
+        </div>
+        <form method="POST" action="/reset">
+            <button type="submit" class="btn-reset" id="resetBtn" disabled>
+                <i class="bi bi-trash3-fill"></i> Reset the Lab
+            </button>
+        </form>
+        <% } %>
+
+    </div>
+</div>
+
+<script>
+function toggleReset(cb) {
+    document.getElementById('resetBtn').disabled = !cb.checked;
+}
+</script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

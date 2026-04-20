@@ -1,0 +1,719 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin - Pwnshop</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <style>
+        :root{--purple-deep:#3B0764;--purple-mid:#6D28D9;--purple-light:#A855F7;--purple-pale:#F3E8FF;--black:#0D0D0D;--white:#FFFFFF;--gray-100:#F8F5FF;--gray-200:#EDE9F6;--gray-500:#6B7280;--accent:#C026D3;--danger:#dc2626;}
+        *{box-sizing:border-box;}
+        body{font-family:'DM Sans',sans-serif;background:var(--gray-100);color:var(--black);margin:0;display:flex;min-height:100vh;}
+
+        /* ── SIDEBAR ── */
+        .sidebar{width:220px;background:var(--purple-deep);flex-shrink:0;display:flex;flex-direction:column;position:sticky;top:0;height:100vh;overflow-y:auto;}
+        .sb-brand{padding:18px 16px 14px;display:flex;align-items:center;gap:0;border-bottom:1px solid rgba(255,255,255,0.1);}
+        .sb-brand-name{font-family:'Syne',sans-serif;font-weight:800;font-size:1.05rem;color:var(--white);white-space:nowrap;}
+        .sb-brand .dot{width:6px;height:6px;background:var(--purple-light);border-radius:50%;margin:0 4px;}
+        .admin-tag{background:var(--danger);color:var(--white);font-size:0.5rem;font-weight:800;letter-spacing:0.8px;text-transform:uppercase;padding:2px 6px;border-radius:4px;margin-left:6px;flex-shrink:0;white-space:nowrap;line-height:1.4;}
+        .sb-section{padding:14px 12px 6px;font-size:0.62rem;font-weight:700;color:rgba(255,255,255,0.35);text-transform:uppercase;letter-spacing:1.2px;}
+        .sb-link{display:flex;align-items:center;gap:10px;padding:9px 16px;color:rgba(255,255,255,0.65);font-size:0.85rem;font-weight:500;text-decoration:none;border-radius:8px;margin:2px 8px;transition:all 0.18s;}
+        .sb-link:hover{background:rgba(255,255,255,0.1);color:var(--white);}
+        .sb-link.active{background:rgba(255,255,255,0.15);color:var(--white);font-weight:700;}
+        .sb-link i{font-size:1rem;width:18px;text-align:center;flex-shrink:0;}
+        .sb-link .sb-badge{margin-left:auto;background:rgba(255,255,255,0.15);color:var(--white);font-size:0.65rem;border-radius:20px;padding:1px 8px;}
+        .sb-link.active .sb-badge{background:var(--purple-light);}
+        .sb-bottom{margin-top:auto;padding:14px 8px;border-top:1px solid rgba(255,255,255,0.1);}
+        .sb-user{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:8px;background:rgba(255,255,255,0.07);}
+        .sb-avatar{width:32px;height:32px;background:var(--purple-mid);border-radius:8px;display:flex;align-items:center;justify-content:center;font-family:'Syne',sans-serif;font-weight:800;font-size:0.85rem;color:var(--white);}
+        .sb-uname{font-size:0.8rem;color:var(--white);font-weight:600;}
+        .sb-urole{font-size:0.68rem;color:rgba(255,255,255,0.5);}
+
+        /* ── MAIN ── */
+        .main-area{flex:1;display:flex;flex-direction:column;min-width:0;overflow-x:hidden;}
+        .topbar{background:var(--white);border-bottom:1.5px solid var(--gray-200);padding:14px 28px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;}
+        .topbar-title{font-family:'Syne',sans-serif;font-weight:800;font-size:1.1rem;color:var(--black);}
+        .topbar-actions{display:flex;align-items:center;gap:10px;}
+        .btn-tb{border-radius:8px;padding:7px 16px;font-size:0.82rem;font-weight:700;font-family:'DM Sans',sans-serif;border:none;cursor:pointer;transition:all 0.18s;text-decoration:none;display:inline-flex;align-items:center;gap:6px;}
+        .btn-tb-outline{background:transparent;color:var(--gray-500);border:1.5px solid var(--gray-200);}
+        .btn-tb-outline:hover{background:var(--gray-100);color:var(--black);}
+        .btn-tb-primary{background:var(--purple-deep);color:var(--white);}
+        .btn-tb-primary:hover{background:var(--purple-mid);color:var(--white);}
+        .btn-tb-green{background:#16a34a;color:var(--white);}
+        .btn-tb-green:hover{background:#15803d;}
+        .btn-tb-danger{background:#fef2f2;color:var(--danger);border:1px solid #fecaca;}
+        .btn-tb-danger:hover{background:var(--danger);color:var(--white);}
+        .btn-tb-amber{background:#fffbeb;color:#92400e;border:1px solid #fcd34d;}
+        .btn-tb-amber:hover{background:#d97706;color:var(--white);}
+
+        .page-content{padding:28px;flex:1;}
+
+        /* Flash */
+        .flash-ok{background:#f0fdf4;border:1.5px solid #86efac;color:#15803d;border-radius:10px;padding:12px 16px;margin-bottom:20px;display:flex;align-items:center;gap:8px;font-size:0.85rem;}
+        .flash-err{background:#fef2f2;border:1.5px solid #fecaca;color:#dc2626;border-radius:10px;padding:12px 16px;margin-bottom:20px;display:flex;align-items:center;gap:8px;font-size:0.85rem;}
+
+        /* Stats cards */
+        .stats-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:28px;}
+        .stat-card{background:var(--white);border-radius:14px;border:1.5px solid var(--gray-200);padding:20px 22px;}
+        .stat-top{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:14px;}
+        .stat-label{font-size:0.72rem;font-weight:700;color:var(--gray-500);text-transform:uppercase;letter-spacing:0.5px;}
+        .stat-icon{width:38px;height:38px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:1.05rem;}
+        .si-purple{background:var(--purple-pale);color:var(--purple-mid);}
+        .si-blue{background:#eff6ff;color:#2563eb;}
+        .si-amber{background:#fffbeb;color:#d97706;}
+        .si-green{background:#f0fdf4;color:#16a34a;}
+        .stat-value{font-family:'Syne',sans-serif;font-weight:800;font-size:2rem;color:var(--black);line-height:1;}
+        .stat-sub{font-size:0.72rem;color:var(--gray-500);margin-top:6px;}
+
+        /* Section card */
+        .section-card{background:var(--white);border-radius:14px;border:1.5px solid var(--gray-200);overflow:hidden;margin-bottom:22px;}
+        .section-head{padding:16px 22px;border-bottom:1.5px solid var(--gray-200);display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;}
+        .section-head h3{font-family:'Syne',sans-serif;font-weight:800;font-size:0.95rem;color:var(--black);margin:0;display:flex;align-items:center;gap:7px;}
+        .section-head h3 i{color:var(--purple-mid);}
+        .count-tag{background:var(--purple-pale);color:var(--purple-mid);font-size:0.7rem;font-weight:700;border-radius:20px;padding:2px 10px;}
+
+        /* Search bar */
+        .search-bar{display:flex;gap:8px;align-items:center;}
+        .search-input{border:1.5px solid var(--gray-200);border-radius:9px;padding:8px 14px;font-size:0.85rem;font-family:'DM Sans',sans-serif;outline:none;background:var(--white);color:var(--black);min-width:240px;transition:border-color 0.2s;}
+        .search-input:focus{border-color:var(--purple-mid);}
+        .search-input::placeholder{color:#b0afc0;}
+
+        /* Action panel */
+        .action-panel{padding:16px 22px;background:var(--gray-100);border-bottom:1.5px solid var(--gray-200);}
+        .ap-label{font-size:0.72rem;font-weight:700;color:var(--gray-500);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:10px;display:flex;align-items:center;gap:6px;}
+        .ap-label i{color:var(--purple-mid);}
+        .action-row{display:flex;gap:10px;align-items:flex-end;flex-wrap:wrap;}
+        .ap-field{border:1.5px solid var(--gray-200);border-radius:9px;padding:9px 12px;font-size:0.85rem;font-family:'DM Sans',sans-serif;outline:none;background:var(--white);color:var(--black);transition:border-color 0.2s;}
+        .ap-field:focus{border-color:var(--purple-mid);}
+        .ap-field::placeholder{color:#b0afc0;}
+        .ap-select{border:1.5px solid var(--gray-200);border-radius:9px;padding:9px 12px;font-size:0.85rem;font-family:'DM Sans',sans-serif;outline:none;background:var(--white);color:var(--black);cursor:pointer;}
+
+        /* Table */
+        .table-wrap{overflow-x:auto;}
+        table{width:100%;border-collapse:collapse;}
+        th{padding:10px 16px;text-align:left;font-size:0.68rem;font-weight:700;color:var(--gray-500);text-transform:uppercase;letter-spacing:0.5px;background:var(--gray-100);border-bottom:1.5px solid var(--gray-200);white-space:nowrap;}
+        td{padding:11px 16px;font-size:0.84rem;border-bottom:1px solid var(--gray-200);color:var(--black);vertical-align:middle;}
+        tr:last-child td{border-bottom:none;}
+        tr:hover td{background:#fafafa;}
+        .td-id{color:var(--gray-500);font-family:monospace;font-size:0.78rem;}
+        .td-bold{font-weight:600;}
+        .td-mono{font-family:monospace;font-size:0.78rem;color:var(--gray-500);}
+        .td-amount{font-family:'Syne',sans-serif;font-weight:700;font-size:0.88rem;color:var(--purple-mid);}
+        .btn-tbl{border:none;border-radius:6px;padding:4px 10px;font-size:0.72rem;font-weight:700;font-family:'DM Sans',sans-serif;cursor:pointer;transition:all 0.15s;display:inline-flex;align-items:center;gap:4px;}
+        .btn-tbl-red{background:#fef2f2;color:var(--danger);border:1px solid #fecaca;}
+        .btn-tbl-red:hover{background:var(--danger);color:var(--white);}
+        .btn-tbl-purple{background:var(--purple-pale);color:var(--purple-mid);border:1px solid rgba(109,40,217,0.2);}
+        .btn-tbl-purple:hover{background:var(--purple-mid);color:var(--white);}
+        .btn-tbl-amber{background:#fffbeb;color:#92400e;border:1px solid #fcd34d;}
+        .btn-tbl-amber:hover{background:#d97706;color:var(--white);}
+        .status-select{border:1.5px solid var(--gray-200);border-radius:7px;padding:4px 8px;font-size:0.78rem;font-family:'DM Sans',sans-serif;outline:none;background:var(--white);cursor:pointer;color:var(--black);}
+
+        /* Badges */
+        .badge{display:inline-flex;align-items:center;gap:4px;font-size:0.65rem;font-weight:700;border-radius:6px;padding:3px 9px;text-transform:uppercase;letter-spacing:0.3px;}
+        .b-admin{background:rgba(220,38,38,0.1);color:var(--danger);border:1px solid rgba(220,38,38,0.2);}
+        .b-seller{background:var(--purple-pale);color:var(--purple-mid);border:1px solid rgba(109,40,217,0.2);}
+        .b-user{background:var(--gray-100);color:var(--gray-500);border:1px solid var(--gray-200);}
+        .b-pending{background:#fffbeb;color:#92400e;border:1px solid #fcd34d;}
+        .b-processing{background:#eff6ff;color:#1d4ed8;border:1px solid #bfdbfe;}
+        .b-shipped{background:#ecfeff;color:#0e7490;border:1px solid #a5f3fc;}
+        .b-delivered{background:#f0fdf4;color:#15803d;border:1px solid #86efac;}
+        .b-cancelled{background:#fef2f2;color:var(--danger);border:1px solid #fecaca;}
+        .b-active{background:#f0fdf4;color:#15803d;border:1px solid #86efac;}
+        .b-inactive{background:#fef2f2;color:var(--danger);border:1px solid #fecaca;}
+
+        /* Security tab */
+        .sec-card{background:var(--white);border-radius:14px;border:1.5px solid var(--gray-200);padding:28px;margin-bottom:16px;}
+        .sec-card h3{font-family:'Syne',sans-serif;font-weight:800;font-size:1rem;color:var(--black);margin-bottom:8px;display:flex;align-items:center;gap:8px;}
+        .vuln-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:14px;margin-top:20px;}
+        .vuln-item{background:var(--gray-100);border-radius:10px;border:1.5px solid var(--gray-200);padding:16px;}
+        .vuln-item .v-title{font-family:'Syne',sans-serif;font-weight:700;font-size:0.82rem;color:var(--black);margin-bottom:4px;display:flex;align-items:center;gap:7px;}
+        .vuln-item .v-title i{color:var(--danger);}
+        .vuln-item .v-desc{font-size:0.78rem;color:var(--gray-500);line-height:1.55;}
+        .vuln-item .v-status{display:inline-flex;align-items:center;gap:4px;margin-top:8px;font-size:0.7rem;font-weight:700;border-radius:20px;padding:2px 10px;}
+        .v-open{background:#fef2f2;color:var(--danger);}
+        .v-info{background:var(--purple-pale);color:var(--purple-mid);}
+
+        .empty-state{text-align:center;padding:60px 20px;}
+        .empty-state i{font-size:3rem;color:var(--gray-200);display:block;margin-bottom:14px;}
+        .empty-state p{color:var(--gray-500);font-size:0.85rem;}
+
+        /* ── CONFIRM MODAL ── */
+        .modal-backdrop{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.45);z-index:2000;align-items:center;justify-content:center;}
+        .modal-backdrop.open{display:flex;}
+        .modal-box{background:var(--white);border-radius:16px;padding:32px 28px;max-width:400px;width:90%;box-shadow:0 20px 60px rgba(0,0,0,0.25);animation:modalIn 0.18s ease;}
+        @keyframes modalIn{from{transform:scale(0.95);opacity:0;}to{transform:scale(1);opacity:1;}}
+        .modal-icon{width:48px;height:48px;background:#fef2f2;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:1.3rem;color:#dc2626;margin-bottom:16px;}
+        .modal-title{font-family:'Syne',sans-serif;font-weight:800;font-size:1.05rem;color:var(--black);margin-bottom:6px;}
+        .modal-body{font-size:0.85rem;color:var(--gray-500);line-height:1.6;margin-bottom:24px;}
+        .modal-actions{display:flex;gap:10px;justify-content:flex-end;}
+        .btn-modal-cancel{background:var(--white);border:1.5px solid var(--gray-200);color:var(--gray-500);border-radius:9px;padding:9px 20px;font-size:0.85rem;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all 0.18s;}
+        .btn-modal-cancel:hover{background:var(--gray-100);color:var(--black);}
+        .btn-modal-confirm{background:#dc2626;border:none;color:var(--white);border-radius:9px;padding:9px 20px;font-size:0.85rem;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif;transition:background 0.18s;}
+        .btn-modal-confirm:hover{background:#b91c1c;}
+    </style>
+</head>
+<body>
+
+<nav class="sidebar">
+    <div class="sb-brand">
+        <a href="/" style="text-decoration:none;display:flex;align-items:center;min-width:0;">
+            <span class="sb-brand-name">Pwnshop</span><span class="dot"></span>
+        </a>
+        <span class="admin-tag">Admin</span>
+    </div>
+
+    <div class="sb-section">Overview</div>
+    <a href="/admin/stats"    class="sb-link <%= tab==='stats'    ? 'active':'' %>"><i class="bi bi-grid-1x2"></i> Dashboard</a>
+
+    <div class="sb-section">Manage</div>
+    <a href="/admin/users"    class="sb-link <%= tab==='users'    ? 'active':'' %>"><i class="bi bi-people"></i> Users</a>
+    <a href="/admin/orders"   class="sb-link <%= tab==='orders'   ? 'active':'' %>"><i class="bi bi-bag"></i> Orders</a>
+    <a href="/admin/products" class="sb-link <%= tab==='products' ? 'active':'' %>"><i class="bi bi-box-seam"></i> Products</a>
+    <a href="/admin/reviews"  class="sb-link <%= tab==='reviews'  ? 'active':'' %>"><i class="bi bi-chat-square-text"></i> Reviews</a>
+    <a href="/admin/coupons"  class="sb-link <%= tab==='coupons'  ? 'active':'' %>"><i class="bi bi-ticket-perforated"></i> Coupons</a>
+
+    <div class="sb-section">System</div>
+    <a href="/admin/security" class="sb-link <%= tab==='security' ? 'active':'' %>"><i class="bi bi-shield-exclamation"></i> Security</a>
+    <a href="/admin/export-orders" class="sb-link"><i class="bi bi-download"></i> Export CSV</a>
+    <a href="/vulnerabilities" class="sb-link"><i class="bi bi-bug"></i> Vulns</a>
+
+    <div class="sb-bottom">
+        <div class="sb-user">
+            <div class="sb-avatar"><%= user.username.charAt(0).toUpperCase() %></div>
+            <div>
+                <div class="sb-uname"><%= user.username %></div>
+                <div class="sb-urole">Administrator</div>
+            </div>
+        </div>
+        <a href="/logout" style="display:flex;align-items:center;gap:8px;padding:10px 12px;margin-top:8px;color:rgba(255,255,255,0.6);font-size:0.82rem;text-decoration:none;border-radius:8px;transition:all 0.18s;">
+            <i class="bi bi-box-arrow-left"></i> Sign out
+        </a>
+    </div>
+</nav>
+
+<div class="main-area">
+
+
+    <div class="topbar">
+        <div class="topbar-title">
+            <% if(tab==='stats')    { %>Dashboard<% } %>
+            <% if(tab==='users')    { %>Users<% } %>
+            <% if(tab==='orders')   { %>Orders<% } %>
+            <% if(tab==='products') { %>Products<% } %>
+            <% if(tab==='reviews')  { %>Reviews<% } %>
+            <% if(tab==='security') { %>Security<% } %>
+            <% if(tab==='coupons')  { %>Coupons<% } %>
+        </div>
+        <div class="topbar-actions">
+            <a href="/" class="btn-tb btn-tb-outline"><i class="bi bi-shop"></i> View Store</a>
+            <% if(tab==='orders') { %>
+                <a href="/admin/export-orders" class="btn-tb btn-tb-primary"><i class="bi bi-download"></i> Export CSV</a>
+            <% } %>
+        </div>
+    </div>
+
+    <div class="page-content">
+
+        <% if (success) { %><div class="flash-ok"><i class="bi bi-check-circle-fill"></i> <%= success %></div><% } %>
+        <% if (error)   { %><div class="flash-err"><i class="bi bi-exclamation-circle-fill"></i> <%= error %></div><% } %>
+
+
+
+
+        <% if (tab === 'stats' && stats) { %>
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-top"><span class="stat-label">Total Users</span><span class="stat-icon si-purple"><i class="bi bi-people-fill"></i></span></div>
+                <div class="stat-value"><%= stats.users %></div>
+                <div class="stat-sub"><%= stats.sellers %> sellers registered</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-top"><span class="stat-label">Total Orders</span><span class="stat-icon si-blue"><i class="bi bi-bag-fill"></i></span></div>
+                <div class="stat-value"><%= stats.orders %></div>
+                <div class="stat-sub"><%= stats.pending %> pending fulfilment</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-top"><span class="stat-label">Products</span><span class="stat-icon si-amber"><i class="bi bi-box-seam"></i></span></div>
+                <div class="stat-value"><%= stats.products %></div>
+                <div class="stat-sub"><%= stats.active %> active listings</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-top"><span class="stat-label">Revenue</span><span class="stat-icon si-green"><i class="bi bi-graph-up-arrow"></i></span></div>
+                <div class="stat-value" style="font-size:1.4rem;">&#8358;<%= stats.revenue %></div>
+                <div class="stat-sub">from delivered orders</div>
+            </div>
+        </div>
+        <div class="section-card">
+            <div class="section-head"><h3><i class="bi bi-lightning-charge"></i> Quick Actions</h3></div>
+            <div style="padding:20px 22px;display:flex;gap:12px;flex-wrap:wrap;">
+                <a href="/admin/users"    class="btn-tb btn-tb-primary"><i class="bi bi-people"></i> Manage Users</a>
+                <a href="/admin/orders"   class="btn-tb btn-tb-outline"><i class="bi bi-bag"></i> View Orders</a>
+                <a href="/admin/products" class="btn-tb btn-tb-outline"><i class="bi bi-box-seam"></i> Products</a>
+                <a href="/admin/export-orders" class="btn-tb btn-tb-green"><i class="bi bi-download"></i> Export Orders CSV</a>
+            </div>
+        </div>
+        <% } %>
+
+
+
+
+        <% if (tab === 'users') { %>
+        <div class="section-card">
+            <div class="section-head">
+                <h3><i class="bi bi-person-plus"></i> Promote to Seller</h3>
+            </div>
+            <div class="action-panel">
+                <form method="POST" action="/admin/make-seller">
+                    <div class="action-row">
+                        <input type="email" class="ap-field" name="email" placeholder="Enter user email address" style="min-width:280px;" required>
+                        <button type="submit" class="btn-tb btn-tb-green"><i class="bi bi-arrow-up-circle"></i> Make Seller</button>
+                    </div>
+                </form>
+            </div>
+            <div class="action-panel" style="border-top:1.5px solid var(--gray-200);">
+                <div class="ap-label"><i class="bi bi-wallet2"></i> Top Up Wallet</div>
+                <form method="POST" action="/admin/topup-wallet">
+                    <div class="action-row">
+                        <select class="ap-select" name="user_id" required>
+                            <option value="">Select user…</option>
+                            <% users.forEach(u=>{ %><option value="<%= u.id %>"><%= u.username %> (₦<%= parseFloat(u.wallet_amount||0).toFixed(2) %>)</option><% }); %>
+                        </select>
+                        <input type="number" class="ap-field" name="amount" placeholder="Amount (₦)" min="1" step="0.01" style="width:160px;" required>
+                        <button type="submit" class="btn-tb btn-tb-primary"><i class="bi bi-plus-circle"></i> Add Funds</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <div class="section-card">
+            <div class="section-head">
+                <h3><i class="bi bi-people"></i> All Users</h3>
+                <div style="display:flex;align-items:center;gap:10px;">
+                    <span class="count-tag"><%= users.length %> users</span>
+                    <form method="GET" action="/admin/users" style="display:flex;gap:6px;">
+                        <input type="text" name="search" class="search-input" placeholder="Search users…" value="<%= search || '' %>">
+                        <button type="submit" class="btn-tb btn-tb-primary"><i class="bi bi-search"></i></button>
+                    </form>
+                </div>
+            </div>
+            <div class="table-wrap">
+                <table>
+                    <thead><tr><th>ID</th><th>Username</th><th>Email</th><th>Phone</th><th>Role</th><th>Wallet</th><th>Joined</th><th>Actions</th></tr></thead>
+                    <tbody>
+                        <% users.forEach(u=>{ %>
+                        <tr>
+                            <td class="td-id">#<%= u.id %></td>
+                            <td class="td-bold"><%= u.username %></td>
+                            <td class="td-mono"><%= u.email %></td>
+                            <td class="td-mono"><%= u.phone||'—' %></td>
+                            <td>
+                                <%if(u.role==='admin'){%><span class="badge b-admin"><i class="bi bi-shield-fill"></i> Admin</span>
+                                <%}else if(u.isSeller){%><span class="badge b-seller"><i class="bi bi-shop"></i> Seller</span>
+                                <%}else{%><span class="badge b-user"><i class="bi bi-person"></i> User</span><%}%>
+                            </td>
+                            <td class="td-amount">&#8358;<%= parseFloat(u.wallet_amount||0).toFixed(2) %></td>
+                            <td class="td-mono"><%= new Date(u.created_at).toLocaleDateString() %></td>
+                            <td><div style="display:flex;gap:6px;flex-wrap:wrap;">
+                                <%if(u.isSeller&&u.role!=='admin'){%>
+                                <form style="display:inline" method="POST" action="/admin/remove-seller">
+                                    <input type="hidden" name="user_id" value="<%= u.id %>">
+                                    <button class="btn-tbl btn-tbl-amber" type="submit"><i class="bi bi-shop"></i> Remove Seller</button>
+                                </form><%}%>
+                                <%if(u.role!=='admin'){%>
+                                <form style="display:inline" method="POST" action="/admin/delete-user" onsubmit="return confirm('Delete <%= u.username %>?')">
+                                    <input type="hidden" name="user_id" value="<%= u.id %>">
+                                    <button class="btn-tbl btn-tbl-red" type="submit"><i class="bi bi-trash3"></i> Delete</button>
+                                </form><%}%>
+                            </div></td>
+                        </tr>
+                        <%});%>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        <% } %>
+
+
+
+
+        <% if (tab === 'orders') { %>
+        <div class="section-card">
+            <div class="section-head">
+                <h3><i class="bi bi-bag"></i> Orders</h3>
+                <div style="display:flex;align-items:center;gap:10px;">
+                    <span class="count-tag"><%= orders.length %> shown</span>
+                    <form method="GET" action="/admin/orders" style="display:flex;gap:6px;">
+                        <input type="text" name="search" class="search-input" placeholder="Search by ID, user, address…" value="<%= search || '' %>">
+                        <button type="submit" class="btn-tb btn-tb-primary"><i class="bi bi-search"></i></button>
+                    </form>
+                </div>
+            </div>
+            <div class="table-wrap">
+                <table>
+                    <thead><tr><th>Order ID</th><th>User ID</th><th>Amount</th><th>Status</th><th>Address</th><th>Date</th><th>Update</th><th></th></tr></thead>
+                    <tbody>
+                        <%orders.forEach(o=>{%>
+                        <tr>
+                            <td class="td-bold">#<%= o.id %></td>
+                            <td class="td-id">#<%= o.user_id %></td>
+                            <td class="td-amount">&#8358;<%= parseFloat(o.total_amount||0).toFixed(2) %></td>
+                            <td><span class="badge b-<%= o.status %>"><%= o.status.toUpperCase() %></span></td>
+                            <td class="td-mono" style="max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="<%= o.shipping_address %>"><%= o.shipping_address %></td>
+                            <td class="td-mono"><%= new Date(o.created_at).toLocaleDateString() %></td>
+                            <td>
+                                <form method="POST" action="/admin/update-order-status" style="display:flex;gap:6px;align-items:center;flex-wrap:wrap;">
+                                    <input type="hidden" name="order_id" value="<%= o.id %>">
+                                    <select class="status-select" name="status">
+                                        <option value="pending"    <%=o.status==='pending'    ?'selected':''%>>Pending</option>
+                                        <option value="processing" <%=o.status==='processing' ?'selected':''%>>Processing</option>
+                                        <option value="shipped"    <%=o.status==='shipped'    ?'selected':''%>>Shipped</option>
+                                        <option value="delivered"  <%=o.status==='delivered'  ?'selected':''%>>Delivered</option>
+                                        <option value="cancelled"  <%=o.status==='cancelled'  ?'selected':''%>>Cancelled</option>
+                                    </select>
+                                    <input type="text" name="tracking_note" class="search-input" placeholder="Tracking note (optional)" style="min-width:160px;font-size:0.78rem;">
+                                    <button class="btn-tbl btn-tbl-purple" type="submit"><i class="bi bi-check2"></i> Save</button>
+                                </form>
+                            </td>
+                            <td style="display:flex;gap:6px;">
+                                <a href="/order/<%= o.id %>" class="btn-tbl btn-tbl-purple"><i class="bi bi-eye"></i> View</a>
+                                <a href="/track/<%= o.id %>" class="btn-tbl btn-tbl-view" target="_blank"><i class="bi bi-geo-alt"></i> Track</a>
+                            </td>
+                        </tr>
+                        <%});%>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        <% } %>
+
+
+
+
+        <% if (tab === 'products') { %>
+        <div class="section-card">
+            <div class="section-head">
+                <h3><i class="bi bi-box-seam"></i> Products</h3>
+                <div style="display:flex;align-items:center;gap:10px;">
+                    <span class="count-tag"><%= products.length %> shown</span>
+                    <form method="GET" action="/admin/products" style="display:flex;gap:6px;">
+                        <input type="text" name="search" class="search-input" placeholder="Search name, category, seller…" value="<%= search || '' %>">
+                        <button type="submit" class="btn-tb btn-tb-primary"><i class="bi bi-search"></i></button>
+                    </form>
+                </div>
+            </div>
+            <div class="table-wrap">
+                <table>
+                    <thead><tr><th>ID</th><th>Name</th><th>Category</th><th>Price</th><th>Stock</th><th>Seller</th><th>Status</th><th>Action</th></tr></thead>
+                    <tbody>
+                        <%products.forEach(p=>{%>
+                        <tr>
+                            <td class="td-id">#<%= p.id %></td>
+                            <td class="td-bold"><a href="/product/<%= p.id %>" style="color:var(--purple-mid);text-decoration:none;"><%= p.name %></a></td>
+                            <td><span style="font-size:0.78rem;background:var(--gray-100);border-radius:4px;padding:2px 8px;color:var(--gray-500);"><%= p.category %></span></td>
+                            <td class="td-amount">&#8358;<%= parseFloat(p.price||0).toLocaleString() %></td>
+                            <td class="td-mono"><%= p.stock||0 %> units</td>
+                            <td class="td-mono"><%= p.seller_username||'—' %></td>
+                            <td><%if(p.available){%><span class="badge b-active"><i class="bi bi-eye"></i> Active</span><%}else{%><span class="badge b-inactive"><i class="bi bi-eye-slash"></i> Hidden</span><%}%></td>
+                            <td>
+                                <form style="display:inline" method="POST" action="/admin/toggle-product">
+                                    <input type="hidden" name="product_id" value="<%= p.id %>">
+                                    <button class="btn-tbl <%=p.available?'btn-tbl-amber':'btn-tbl-purple'%>" type="submit">
+                                        <i class="bi bi-<%=p.available?'eye-slash':'eye'%>"></i> <%=p.available?'Hide':'Show'%>
+                                    </button>
+                                </form>
+                            </td>
+                        </tr>
+                        <%});%>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        <% } %>
+
+
+
+
+        <% if (tab === 'reviews') { %>
+        <div class="section-card">
+            <div class="section-head">
+                <h3><i class="bi bi-chat-square-text"></i> Customer Reviews</h3>
+                <span class="count-tag"><%= reviews.length %> reviews</span>
+            </div>
+            <% if (reviews.length === 0) { %>
+                <div class="empty-state"><i class="bi bi-chat-square-text"></i><p>No reviews submitted yet.</p></div>
+            <% } else { %>
+            <div class="table-wrap">
+                <table>
+                    <thead><tr><th>ID</th><th>Product</th><th>Reviewer</th><th>Rating</th><th>Comment</th><th>Date</th><th></th></tr></thead>
+                    <tbody>
+                        <% reviews.forEach(r => { %>
+                        <tr>
+                            <td class="td-id">#<%= r.id %></td>
+                            <td class="td-bold"><a href="/product/<%= r.product_id %>" style="color:var(--purple-mid);text-decoration:none;"><%= r.product_name %></a></td>
+                            <td class="td-mono"><%= r.reviewer %></td>
+                            <td><span style="color:#f59e0b;font-size:0.82rem;"><% for(var s=1;s<=5;s++){%><i class="bi bi-star<%=s<=r.rating?'-fill':''%>"></i><%}%></span></td>
+                            <td style="max-width:280px;font-size:0.84rem;"><%- r.comment %></td>
+                            <td class="td-mono"><%= new Date(r.created_at).toLocaleDateString() %></td>
+                            <td>
+                                <form style="display:inline" method="POST" action="/admin/delete-review">
+                                    <input type="hidden" name="review_id" value="<%= r.id %>">
+                                    <button class="btn-tbl btn-tbl-red" type="submit"><i class="bi bi-trash3"></i></button>
+                                </form>
+                            </td>
+                        </tr>
+                        <% }); %>
+                    </tbody>
+                </table>
+            </div>
+            <% } %>
+        </div>
+        <% } %>
+
+
+
+
+        <% if (tab === 'security') { %>
+        <div class="sec-card">
+            <h3><i class="bi bi-journal-text" style="color:var(--purple-mid)"></i> Security Audit Log</h3>
+            <p style="color:var(--gray-500);font-size:0.82rem;margin-bottom:16px;">
+                Live log of all security-relevant events. Also accessible publicly at
+                <a href="/api/v1/events" target="_blank" style="color:var(--purple-mid);font-weight:600;">/api/v1/events</a>
+                with no authentication required.
+            </p>
+
+
+            <div style="display:flex;gap:8px;margin-bottom:18px;flex-wrap:wrap;align-items:center;">
+                <form method="GET" action="/admin/security" style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;">
+                    <input type="text" name="search" value="<%= search %>"
+                           placeholder="Search action or detail…"
+                           class="search-input" style="max-width:300px;">
+                    <button type="submit" class="btn-tb btn-tb-primary" style="padding:8px 16px;">
+                        <i class="bi bi-search"></i> Search
+                    </button>
+                    <% if (search) { %>
+                        <a href="/admin/security" class="btn-tb btn-tb-outline">Clear</a>
+                    <% } %>
+                </form>
+
+                <button type="button" class="btn-tb btn-tb-danger" style="padding:8px 16px;" onclick="openResetModal()">
+                    <i class="bi bi-trash3"></i> Reset Log
+                </button>
+            </div>
+
+            <% if (!auditLogs || auditLogs.length === 0) { %>
+                <div style="background:var(--gray-100);border-radius:10px;padding:28px;border:1.5px dashed var(--gray-200);text-align:center;color:var(--gray-500);font-size:0.85rem;">
+                    <i class="bi bi-journal-text" style="font-size:2rem;display:block;margin-bottom:8px;color:var(--gray-200);"></i>
+                    No log entries yet. Events will appear here as the lab is used.
+                </div>
+            <% } else { %>
+                <div class="table-wrap">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>Time</th>
+                                <th>Action</th>
+                                <th>User</th>
+                                <th>Detail</th>
+                                <th>IP</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <% auditLogs.forEach(log => { %>
+                            <tr>
+                                <td class="td-id"><%= log.id %></td>
+                                <td class="td-mono" style="white-space:nowrap;font-size:0.75rem;">
+                                    <%= new Date(log.created_at).toLocaleString() %>
+                                </td>
+                                <td>
+                                    <%
+                                        const badgeColor = {
+                                            'LOGIN_FAILED':           'background:#fef2f2;color:#dc2626;border:1px solid #fecaca;',
+                                            'LOGIN_SUCCESS':          'background:#f0fdf4;color:#15803d;border:1px solid #86efac;',
+                                            'ADMIN_LOGIN_FAILED':     'background:#fef2f2;color:#dc2626;border:1px solid #fecaca;',
+                                            'ADMIN_LOGIN_SUCCESS':    'background:#eff6ff;color:#1d4ed8;border:1px solid #bfdbfe;',
+                                            'ADMIN_LOGIN_INITIATED':   'background:#f0fdf4;color:#15803d;border:1px solid #86efac;',
+                                            'SQLI_ATTEMPT':           'background:#fdf2f8;color:#9d174d;border:1px solid #fbcfe8;',
+                                            'OTP_FAILED':             'background:#fffbeb;color:#92400e;border:1px solid #fcd34d;',
+                                            'DEBUG_ENDPOINT_ACCESSED':'background:#fdf2f8;color:#9d174d;border:1px solid #fbcfe8;',
+                                            'AVATAR_URL_SET':         'background:#fffbeb;color:#92400e;border:1px solid #fcd34d;',
+                                            'ACCOUNT_DELETED':        'background:#fef2f2;color:#dc2626;border:1px solid #fecaca;',
+                                        };
+                                        const style = badgeColor[log.action] || 'background:var(--gray-100);color:var(--gray-500);border:1px solid var(--gray-200);';
+                                    %>
+                                    <span style="display:inline-block;padding:2px 8px;border-radius:6px;font-size:0.68rem;font-weight:700;letter-spacing:0.3px;<%= style %>">
+                                        <%= log.action %>
+                                    </span>
+                                </td>
+                                <td class="td-mono" style="font-size:0.78rem;">
+                                    <%= log.username || (log.user_id ? '#'+log.user_id : '—') %>
+                                </td>
+                                <td style="font-size:0.78rem;color:var(--gray-500);max-width:340px;word-break:break-all;">
+                                    <%= log.detail %>
+                                </td>
+                                <td class="td-mono" style="font-size:0.75rem;"><%= log.ip || '—' %></td>
+                            </tr>
+                            <% }); %>
+                        </tbody>
+                    </table>
+                </div>
+                <p style="font-size:0.72rem;color:var(--gray-500);margin-top:10px;">
+                    Showing <%= auditLogs.length %> most recent entries.
+                    Also available at <a href="/api/v1/events" target="_blank" style="color:var(--purple-mid);">/api/v1/events</a> (no auth required).
+                </p>
+            <% } %>
+        </div>
+        <% } %>
+
+
+
+
+    <% if (tab === 'coupons') { %>
+
+
+    <div class="sec-card" style="margin-bottom:20px;">
+        <h3 style="font-family:'Syne',sans-serif;font-weight:800;font-size:0.95rem;margin-bottom:16px;display:flex;align-items:center;gap:8px;">
+            <i class="bi bi-plus-circle" style="color:var(--purple-mid)"></i> Create New Coupon
+        </h3>
+        <form method="POST" action="/admin/coupons/create" style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;">
+            <div>
+                <label style="font-size:0.72rem;font-weight:700;text-transform:uppercase;letter-spacing:0.3px;color:var(--gray-700);display:block;margin-bottom:5px;">Code</label>
+                <input type="text" name="code" class="search-input" placeholder="e.g. SAVE20" required style="width:100%;text-transform:uppercase;">
+            </div>
+            <div>
+                <label style="font-size:0.72rem;font-weight:700;text-transform:uppercase;letter-spacing:0.3px;color:var(--gray-700);display:block;margin-bottom:5px;">Discount %</label>
+                <input type="number" name="discount_percent" class="search-input" placeholder="e.g. 20" min="1" max="100" required style="width:100%;">
+            </div>
+            <div>
+                <label style="font-size:0.72rem;font-weight:700;text-transform:uppercase;letter-spacing:0.3px;color:var(--gray-700);display:block;margin-bottom:5px;">Category (optional)</label>
+                <select name="allowed_category" class="search-input" style="width:100%;">
+                    <option value="">All categories</option>
+                    <option value="computers">Computers</option>
+                    <option value="phones">Phones</option>
+                    <option value="electronics">Electronics</option>
+                    <option value="fashion">Fashion</option>
+                    <option value="home">Home & Kitchen</option>
+                    <option value="kids">Kids & Toys</option>
+                    <option value="beauty">Beauty & Health</option>
+                </select>
+            </div>
+            <div>
+                <label style="font-size:0.72rem;font-weight:700;text-transform:uppercase;letter-spacing:0.3px;color:var(--gray-700);display:block;margin-bottom:5px;">Max uses per user</label>
+                <input type="number" name="max_uses_per_user" class="search-input" placeholder="1" min="1" value="1" style="width:100%;">
+            </div>
+            <div>
+                <label style="font-size:0.72rem;font-weight:700;text-transform:uppercase;letter-spacing:0.3px;color:var(--gray-700);display:block;margin-bottom:5px;">Max total uses (blank = unlimited)</label>
+                <input type="number" name="max_total_uses" class="search-input" placeholder="e.g. 100" min="1" style="width:100%;">
+            </div>
+            <div style="display:flex;align-items:flex-end;">
+                <button type="submit" class="btn-tb btn-tb-primary" style="width:100%;padding:10px 16px;">
+                    <i class="bi bi-plus-circle"></i> Create Coupon
+                </button>
+            </div>
+        </form>
+    </div>
+
+
+    <div class="sec-card">
+        <h3 style="font-family:'Syne',sans-serif;font-weight:800;font-size:0.95rem;margin-bottom:16px;display:flex;align-items:center;gap:8px;">
+            <i class="bi bi-ticket-perforated" style="color:var(--purple-mid)"></i> All Coupons
+        </h3>
+        <% if (!coupons || coupons.length === 0) { %>
+            <div style="background:var(--gray-100);border-radius:10px;padding:28px;text-align:center;color:var(--gray-500);font-size:0.85rem;border:1.5px dashed var(--gray-200);">
+                <i class="bi bi-ticket-perforated" style="font-size:2rem;display:block;margin-bottom:8px;color:var(--gray-200);"></i>
+                No coupons yet. Create one above.
+            </div>
+        <% } else { %>
+        <div class="table-wrap">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Code</th>
+                        <th>Discount</th>
+                        <th>Category</th>
+                        <th>Per User</th>
+                        <th>Total Limit</th>
+                        <th>Used</th>
+                        <th>Unique Users</th>
+                        <th>Status</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <% coupons.forEach(c => { %>
+                    <tr>
+                        <td style="font-family:'JetBrains Mono',monospace;font-weight:700;font-size:0.82rem;color:var(--purple-mid);"><%= c.code %></td>
+                        <td style="font-family:'Syne',sans-serif;font-weight:700;"><%= c.discount_percent %>%</td>
+                        <td>
+                            <% if (c.allowed_category) { %>
+                                <span style="background:var(--purple-pale);color:var(--purple-mid);border-radius:4px;padding:2px 8px;font-size:0.72rem;font-weight:600;"><%= c.allowed_category %></span>
+                            <% } else { %>
+                                <span style="color:var(--gray-500);font-size:0.78rem;">All</span>
+                            <% } %>
+                        </td>
+                        <td style="font-size:0.82rem;"><%= c.max_uses_per_user || 1 %>x</td>
+                        <td style="font-size:0.82rem;"><%= c.max_total_uses || '∞' %></td>
+                        <td style="font-size:0.82rem;"><%= c.total_used || 0 %></td>
+                        <td style="font-size:0.82rem;"><%= c.unique_users || 0 %></td>
+                        <td>
+                            <span style="display:inline-flex;align-items:center;gap:4px;padding:3px 10px;border-radius:6px;font-size:0.68rem;font-weight:700;
+                                <%= c.is_active ? 'background:#f0fdf4;color:#15803d;border:1px solid #86efac;' : 'background:#fef2f2;color:#dc2626;border:1px solid #fecaca;' %>">
+                                <%= c.is_active ? 'Active' : 'Disabled' %>
+                            </span>
+                        </td>
+                        <td style="display:flex;gap:6px;">
+                            <form method="POST" action="/admin/coupons/toggle" style="display:inline;">
+                                <input type="hidden" name="coupon_id" value="<%= c.id %>">
+                                <button type="submit" class="btn-tb <%= c.is_active ? 'btn-tb-amber' : 'btn-tb-primary' %>" style="font-size:0.72rem;">
+                                    <%= c.is_active ? 'Disable' : 'Enable' %>
+                                </button>
+                            </form>
+                            <form method="POST" action="/admin/coupons/delete" style="display:inline;"
+                                  onsubmit="return confirm('Delete coupon <%= c.code %>? This cannot be undone.')">
+                                <input type="hidden" name="coupon_id" value="<%= c.id %>">
+                                <button type="submit" class="btn-tb btn-tb-red" style="font-size:0.72rem;">Delete</button>
+                            </form>
+                        </td>
+                    </tr>
+                    <% }); %>
+                </tbody>
+            </table>
+        </div>
+        <% } %>
+    </div>
+    <% } %>
+
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+<div class="modal-backdrop" id="resetLogModal">
+    <div class="modal-box">
+        <div class="modal-icon"><i class="bi bi-trash3-fill"></i></div>
+        <div class="modal-title">Clear the audit log?</div>
+        <p class="modal-body">
+            All log entries will be permanently deleted. A single record of this action will remain.<br><br>
+            This cannot be undone.
+        </p>
+        <div class="modal-actions">
+            <button class="btn-modal-cancel" onclick="closeResetModal()">Cancel</button>
+            <button class="btn-modal-confirm" onclick="submitResetLog()">Yes, clear it</button>
+        </div>
+    </div>
+</div>
+<form id="resetLogForm" method="POST" action="/admin/reset-log" style="display:none"></form>
+
+<script>
+function openResetModal()  { document.getElementById('resetLogModal').classList.add('open'); }
+function closeResetModal() { document.getElementById('resetLogModal').classList.remove('open'); }
+function submitResetLog()  { document.getElementById('resetLogForm').submit(); }
+
+document.getElementById('resetLogModal').addEventListener('click', function(e) {
+    if (e.target === this) closeResetModal();
+});
+</script>
+</body>
+</html>

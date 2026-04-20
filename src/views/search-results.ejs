@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Search Results - Pwnshop</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --purple-deep:  #3B0764;
+            --purple-mid:   #6D28D9;
+            --purple-light: #A855F7;
+            --purple-pale:  #F3E8FF;
+            --black:        #0D0D0D;
+            --white:        #FFFFFF;
+            --gray-100:     #F8F5FF;
+            --gray-200:     #EDE9F6;
+            --gray-500:     #6B7280;
+            --accent:       #C026D3;
+        }
+        * { box-sizing: border-box; }
+        body { font-family: 'DM Sans', sans-serif; background: var(--gray-100); color: var(--black); margin: 0; }
+
+        /* ── NAVBAR ── */
+        .topbar { background: var(--purple-deep); padding: 0; position: sticky; top: 0; z-index: 1000; box-shadow: 0 2px 16px rgba(59,7,100,0.4); }
+        .topbar .container { display: flex; align-items: center; gap: 16px; padding: 12px 24px; }
+        .navbar-brand { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 1.6rem; color: var(--white) !important; text-decoration: none; display: flex; align-items: center; gap: 6px; white-space: nowrap; }
+        .navbar-brand .dot { width: 8px; height: 8px; background: var(--purple-light); border-radius: 50%; }
+        .search-wrap { flex: 1; max-width: 600px; display: flex; margin: 0 auto; }
+        .search-wrap input { border: none; border-radius: 8px 0 0 8px; padding: 10px 16px; font-size: 0.9rem; outline: none; width: 100%; background: rgba(255,255,255,0.12); color: var(--white); }
+        .search-wrap input::placeholder { color: rgba(255,255,255,0.5); }
+        .search-wrap input:focus { background: rgba(255,255,255,0.2); }
+        .search-wrap button { background: var(--purple-light); border: none; border-radius: 0 8px 8px 0; padding: 10px 18px; color: var(--white); cursor: pointer; font-size: 0.9rem; font-weight: 600; transition: background 0.2s; font-family: 'DM Sans', sans-serif; display: flex; align-items: center; gap: 6px; }
+        .search-wrap button:hover { background: var(--accent); }
+        .nav-right { display: flex; align-items: center; gap: 8px; list-style: none; margin: 0; padding: 0; }
+        .user-chip { text-decoration: none; background: rgba(168,85,247,0.2); border: 1px solid rgba(168,85,247,0.4); color: var(--white) !important; border-radius: 20px; padding: 5px 14px; font-size: 0.85rem; font-weight: 600; }
+        .btn-logout { background: transparent; border: 1px solid rgba(255,255,255,0.3); color: rgba(255,255,255,0.8) !important; border-radius: 8px; padding: 5px 12px; font-size: 0.83rem; text-decoration: none; }
+        .btn-login { background: var(--white); color: var(--purple-deep) !important; border: none; border-radius: 8px; padding: 7px 16px; font-size: 0.88rem; font-weight: 700; text-decoration: none; }
+
+        /* ── PAGE ── */
+        .page-wrap { max-width: 1200px; margin: 32px auto; padding: 0 20px 60px; }
+
+        /* ── SEARCH INFO ── */
+        .search-info { font-size: 0.88rem; color: var(--gray-500); margin-bottom: 20px; }
+        .search-info strong { color: var(--black); }
+
+        /* ── PRODUCTS GRID ── */
+        .products-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(210px, 1fr)); gap: 20px; }
+        .product-card { background: var(--white); border-radius: 14px; border: 1.5px solid var(--gray-200); overflow: hidden; transition: all 0.22s; display: flex; flex-direction: column; }
+        .product-card:hover { border-color: var(--purple-light); box-shadow: 0 8px 28px rgba(109,40,217,0.13); transform: translateY(-4px); }
+        .product-card img { height: 175px; width: 100%; object-fit: cover; }
+        .product-card-body { padding: 14px 16px 16px; display: flex; flex-direction: column; flex: 1; }
+        .product-name { font-weight: 600; font-size: 0.92rem; color: var(--black); margin-bottom: 4px; line-height: 1.3; }
+        .product-price { font-family: 'Syne', sans-serif; font-weight: 700; font-size: 1.05rem; color: var(--purple-mid); margin-bottom: 4px; }
+        .product-meta { font-size: 0.75rem; color: var(--gray-500); background: var(--gray-100); display: inline-block; padding: 2px 8px; border-radius: 4px; margin-bottom: 12px; }
+        .btn-view { display: block; background: var(--purple-deep); color: var(--white); border-radius: 8px; padding: 8px; font-size: 0.82rem; font-weight: 700; text-align: center; text-decoration: none; transition: background 0.18s; margin-top: auto; }
+        .btn-view:hover { background: var(--purple-mid); color: var(--white); }
+
+        /* ── DATA LEAK ROW (SQLi result) ── */
+        .leaked-card { border-color: #fcd34d !important; background: #fffbeb !important; }
+        .leaked-card .product-name { color: #92400e; }
+        .leaked-card .product-price { color: #d97706; font-size: 0.82rem; }
+
+        /* ── EMPTY ── */
+        .empty-state { text-align: center; padding: 80px 20px; background: var(--white); border-radius: 14px; border: 1.5px solid var(--gray-200); }
+        .empty-state i { font-size: 3rem; color: var(--gray-200); display: block; margin-bottom: 14px; }
+        .empty-state h3 { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 1.1rem; color: var(--black); margin-bottom: 6px; }
+        .empty-state p { color: var(--gray-500); font-size: 0.88rem; }
+        .btn-home { display: inline-flex; align-items: center; gap: 6px; margin-top: 18px; background: var(--purple-deep); color: var(--white); border: none; border-radius: 10px; padding: 10px 22px; font-size: 0.85rem; font-weight: 700; text-decoration: none; transition: background 0.2s; }
+        .btn-home:hover { background: var(--purple-mid); color: var(--white); }
+
+        /* ── FOOTER ── */
+        footer { background: var(--purple-deep); color: rgba(255,255,255,0.6); text-align: center; padding: 24px; font-size: 0.85rem; margin-top: 48px; }
+        footer strong { color: var(--purple-light); }
+    </style>
+</head>
+<body>
+
+<nav class="topbar">
+    <div class="container">
+        <a class="navbar-brand" href="/">Pwnshop<span class="dot"></span></a>
+        <form class="search-wrap" action="/search" method="GET">
+            <input type="text" name="q" placeholder="Search products..." value="<%= query || '' %>" required>
+            <button type="submit"><i class="bi bi-search"></i> Search</button>
+        </form>
+        <ul class="nav-right">
+            <% if (user) { %>
+                <li><a href="/profile" class="user-chip"><%= user.username %></a></li>
+                <li><a href="/logout" class="btn-logout">Logout</a></li>
+            <% } else { %>
+                <li><a href="/login" class="btn-login">Login / Signup</a></li>
+            <% } %>
+        </ul>
+    </div>
+</nav>
+
+<div class="page-wrap">
+
+    <% if (query) { %>
+        <div class="search-info">
+            Found <strong><%= products.length %></strong> result<%= products.length !== 1 ? 's' : '' %> for "<strong><%= query %></strong>"
+        </div>
+    <% } %>
+
+    <% if (products.length === 0) { %>
+        <div class="empty-state">
+            <i class="bi bi-search"></i>
+            <h3>No products found</h3>
+            <p>Try different keywords or browse our categories.</p>
+            <a href="/" class="btn-home"><i class="bi bi-arrow-left"></i> Back to Home</a>
+        </div>
+    <% } else { %>
+        <div class="products-grid">
+            <% products.forEach(product => { %>
+                <div class="product-card <%= product.username ? 'leaked-card' : '' %>">
+                    <img src="<%= product.image || product.name || '/images/placeholder.jpg' %>"
+                         alt="<%= product.name || product.username || 'Product' %>"
+                         onerror="this.src='/images/placeholder.jpg'">
+                    <div class="product-card-body">
+                        <div class="product-name"><%= product.name || product.username || 'Unknown' %></div>
+                        <div class="product-price">
+                            <% if (product.price) { %>
+                                ₦<%= parseFloat(product.price).toFixed(2) %>
+                            <% } else if (product.email) { %>
+                                <span style="color:#d97706;font-size:0.78rem;">Email: <%= product.email %></span>
+                            <% } else { %> N/A <% } %>
+                        </div>
+                        <span class="product-meta"><%= product.category || product.role || 'General' %></span>
+                        <% if (product.id && !product.username) { %>
+                            <a href="/product/<%= product.id %>" class="btn-view">View Details</a>
+                        <% } %>
+                    </div>
+                </div>
+            <% }); %>
+        </div>
+    <% } %>
+
+</div>
+
+<footer>
+    &copy; <%= new Date().getFullYear() %> <strong>Pwnshop</strong>. All rights reserved.
+</footer>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

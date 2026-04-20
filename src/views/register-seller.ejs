@@ -1,0 +1,368 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Become a Seller - Pwnshop</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --purple-deep:  #3B0764;
+            --purple-mid:   #6D28D9;
+            --purple-light: #A855F7;
+            --purple-pale:  #F3E8FF;
+            --black:        #0D0D0D;
+            --white:        #FFFFFF;
+            --gray-100:     #F8F5FF;
+            --gray-200:     #EDE9F6;
+            --gray-500:     #6B7280;
+            --accent:       #C026D3;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            font-family: 'DM Sans', sans-serif;
+            background: var(--gray-100);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 24px;
+        }
+
+        .seller-card {
+            background: var(--white);
+            border-radius: 20px;
+            box-shadow: 0 8px 40px rgba(59,7,100,0.13);
+            width: 100%;
+            max-width: 920px;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            overflow: hidden;
+            min-height: 540px;
+        }
+
+        /* ── LEFT PANEL ── */
+        .panel-left {
+            background: linear-gradient(145deg, var(--purple-deep), var(--purple-mid));
+            padding: 48px 40px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .panel-left::before {
+            content: '';
+            position: absolute;
+            width: 260px;
+            height: 260px;
+            background: rgba(168,85,247,0.15);
+            border-radius: 50%;
+            top: -60px;
+            right: -80px;
+        }
+
+        .panel-left::after {
+            content: '';
+            position: absolute;
+            width: 180px;
+            height: 180px;
+            background: rgba(192,38,211,0.12);
+            border-radius: 50%;
+            bottom: -40px;
+            left: -40px;
+        }
+
+        .brand-logo {
+            font-family: 'Syne', sans-serif;
+            font-weight: 800;
+            font-size: 1.7rem;
+            color: var(--white);
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .brand-logo .dot {
+            width: 8px;
+            height: 8px;
+            background: var(--purple-light);
+            border-radius: 50%;
+        }
+
+        .panel-headline {
+            position: relative;
+            z-index: 1;
+        }
+
+        .panel-headline h2 {
+            font-family: 'Syne', sans-serif;
+            font-weight: 800;
+            font-size: 1.9rem;
+            color: var(--white);
+            line-height: 1.25;
+            margin-bottom: 14px;
+        }
+
+        .panel-headline p {
+            color: rgba(255,255,255,0.72);
+            font-size: 0.9rem;
+            line-height: 1.6;
+        }
+
+        /* Seller benefits */
+        .seller-benefits {
+            position: relative;
+            z-index: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .benefit-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+        }
+
+        .benefit-icon {
+            width: 34px;
+            height: 34px;
+            border-radius: 8px;
+            background: rgba(255,255,255,0.12);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+
+        .benefit-icon i {
+            font-size: 0.95rem;
+            color: var(--purple-light);
+        }
+
+        .benefit-text strong {
+            display: block;
+            color: var(--white);
+            font-size: 0.85rem;
+            font-weight: 600;
+            margin-bottom: 1px;
+        }
+
+        .benefit-text span {
+            color: rgba(255,255,255,0.6);
+            font-size: 0.78rem;
+        }
+
+        /* ── RIGHT PANEL ── */
+        .panel-right {
+            padding: 48px 44px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .badge-seller {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background: var(--purple-pale);
+            color: var(--purple-mid);
+            font-size: 0.75rem;
+            font-weight: 700;
+            border-radius: 20px;
+            padding: 4px 12px;
+            letter-spacing: 0.4px;
+            text-transform: uppercase;
+            margin-bottom: 16px;
+        }
+
+        .panel-right h3 {
+            font-family: 'Syne', sans-serif;
+            font-weight: 800;
+            font-size: 1.5rem;
+            color: var(--black);
+            margin-bottom: 8px;
+            line-height: 1.3;
+        }
+
+        .panel-right .subtitle {
+            color: var(--gray-500);
+            font-size: 0.875rem;
+            margin-bottom: 32px;
+            line-height: 1.55;
+        }
+
+        /* Confirm steps */
+        .confirm-steps {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            margin-bottom: 32px;
+        }
+
+        .step-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 16px;
+            background: var(--gray-100);
+            border-radius: 10px;
+            border: 1.5px solid var(--gray-200);
+        }
+
+        .step-num {
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            background: var(--purple-deep);
+            color: var(--white);
+            font-size: 0.75rem;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+
+        .step-item span {
+            font-size: 0.85rem;
+            color: var(--black);
+            font-weight: 500;
+        }
+
+        /* ── BUTTONS ── */
+        .btn-confirm {
+            background: var(--purple-deep);
+            color: var(--white);
+            border: none;
+            border-radius: 10px;
+            padding: 13px;
+            font-size: 0.92rem;
+            font-weight: 700;
+            font-family: 'DM Sans', sans-serif;
+            width: 100%;
+            cursor: pointer;
+            transition: background 0.2s, transform 0.15s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .btn-confirm:hover {
+            background: var(--purple-mid);
+            transform: translateY(-1px);
+        }
+
+        .btn-back {
+            display: block;
+            text-align: center;
+            margin-top: 16px;
+            color: var(--gray-500);
+            font-size: 0.83rem;
+            text-decoration: none;
+            transition: color 0.2s;
+        }
+
+        .btn-back:hover { color: var(--purple-mid); }
+
+        @media (max-width: 640px) {
+            .seller-card { grid-template-columns: 1fr; }
+            .panel-left { display: none; }
+            .panel-right { padding: 36px 28px; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="seller-card">
+
+
+    <div class="panel-left">
+        <a href="/" class="brand-logo">Pwnshop<span class="dot"></span></a>
+
+        <div class="panel-headline">
+            <h2>Start selling today.</h2>
+            <p>Join our growing community of sellers and reach thousands of buyers across the platform.</p>
+        </div>
+
+        <div class="seller-benefits">
+            <div class="benefit-item">
+                <div class="benefit-icon"><i class="bi bi-graph-up-arrow"></i></div>
+                <div class="benefit-text">
+                    <strong>Grow your revenue</strong>
+                    <span>Access a large, active buyer base</span>
+                </div>
+            </div>
+            <div class="benefit-item">
+                <div class="benefit-icon"><i class="bi bi-layout-text-sidebar"></i></div>
+                <div class="benefit-text">
+                    <strong>Manage with ease</strong>
+                    <span>Simple dashboard for all your listings</span>
+                </div>
+            </div>
+            <div class="benefit-item">
+                <div class="benefit-icon"><i class="bi bi-shield-lock"></i></div>
+                <div class="benefit-text">
+                    <strong>Secure payments</strong>
+                    <span>Reliable payouts directly to your account</span>
+                </div>
+            </div>
+            <div class="benefit-item">
+                <div class="benefit-icon"><i class="bi bi-headset"></i></div>
+                <div class="benefit-text">
+                    <strong>Dedicated support</strong>
+                    <span>Our team is here to help you succeed</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <div class="panel-right">
+        <div class="badge-seller"><i class="bi bi-shop"></i> Seller Programme</div>
+        <h3>Confirm your seller registration</h3>
+        <p class="subtitle">
+            Activating your seller account is instant. Here's what happens next:
+        </p>
+
+        <div class="confirm-steps">
+            <div class="step-item">
+                <div class="step-num">1</div>
+                <span>Your account role is upgraded to <strong>Seller</strong></span>
+            </div>
+            <div class="step-item">
+                <div class="step-num">2</div>
+                <span>You get access to <strong>Add Product</strong> from the navbar</span>
+            </div>
+            <div class="step-item">
+                <div class="step-num">3</div>
+                <span>Your storefront becomes visible on the <strong>Featured Sellers</strong> section</span>
+            </div>
+        </div>
+
+        <form method="POST" action="/register-seller">
+            <button type="submit" class="btn-confirm">
+                <i class="bi bi-check-circle-fill"></i>
+                Yes, Make Me a Seller
+            </button>
+        </form>
+
+        <a href="/" class="btn-back">
+            <i class="bi bi-arrow-left"></i> Back to Home
+        </a>
+    </div>
+
+</div>
+
+</body>
+</html>

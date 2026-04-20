@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Login - Pwnshop</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --purple-deep:  #3B0764;
+            --purple-mid:   #6D28D9;
+            --purple-light: #A855F7;
+            --purple-pale:  #F3E8FF;
+            --black:        #0D0D0D;
+            --white:        #FFFFFF;
+            --gray-100:     #F8F5FF;
+            --gray-200:     #EDE9F6;
+            --gray-500:     #6B7280;
+            --accent:       #C026D3;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family:'DM Sans',sans-serif; background:var(--gray-100); min-height:100vh; display:flex; align-items:center; justify-content:center; padding:24px; }
+
+        .auth-card { background:var(--white); border-radius:20px; box-shadow:0 8px 40px rgba(59,7,100,0.13); width:100%; max-width:920px; display:grid; grid-template-columns:1fr 1fr; overflow:hidden; min-height:520px; }
+
+        .panel-left { background:linear-gradient(145deg,var(--purple-deep),#4c0099); padding:48px 40px; display:flex; flex-direction:column; justify-content:space-between; position:relative; overflow:hidden; }
+        .panel-left::before { content:''; position:absolute; width:260px; height:260px; background:rgba(168,85,247,0.15); border-radius:50%; top:-60px; right:-80px; }
+        .panel-left::after  { content:''; position:absolute; width:180px; height:180px; background:rgba(192,38,211,0.12); border-radius:50%; bottom:-40px; left:-40px; }
+
+        .brand-logo { font-family:'Syne',sans-serif; font-weight:800; font-size:1.7rem; color:var(--white); text-decoration:none; display:flex; align-items:center; gap:8px; position:relative; z-index:1; }
+        .brand-logo .dot { width:8px; height:8px; background:var(--purple-light); border-radius:50%; }
+
+        .panel-mid { position:relative; z-index:1; }
+        .restricted-tag { display:inline-flex; align-items:center; gap:6px; background:rgba(255,255,255,0.1); border:1px solid rgba(255,255,255,0.2); color:rgba(255,255,255,0.8); font-size:0.7rem; font-weight:700; border-radius:6px; padding:4px 12px; letter-spacing:0.8px; text-transform:uppercase; margin-bottom:14px; }
+        .panel-mid h2 { font-family:'Syne',sans-serif; font-weight:800; font-size:1.9rem; color:var(--white); line-height:1.25; margin-bottom:12px; }
+        .panel-mid p { color:rgba(255,255,255,0.65); font-size:0.88rem; line-height:1.6; }
+
+        .panel-perks { position:relative; z-index:1; display:flex; flex-direction:column; gap:10px; }
+        .perk-item { display:flex; align-items:center; gap:10px; color:rgba(255,255,255,0.82); font-size:0.84rem; }
+        .perk-item i { color:var(--purple-light); font-size:1rem; flex-shrink:0; }
+
+        .panel-right { padding:48px 44px; display:flex; flex-direction:column; justify-content:center; }
+        .panel-right h3 { font-family:'Syne',sans-serif; font-weight:800; font-size:1.5rem; color:var(--black); margin-bottom:6px; }
+        .subtitle { color:var(--gray-500); font-size:0.875rem; margin-bottom:24px; }
+
+        .f-label { font-size:0.78rem; font-weight:600; color:var(--black); margin-bottom:6px; letter-spacing:0.3px; text-transform:uppercase; display:block; }
+        .f-field { border:1.5px solid var(--gray-200); border-radius:10px; padding:11px 14px; font-size:0.9rem; font-family:'DM Sans',sans-serif; width:100%; outline:none; transition:border-color 0.2s,box-shadow 0.2s; color:var(--black); background:var(--white); }
+        .f-field:focus { border-color:var(--purple-mid); box-shadow:0 0 0 3px rgba(109,40,217,0.08); }
+        .f-field::placeholder { color:#b0afc0; }
+
+        .pw-wrap { position:relative; }
+        .pw-wrap .f-field { padding-right:42px; }
+        .pw-toggle { position:absolute; right:13px; top:50%; transform:translateY(-50%); background:none; border:none; color:var(--gray-500); cursor:pointer; font-size:1rem; padding:0; }
+        .pw-toggle:hover { color:var(--purple-mid); }
+
+        .label-row { display:flex; justify-content:space-between; align-items:center; margin-bottom:6px; }
+        .label-row .f-label { margin:0; }
+        .label-row a { font-size:0.78rem; color:var(--purple-mid); font-weight:600; text-decoration:none; }
+
+        .alert-err { background:#fef2f2; border:1px solid #fecaca; color:#dc2626; border-radius:8px; padding:10px 14px; font-size:0.83rem; display:flex; align-items:center; gap:8px; margin-bottom:18px; }
+
+        .btn-submit { background:var(--purple-deep); color:var(--white); border:none; border-radius:10px; padding:13px; font-size:0.9rem; font-weight:700; font-family:'DM Sans',sans-serif; width:100%; cursor:pointer; transition:background 0.2s,transform 0.15s; display:flex; align-items:center; justify-content:center; gap:8px; }
+        .btn-submit:hover { background:var(--purple-mid); transform:translateY(-1px); }
+
+        .auth-footer { margin-top:18px; text-align:center; font-size:0.82rem; color:var(--gray-500); }
+        .auth-footer a { color:var(--purple-mid); font-weight:600; text-decoration:none; }
+
+        @media (max-width:640px) { .auth-card { grid-template-columns:1fr; } .panel-left { display:none; } .panel-right { padding:36px 28px; } }
+    </style>
+</head>
+<body>
+<div class="auth-card">
+
+    <div class="panel-left">
+        <a href="/" class="brand-logo">Pwnshop<span class="dot"></span></a>
+        <div class="panel-mid">
+            <div class="restricted-tag"><i class="bi bi-shield-exclamation"></i> Restricted Access</div>
+            <h2>Admin Control Panel</h2>
+            <p>Authorised personnel only. All access attempts are monitored.</p>
+        </div>
+        <div class="panel-perks">
+            <div class="perk-item"><i class="bi bi-people-fill"></i><span>Manage users &amp; seller roles</span></div>
+            <div class="perk-item"><i class="bi bi-bag-check-fill"></i><span>Update and track orders</span></div>
+            <div class="perk-item"><i class="bi bi-wallet2"></i><span>Top up user wallets</span></div>
+            <div class="perk-item"><i class="bi bi-graph-up-arrow"></i><span>Monitor revenue &amp; stats</span></div>
+        </div>
+    </div>
+
+    <div class="panel-right">
+        <h3>Administrator Sign In</h3>
+        <p class="subtitle">Enter your admin credentials to access the dashboard.</p>
+
+        <% if (error) { %>
+            <div class="alert-err"><i class="bi bi-exclamation-circle-fill"></i> <%= error %></div>
+        <% } %>
+
+        <form method="POST" action="/admin/login">
+            <div class="mb-3">
+                <label class="f-label">Username</label>
+                <input type="text" class="f-field" name="username" placeholder="Admin username" autocomplete="off" required>
+            </div>
+            <div class="mb-4">
+                <div class="label-row">
+                    <label class="f-label">Password</label>
+                    <a href="/forgot-password">Forgot?</a>
+                </div>
+                <div class="pw-wrap">
+                    <input type="password" class="f-field" name="password" id="pwField" placeholder="••••••••" required>
+                    <button type="button" class="pw-toggle" id="pwToggle"><i class="bi bi-eye" id="pwIcon"></i></button>
+                </div>
+            </div>
+            <button type="submit" class="btn-submit">
+                <i class="bi bi-shield-lock-fill"></i> Access Admin Panel
+            </button>
+        </form>
+
+        <div class="auth-footer">Not an admin? <a href="/login">Return to main login</a></div>
+
+    </div>
+</div>
+<script>
+    document.getElementById('pwToggle').addEventListener('click', function () {
+        const f = document.getElementById('pwField'), i = document.getElementById('pwIcon');
+        if (f.type === 'password') { f.type = 'text'; i.className = 'bi bi-eye-slash'; }
+        else { f.type = 'password'; i.className = 'bi bi-eye'; }
+    });
+</script>
+</body>
+</html>

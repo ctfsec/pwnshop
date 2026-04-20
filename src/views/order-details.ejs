@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Order #<%= order.id %> - Pwnshop</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --purple-deep:  #3B0764;
+            --purple-mid:   #6D28D9;
+            --purple-light: #A855F7;
+            --purple-pale:  #F3E8FF;
+            --black:        #0D0D0D;
+            --white:        #FFFFFF;
+            --gray-100:     #F8F5FF;
+            --gray-200:     #EDE9F6;
+            --gray-500:     #6B7280;
+            --accent:       #C026D3;
+        }
+        * { box-sizing: border-box; }
+        body { font-family: 'DM Sans', sans-serif; background: var(--gray-100); color: var(--black); margin: 0; }
+
+        /* ── NAVBAR ── */
+        .topbar { background: var(--purple-deep); padding: 0; position: sticky; top: 0; z-index: 1000; box-shadow: 0 2px 16px rgba(59,7,100,0.4); }
+        .topbar .container { display: flex; align-items: center; gap: 16px; padding: 12px 24px; }
+        .navbar-brand { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 1.6rem; color: var(--white) !important; text-decoration: none; display: flex; align-items: center; gap: 6px; }
+        .navbar-brand .dot { width: 8px; height: 8px; background: var(--purple-light); border-radius: 50%; }
+        .nav-right { display: flex; align-items: center; gap: 8px; list-style: none; margin: 0 0 0 auto; padding: 0; }
+        .user-chip { background: rgba(168,85,247,0.2); border: 1px solid rgba(168,85,247,0.4); color: var(--white) !important; border-radius: 20px; padding: 5px 14px; font-size: 0.85rem; font-weight: 600; }
+        .btn-logout { background: transparent; border: 1px solid rgba(255,255,255,0.3); color: rgba(255,255,255,0.8) !important; border-radius: 8px; padding: 5px 12px; font-size: 0.83rem; text-decoration: none; }
+        .nav-link-plain { color: rgba(255,255,255,0.75) !important; font-size: 0.88rem; padding: 6px 12px; border-radius: 6px; text-decoration: none; }
+        .nav-link-plain:hover { background: rgba(255,255,255,0.1); color: var(--white) !important; }
+
+        /* ── PAGE ── */
+        .page-wrap { max-width: 820px; margin: 36px auto; padding: 0 20px 60px; }
+
+        /* ── SUCCESS BANNER ── */
+        .success-banner { background: linear-gradient(135deg, #f0fdf4, #dcfce7); border: 1.5px solid #86efac; border-radius: 14px; padding: 24px; text-align: center; margin-bottom: 24px; }
+        .success-banner .check-circle { width: 52px; height: 52px; background: #16a34a; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 12px; }
+        .success-banner .check-circle i { font-size: 1.4rem; color: var(--white); }
+        .success-banner h2 { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 1.2rem; color: #15803d; margin-bottom: 4px; }
+        .success-banner p { color: #166534; font-size: 0.85rem; }
+
+        /* ── ORDER CARD ── */
+        .order-card { background: var(--white); border-radius: 16px; border: 1.5px solid var(--gray-200); overflow: hidden; margin-bottom: 20px; }
+        .order-card-header { display: flex; align-items: center; justify-content: space-between; padding: 20px 24px; border-bottom: 1.5px solid var(--gray-200); }
+        .order-id { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 1.1rem; color: var(--black); }
+        .status-badge { display: inline-flex; align-items: center; gap: 5px; font-size: 0.78rem; font-weight: 700; border-radius: 20px; padding: 5px 14px; text-transform: uppercase; letter-spacing: 0.3px; }
+        .status-pending   { background: #fffbeb; color: #92400e; }
+        .status-processing{ background: #eff6ff; color: #1d4ed8; }
+        .status-shipped   { background: #ecfeff; color: #0e7490; }
+        .status-delivered { background: #f0fdf4; color: #15803d; }
+        .status-cancelled { background: #fef2f2; color: #dc2626; }
+
+        /* ── INFO SECTIONS ── */
+        .info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0; }
+        .info-section { padding: 20px 24px; border-bottom: 1px solid var(--gray-200); }
+        .info-section:nth-child(odd) { border-right: 1px solid var(--gray-200); }
+        .info-section h4 { font-family: 'Syne', sans-serif; font-weight: 700; font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.5px; color: var(--purple-mid); margin-bottom: 10px; }
+        .info-section p { font-size: 0.88rem; color: var(--black); line-height: 1.5; margin: 0; }
+        .info-section p span { color: var(--gray-500); }
+
+        /* ── ITEMS ── */
+        .items-section { padding: 0 24px; }
+        .items-section h4 { font-family: 'Syne', sans-serif; font-weight: 700; font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.5px; color: var(--purple-mid); padding: 18px 0 12px; border-bottom: 1px solid var(--gray-200); margin: 0; }
+        .order-item { display: flex; justify-content: space-between; align-items: center; padding: 14px 0; border-bottom: 1px solid var(--gray-200); gap: 12px; }
+        .order-item:last-child { border-bottom: none; }
+        .item-name { font-weight: 600; font-size: 0.9rem; }
+        .item-qty { font-size: 0.8rem; color: var(--gray-500); margin-top: 2px; }
+        .item-price { font-family: 'Syne', sans-serif; font-weight: 700; font-size: 0.95rem; color: var(--purple-mid); white-space: nowrap; }
+
+        /* ── TOTAL ── */
+        .total-row { display: flex; justify-content: space-between; align-items: center; padding: 18px 24px; background: var(--gray-100); border-top: 2px solid var(--gray-200); }
+        .total-row span:first-child { font-weight: 700; font-size: 0.95rem; }
+        .total-row span:last-child { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 1.3rem; color: var(--purple-mid); }
+
+        /* ── ACTIONS ── */
+        .action-row { display: flex; gap: 12px; margin-top: 24px; }
+        .btn-primary-purple { background: var(--purple-deep); color: var(--white); border: none; border-radius: 10px; padding: 12px 24px; font-size: 0.88rem; font-weight: 700; text-decoration: none; display: inline-flex; align-items: center; gap: 6px; transition: background 0.2s; font-family: 'DM Sans', sans-serif; }
+        .btn-primary-purple:hover { background: var(--purple-mid); color: var(--white); }
+        .btn-outline-purple { background: transparent; color: var(--purple-mid); border: 1.5px solid var(--purple-mid); border-radius: 10px; padding: 11px 24px; font-size: 0.88rem; font-weight: 700; text-decoration: none; display: inline-flex; align-items: center; gap: 6px; transition: all 0.2s; font-family: 'DM Sans', sans-serif; }
+        .btn-outline-purple:hover { background: var(--purple-pale); color: var(--purple-deep); }
+
+        /* ── FOOTER ── */
+        footer { background: var(--purple-deep); color: rgba(255,255,255,0.6); text-align: center; padding: 24px; font-size: 0.85rem; margin-top: 48px; }
+        footer strong { color: var(--purple-light); }
+    </style>
+</head>
+<body>
+
+<nav class="topbar">
+    <div class="container">
+        <a class="navbar-brand" href="/">Pwnshop<span class="dot"></span></a>
+        <ul class="nav-right">
+            <li><a class="nav-link-plain" href="/">Home</a></li>
+            <% if (user) { %>
+                <li><a class="nav-link-plain" href="/cart">Cart</a></li>
+                <li><a class="nav-link-plain" href="/profile">Profile</a></li>
+                <li><span class="user-chip"><%= user.username %></span></li>
+                <li><a href="/logout" class="btn-logout">Logout</a></li>
+            <% } else { %>
+                <li><a class="nav-link-plain" href="/login">Login</a></li>
+            <% } %>
+        </ul>
+    </div>
+</nav>
+
+<div class="page-wrap">
+
+
+    <% if (order.user_id === user.id) { %>
+        <div class="success-banner">
+            <div class="check-circle"><i class="bi bi-check-lg"></i></div>
+            <h2>Order Placed Successfully!</h2>
+            <p>Thank you for your order. We'll send updates to your email.</p>
+        </div>
+    <% } %>
+
+
+    <div class="order-card">
+        <div class="order-card-header">
+            <div class="order-id" data-owner="<%= order.user_id %>" data-inbox="<%= order.inbox_token || '' %>">Order #<%= order.id %></div>
+            <span class="status-badge status-<%= order.status %>">
+                <i class="bi bi-circle-fill" style="font-size:0.5rem"></i>
+                <%= order.status.toUpperCase() %>
+            </span>
+        </div>
+
+        <div class="info-grid">
+            <div class="info-section">
+                <h4>Order Date</h4>
+                <p><%= new Date(order.created_at).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }) %></p>
+                <p><span><%= new Date(order.created_at).toLocaleTimeString('en-US') %></span></p>
+            </div>
+            <div class="info-section">
+                <h4>Shipping Address</h4>
+                <p><%= order.shipping_address %></p>
+            </div>
+        </div>
+
+        <div class="items-section">
+            <h4>Items Ordered</h4>
+            <% items.forEach(item => { %>
+                <div class="order-item">
+                    <div>
+                        <div class="item-name"><%= item.name %></div>
+                        <div class="item-qty">Qty: <%= item.quantity %> × ₦<%= parseFloat(item.price).toFixed(2) %></div>
+                    </div>
+                    <div class="item-price">₦<%= (parseFloat(item.price) * item.quantity).toFixed(2) %></div>
+                </div>
+            <% }); %>
+        </div>
+
+        <div class="total-row">
+            <span>Total Amount</span>
+            <span>₦<%= parseFloat(order.total_amount).toFixed(2) %></span>
+        </div>
+    </div>
+
+    <div class="action-row">
+        <a href="/profile" class="btn-primary-purple"><i class="bi bi-list-ul"></i> All Orders</a>
+        <a href="/" class="btn-outline-purple"><i class="bi bi-grid"></i> Continue Shopping</a>
+        <a href="/download?file=invoices/<%= order.id %>.pdf" class="btn-outline-purple" style="border-color:var(--gray-200);color:var(--gray-500);">
+            <i class="bi bi-file-earmark-pdf"></i> Download Invoice
+        </a>
+    </div>
+
+</div>
+
+<footer>
+    &copy; <%= new Date().getFullYear() %> <strong>Pwnshop</strong>. All rights reserved.
+</footer>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

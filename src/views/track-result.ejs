@@ -1,0 +1,424 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Order #<%= order.id %> Tracking - Pwnshop</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <style>
+        :root {
+            --purple-deep:  #3B0764;
+            --purple-mid:   #6D28D9;
+            --purple-light: #A855F7;
+            --purple-pale:  #F3E8FF;
+            --black:        #0D0D0D;
+            --white:        #FFFFFF;
+            --gray-100:     #F8F5FF;
+            --gray-200:     #EDE9F6;
+            --gray-500:     #6B7280;
+            --accent:       #C026D3;
+        }
+        * { box-sizing: border-box; }
+        body { font-family: 'DM Sans', sans-serif; background: var(--gray-100); color: var(--black); margin: 0; }
+
+        /* ── NAVBAR ── */
+        .topbar { background: var(--purple-deep); padding: 0; position: sticky; top: 0; z-index: 1000; box-shadow: 0 2px 16px rgba(59,7,100,0.4); }
+        .topbar .container { display: flex; align-items: center; gap: 16px; padding: 12px 24px; }
+        .navbar-brand { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 1.6rem; color: var(--white) !important; text-decoration: none; display: flex; align-items: center; gap: 6px; }
+        .navbar-brand .dot { width: 8px; height: 8px; background: var(--purple-light); border-radius: 50%; }
+        .nav-right { display: flex; align-items: center; gap: 8px; list-style: none; margin: 0 0 0 auto; padding: 0; }
+        .user-chip { text-decoration: none; background: rgba(168,85,247,0.2); border: 1px solid rgba(168,85,247,0.4); color: var(--white) !important; border-radius: 20px; padding: 5px 14px; font-size: 0.85rem; font-weight: 600; }
+        .btn-logout { background: transparent; border: 1px solid rgba(255,255,255,0.3); color: rgba(255,255,255,0.8) !important; border-radius: 8px; padding: 5px 12px; font-size: 0.83rem; text-decoration: none; }
+        .nav-link-plain { color: rgba(255,255,255,0.75) !important; font-size: 0.88rem; padding: 6px 12px; border-radius: 6px; text-decoration: none; }
+        .nav-link-plain:hover { background: rgba(255,255,255,0.1); color: var(--white) !important; }
+
+        /* ── PAGE ── */
+        .page-wrap { max-width: 1100px; margin: 32px auto; padding: 0 20px 60px; }
+
+        /* ── ORDER HEADER ── */
+        .order-header {
+            background: var(--white);
+            border-radius: 16px;
+            border: 1.5px solid var(--gray-200);
+            padding: 22px 26px;
+            margin-bottom: 22px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 16px;
+        }
+        .order-header-left h2 { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 1.3rem; color: var(--black); margin: 0 0 4px; }
+        .order-meta-row { display: flex; gap: 16px; flex-wrap: wrap; align-items: center; }
+        .order-meta-item { display: flex; align-items: center; gap: 5px; font-size: 0.82rem; color: var(--gray-500); }
+        .status-pill {
+            display: inline-flex; align-items: center; gap: 6px;
+            font-size: 0.78rem; font-weight: 700; border-radius: 20px;
+            padding: 5px 14px; text-transform: uppercase; letter-spacing: 0.3px;
+        }
+        .s-pending   { background: #fffbeb; color: #92400e; border: 1px solid #fcd34d; }
+        .s-processing{ background: #eff6ff; color: #1d4ed8; border: 1px solid #bfdbfe; }
+        .s-shipped   { background: #ecfeff; color: #0e7490; border: 1px solid #a5f3fc; }
+        .s-delivered { background: #f0fdf4; color: #15803d; border: 1px solid #86efac; }
+        .s-cancelled { background: #fef2f2; color: #dc2626; border: 1px solid #fecaca; }
+        .btn-back { display: inline-flex; align-items: center; gap: 6px; background: var(--purple-pale); color: var(--purple-mid); border: none; border-radius: 9px; padding: 9px 18px; font-size: 0.82rem; font-weight: 700; text-decoration: none; transition: all 0.18s; font-family: 'DM Sans', sans-serif; }
+        .btn-back:hover { background: var(--purple-mid); color: var(--white); }
+
+        /* ── PROGRESS BAR ── */
+        .progress-card { background: var(--white); border-radius: 16px; border: 1.5px solid var(--gray-200); padding: 26px; margin-bottom: 22px; }
+        .progress-steps { display: flex; align-items: flex-start; justify-content: space-between; position: relative; }
+        .progress-steps::before {
+            content: '';
+            position: absolute;
+            top: 18px;
+            left: 0; right: 0;
+            height: 3px;
+            background: var(--gray-200);
+            z-index: 0;
+        }
+        .progress-fill {
+            position: absolute;
+            top: 18px; left: 0;
+            height: 3px;
+            background: linear-gradient(90deg, var(--purple-mid), var(--purple-light));
+            z-index: 1;
+            transition: width 0.6s ease;
+        }
+        .step-node { display: flex; flex-direction: column; align-items: center; flex: 1; position: relative; z-index: 2; }
+        .step-circle {
+            width: 38px; height: 38px;
+            border-radius: 50%;
+            background: var(--white);
+            border: 3px solid var(--gray-200);
+            display: flex; align-items: center; justify-content: center;
+            font-size: 0.9rem;
+            color: var(--gray-500);
+            margin-bottom: 10px;
+            transition: all 0.3s;
+        }
+        .step-circle.done     { background: var(--purple-mid); border-color: var(--purple-mid); color: var(--white); }
+        .step-circle.active   { background: var(--white); border-color: var(--purple-mid); color: var(--purple-mid); box-shadow: 0 0 0 4px rgba(109,40,217,0.12); }
+        .step-circle.cancelled{ background: #fef2f2; border-color: #fecaca; color: #dc2626; }
+        .step-label { font-size: 0.72rem; font-weight: 600; color: var(--gray-500); text-align: center; line-height: 1.3; }
+        .step-label.done   { color: var(--purple-mid); }
+        .step-label.active { color: var(--purple-deep); font-weight: 700; }
+
+        /* ── TWO COLUMN LAYOUT ── */
+        .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 22px; margin-bottom: 22px; }
+        @media (max-width: 768px) { .two-col { grid-template-columns: 1fr; } }
+
+        /* ── MAP ── */
+        .map-card { background: var(--white); border-radius: 16px; border: 1.5px solid var(--gray-200); overflow: hidden; }
+        .map-card-header { padding: 16px 20px; border-bottom: 1.5px solid var(--gray-200); display: flex; align-items: center; gap: 8px; }
+        .map-card-header h3 { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 0.9rem; color: var(--black); margin: 0; }
+        .map-card-header i  { color: var(--purple-mid); }
+        #deliveryMap { height: 320px; width: 100%; }
+
+        /* ── TIMELINE ── */
+        .timeline-card { background: var(--white); border-radius: 16px; border: 1.5px solid var(--gray-200); overflow: hidden; }
+        .timeline-card-header { padding: 16px 20px; border-bottom: 1.5px solid var(--gray-200); display: flex; align-items: center; justify-content: space-between; }
+        .timeline-card-header h3 { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 0.9rem; color: var(--black); margin: 0; display: flex; align-items: center; gap: 7px; }
+        .timeline-card-header h3 i { color: var(--purple-mid); }
+        .event-count { background: var(--purple-pale); color: var(--purple-mid); font-size: 0.7rem; font-weight: 700; border-radius: 20px; padding: 2px 10px; }
+        .timeline { padding: 20px 22px; }
+        .t-event { display: flex; gap: 14px; margin-bottom: 20px; position: relative; }
+        .t-event:last-child { margin-bottom: 0; }
+        .t-event:not(:last-child)::before {
+            content: '';
+            position: absolute;
+            left: 15px; top: 32px;
+            width: 2px;
+            height: calc(100% + 4px);
+            background: var(--gray-200);
+        }
+        .t-dot {
+            width: 32px; height: 32px;
+            border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 0.8rem;
+            flex-shrink: 0;
+            position: relative; z-index: 1;
+        }
+        .t-dot.latest { background: var(--purple-mid); color: var(--white); }
+        .t-dot.past   { background: var(--purple-pale); color: var(--purple-mid); }
+        .t-dot.cancelled { background: #fef2f2; color: #dc2626; }
+        .t-body { flex: 1; }
+        .t-status { font-weight: 700; font-size: 0.88rem; color: var(--black); margin-bottom: 2px; text-transform: capitalize; }
+        .t-note { font-size: 0.82rem; color: var(--gray-500); margin-bottom: 3px; }
+        .t-time { font-size: 0.75rem; color: var(--gray-500); }
+
+        /* ── ORDER ITEMS ── */
+        .items-card { background: var(--white); border-radius: 16px; border: 1.5px solid var(--gray-200); overflow: hidden; margin-bottom: 22px; }
+        .items-card-header { padding: 16px 20px; border-bottom: 1.5px solid var(--gray-200); }
+        .items-card-header h3 { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 0.9rem; color: var(--black); margin: 0; display: flex; align-items: center; gap: 7px; }
+        .items-card-header h3 i { color: var(--purple-mid); }
+        .item-row { display: flex; align-items: center; gap: 14px; padding: 14px 20px; border-bottom: 1px solid var(--gray-200); }
+        .item-row:last-child { border-bottom: none; }
+        .item-thumb { width: 48px; height: 48px; object-fit: cover; border-radius: 8px; border: 1.5px solid var(--gray-200); flex-shrink: 0; }
+        .item-thumb-ph { width: 48px; height: 48px; background: var(--gray-100); border-radius: 8px; border: 1.5px solid var(--gray-200); display: flex; align-items: center; justify-content: center; color: var(--gray-200); flex-shrink: 0; }
+        .item-name { font-weight: 600; font-size: 0.88rem; color: var(--black); }
+        .item-qty  { font-size: 0.78rem; color: var(--gray-500); }
+        .item-price { font-family: 'Syne', sans-serif; font-weight: 700; font-size: 0.9rem; color: var(--purple-mid); margin-left: auto; white-space: nowrap; }
+
+        footer { background: var(--purple-deep); color: rgba(255,255,255,0.6); text-align: center; padding: 24px; font-size: 0.85rem; margin-top: 48px; }
+        footer strong { color: var(--purple-light); }
+    </style>
+</head>
+<body>
+
+<nav class="topbar">
+    <div class="container">
+        <a class="navbar-brand" href="/">Pwnshop<span class="dot"></span></a>
+        <ul class="nav-right">
+            <li><a class="nav-link-plain" href="/">Home</a></li>
+            <li><a class="nav-link-plain" href="/track">Track Another</a></li>
+            <% if (user) { %>
+                <li><a href="/profile" class="user-chip"><%= user.username %></a></li>
+                <li><a href="/logout" class="btn-logout">Logout</a></li>
+            <% } else { %>
+                <li><a href="/login" class="nav-link-plain">Login</a></li>
+            <% } %>
+        </ul>
+    </div>
+</nav>
+
+<div class="page-wrap">
+
+
+    <div class="order-header">
+        <div class="order-header-left">
+            <h2>Order #<%= order.id %></h2>
+            <div class="order-meta-row">
+                <div class="order-meta-item">
+                    <i class="bi bi-calendar3"></i>
+                    <%= new Date(order.created_at).toLocaleDateString('en-US', {year:'numeric', month:'long', day:'numeric'}) %>
+                </div>
+                <div class="order-meta-item">
+                    <i class="bi bi-geo-alt"></i>
+                    <%= order.shipping_address.substring(0, 45) %><%= order.shipping_address.length > 45 ? '…' : '' %>
+                </div>
+                <div class="order-meta-item">
+                    <i class="bi bi-wallet2"></i>
+                    ₦<%= parseFloat(order.total_amount).toFixed(2) %>
+                </div>
+            </div>
+        </div>
+        <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
+            <span class="status-pill s-<%= order.status %>">
+                <i class="bi bi-circle-fill" style="font-size:0.45rem"></i>
+                <%= order.status.toUpperCase() %>
+            </span>
+            <a href="/track" class="btn-back"><i class="bi bi-arrow-left"></i> Track Another</a>
+        </div>
+    </div>
+
+
+    <%
+        const statusOrder = ['pending','processing','shipped','delivered'];
+        const isCancelled = order.status === 'cancelled';
+        const currentIdx  = isCancelled ? -1 : statusOrder.indexOf(order.status);
+        const fillPct     = isCancelled ? 0 : (currentIdx / (statusOrder.length - 1)) * 100;
+    %>
+    <div class="progress-card">
+        <div class="progress-steps">
+            <div class="progress-fill" style="width:<%= fillPct %>%"></div>
+
+            <% statusOrder.forEach((s, idx) => {
+                let cls = 'pending-step';
+                if (isCancelled) cls = '';
+                else if (idx < currentIdx) cls = 'done';
+                else if (idx === currentIdx) cls = 'active';
+
+                const icons = { pending:'clock', processing:'gear', shipped:'truck', delivered:'check-circle-fill' };
+            %>
+                <div class="step-node">
+                    <div class="step-circle <%= isCancelled ? '' : (idx < currentIdx ? 'done' : (idx === currentIdx ? 'active' : '')) %>">
+                        <i class="bi bi-<%= icons[s] %>"></i>
+                    </div>
+                    <div class="step-label <%= isCancelled ? '' : (idx < currentIdx ? 'done' : (idx === currentIdx ? 'active' : '')) %>">
+                        <%= s.charAt(0).toUpperCase() + s.slice(1) %>
+                    </div>
+                </div>
+            <% }); %>
+
+            <% if (isCancelled) { %>
+                <div class="step-node">
+                    <div class="step-circle cancelled"><i class="bi bi-x-circle-fill"></i></div>
+                    <div class="step-label" style="color:#dc2626;">Cancelled</div>
+                </div>
+            <% } %>
+        </div>
+    </div>
+
+
+    <div class="two-col">
+
+
+        <div class="map-card">
+            <div class="map-card-header">
+                <h3><i class="bi bi-geo-alt-fill"></i> Delivery Location</h3>
+            </div>
+            <div id="deliveryMap"></div>
+        </div>
+
+
+        <div class="timeline-card">
+            <div class="timeline-card-header">
+                <h3><i class="bi bi-clock-history"></i> Status History</h3>
+                <span class="event-count"><%= events.length %> update<%= events.length !== 1 ? 's' : '' %></span>
+            </div>
+            <div class="timeline">
+                <% if (events.length === 0) { %>
+                    <p style="color:var(--gray-500);font-size:0.85rem;text-align:center;padding:20px 0;">No tracking events yet.</p>
+                <% } else { %>
+                    <% events.slice().reverse().forEach((e, idx) => {
+                        const isLatest = idx === 0;
+                        const dotCls   = e.status === 'cancelled' ? 'cancelled' : (isLatest ? 'latest' : 'past');
+                        const statusIcons = { pending:'clock', processing:'gear', shipped:'truck', delivered:'check-circle-fill', cancelled:'x-circle' };
+                    %>
+                        <div class="t-event">
+                            <div class="t-dot <%= dotCls %>">
+                                <i class="bi bi-<%= statusIcons[e.status] || 'circle' %>"></i>
+                            </div>
+                            <div class="t-body">
+                                <div class="t-status"><%= e.status %></div>
+                                <% if (e.note) { %><div class="t-note"><%= e.note %></div><% } %>
+                                <div class="t-time">
+                                    <i class="bi bi-clock"></i>
+                                    <%= new Date(e.created_at).toLocaleDateString('en-US', {month:'short', day:'numeric', year:'numeric'}) %>
+                                    &middot;
+                                    <%= new Date(e.created_at).toLocaleTimeString('en-US', {hour:'2-digit', minute:'2-digit'}) %>
+                                </div>
+                            </div>
+                        </div>
+                    <% }); %>
+                <% } %>
+            </div>
+        </div>
+    </div>
+
+
+    <div class="items-card">
+        <div class="items-card-header">
+            <h3><i class="bi bi-bag"></i> Items in this Order</h3>
+        </div>
+        <% if (items.length === 0) { %>
+            <div style="padding:30px;text-align:center;color:var(--gray-500);font-size:0.85rem;">No items found.</div>
+        <% } else { %>
+            <% items.forEach(item => { %>
+                <div class="item-row">
+                    <% if (item.image && item.image !== '') { %>
+                        <img src="<%= item.image %>" alt="<%= item.name %>" class="item-thumb">
+                    <% } else { %>
+                        <div class="item-thumb-ph"><i class="bi bi-image"></i></div>
+                    <% } %>
+                    <div>
+                        <div class="item-name"><%= item.name %></div>
+                        <div class="item-qty">Qty: <%= item.quantity %></div>
+                    </div>
+                    <div class="item-price">₦<%= (parseFloat(item.price) * item.quantity).toFixed(2) %></div>
+                </div>
+            <% }); %>
+        <% } %>
+    </div>
+
+</div>
+
+<footer>
+    &copy; <%= new Date().getFullYear() %> <strong>Pwnshop</strong>. All rights reserved.
+</footer>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script>
+
+const shippingAddress = '<%= order.shipping_address.replace(/'/g, "\\'").replace(/\n/g, ' ') %>';
+const orderStatus     = '<%= order.status %>';
+
+const nigerianCities = [
+    { name: 'Lagos',    lat:  6.5244,  lng:  3.3792  },
+    { name: 'Abuja',    lat:  9.0765,  lng:  7.3986  },
+    { name: 'Kano',     lat: 12.0022,  lng:  8.5920  },
+    { name: 'Ibadan',   lat:  7.3775,  lng:  3.9470  },
+    { name: 'Port Harcourt', lat: 4.8156, lng: 7.0498 }
+];
+
+const fallback = nigerianCities[<%= order.id %> % nigerianCities.length];
+
+const markerColours = {
+    pending:    '#f59e0b',
+    processing: '#3b82f6',
+    shipped:    '#06b6d4',
+    delivered:  '#16a34a',
+    cancelled:  '#dc2626'
+};
+const markerColour = markerColours[orderStatus] || '#6D28D9';
+
+function buildMarkerIcon(colour) {
+    return L.divIcon({
+        html: `<div style="
+            width:36px;height:36px;border-radius:50% 50% 50% 0;
+            background:${colour};border:3px solid white;
+            box-shadow:0 2px 8px rgba(0,0,0,0.3);
+            transform:rotate(-45deg);
+        "></div>`,
+        iconSize:   [36, 36],
+        iconAnchor: [18, 36],
+        className:  ''
+    });
+}
+
+function initMap(lat, lng, label) {
+    const map = L.map('deliveryMap', { zoomControl: true, scrollWheelZoom: false })
+                 .setView([lat, lng], 12);
+
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '&copy; <a href="https://openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+        maxZoom: 19
+    }).addTo(map);
+
+    L.marker([lat, lng], { icon: buildMarkerIcon(markerColour) })
+     .addTo(map)
+     .bindPopup(`
+        <div style="font-family:'DM Sans',sans-serif;padding:4px;">
+            <strong style="font-size:0.88rem;">Order #<%= order.id %></strong><br>
+            <span style="font-size:0.78rem;color:#6B7280;">${label}</span><br>
+            <span style="font-size:0.78rem;font-weight:700;color:${markerColour};">
+                ${orderStatus.toUpperCase()}
+            </span>
+        </div>
+     `, { maxWidth: 220 })
+     .openPopup();
+}
+
+async function geocodeAndInit() {
+    try {
+        const encoded = encodeURIComponent(shippingAddress);
+        const resp    = await fetch(
+            `https://nominatim.openstreetmap.org/search?q=${encoded}&format=json&limit=1`,
+            { headers: { 'Accept-Language': 'en' } }
+        );
+        const data = await resp.json();
+
+        if (data && data.length > 0) {
+            const lat = parseFloat(data[0].lat);
+            const lng = parseFloat(data[0].lon);
+            initMap(lat, lng, data[0].display_name);
+        } else {
+
+            initMap(fallback.lat, fallback.lng, fallback.name + ', Nigeria (estimated)');
+        }
+    } catch (e) {
+
+        initMap(fallback.lat, fallback.lng, fallback.name + ', Nigeria (estimated)');
+    }
+}
+
+geocodeAndInit();
+</script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

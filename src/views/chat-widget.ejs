@@ -1,0 +1,465 @@
+<style>
+/* ═══════════════════════════════════
+   PWNIE — CHAT WIDGET
+═══════════════════════════════════ */
+
+/* FAB */
+.pw-fab {
+    position: fixed; bottom: 24px; right: 24px; z-index: 9900;
+    width: 58px; height: 58px; border-radius: 50%;
+    background: #3B0764;
+    border: none; cursor: pointer;
+    box-shadow: 0 4px 20px rgba(59,7,100,0.45);
+    display: flex; align-items: center; justify-content: center;
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+.pw-fab:hover {
+    transform: scale(1.08);
+    box-shadow: 0 6px 28px rgba(59,7,100,0.6);
+}
+.pw-fab svg { width: 26px; height: 26px; fill: #fff; }
+
+/* UNREAD DOT */
+.pw-unread {
+    position: absolute; top: 0; right: 0;
+    width: 14px; height: 14px; background: #A855F7;
+    border-radius: 50%; border: 2px solid #fff;
+    display: none;
+}
+.pw-unread.on { display: block; }
+
+/* WINDOW */
+.pw-win {
+    position: fixed; bottom: 94px; right: 24px; z-index: 9900;
+    width: 360px;
+    background: #fff; border-radius: 16px;
+    box-shadow: 0 8px 40px rgba(0,0,0,0.16);
+    display: none; flex-direction: column;
+    overflow: hidden;
+    font-family: 'DM Sans', sans-serif;
+}
+.pw-win.on { display: flex; animation: pwIn 0.22s ease; }
+@keyframes pwIn {
+    from { opacity:0; transform:translateY(14px) scale(0.97); }
+    to   { opacity:1; transform:none; }
+}
+
+/* HEADER */
+.pw-head {
+    background: #3B0764;
+    padding: 14px 16px;
+    display: flex; align-items: center; justify-content: space-between;
+}
+.pw-head-left { display: flex; align-items: center; gap: 10px; }
+.pw-logo {
+    width: 36px; height: 36px; border-radius: 50%;
+    background: #fff;
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'Syne', sans-serif; font-weight: 800;
+    font-size: 0.85rem; color: #3B0764; flex-shrink: 0;
+}
+.pw-head-name {
+    font-family: 'Syne', sans-serif; font-weight: 700;
+    font-size: 0.92rem; color: #fff; line-height: 1.2;
+}
+.pw-head-status {
+    font-size: 0.7rem; color: rgba(255,255,255,0.55);
+    display: flex; align-items: center; gap: 5px; margin-top: 1px;
+}
+.pw-head-status::before {
+    content:''; width:6px; height:6px;
+    background:#4ade80; border-radius:50%;
+}
+.pw-close {
+    background: none; border: none; cursor: pointer;
+    color: rgba(255,255,255,0.6); font-size: 1.2rem;
+    line-height: 1; padding: 0; transition: color 0.15s;
+}
+.pw-close:hover { color: #fff; }
+
+/* GREETING BAND */
+.pw-greet {
+    background: #3B0764;
+    padding: 4px 16px 18px;
+}
+.pw-greet h3 {
+    font-family: 'Syne', sans-serif; font-weight: 800;
+    font-size: 1.1rem; color: #fff; margin: 0 0 4px;
+}
+.pw-greet p {
+    font-size: 0.8rem; color: rgba(255,255,255,0.6);
+    margin: 0; line-height: 1.5;
+}
+
+/* GATE FORM */
+.pw-gate {
+    padding: 20px 16px;
+    display: flex; flex-direction: column; gap: 10px;
+    background: #fff;
+}
+.pw-field label {
+    display: block; font-size: 0.75rem; font-weight: 600;
+    color: #374151; margin-bottom: 5px; letter-spacing: 0.2px;
+}
+.pw-field input {
+    width: 100%; border: 1.5px solid #E5E7EB; border-radius: 8px;
+    padding: 10px 12px; font-size: 0.85rem;
+    font-family: 'DM Sans', sans-serif; outline: none;
+    color: #111827; background: #fff;
+    transition: border-color 0.2s;
+    box-sizing: border-box;
+}
+.pw-field input:focus { border-color: #6D28D9; }
+.pw-field input::placeholder { color: #9CA3AF; }
+.pw-gate-err {
+    font-size: 0.75rem; color: #dc2626;
+    background: #fef2f2; border-radius: 7px;
+    padding: 7px 11px; display: none;
+}
+.pw-start-btn {
+    width: 100%; background: #6D28D9; color: #fff;
+    border: none; border-radius: 8px; padding: 13px;
+    font-size: 0.88rem; font-weight: 700;
+    font-family: 'DM Sans', sans-serif; cursor: pointer;
+    transition: background 0.2s; margin-top: 2px;
+}
+.pw-start-btn:hover { background: #3B0764; }
+.pw-social-row {
+    text-align: center; padding-top: 2px;
+}
+.pw-social-label {
+    font-size: 0.72rem; color: #9CA3AF; margin-bottom: 8px;
+}
+.pw-social-icons { display: flex; justify-content: center; gap: 12px; }
+.pw-social-icons a {
+    width: 34px; height: 34px; border-radius: 50%;
+    border: 1.5px solid #E5E7EB; display: flex;
+    align-items: center; justify-content: center;
+    color: #6B7280; font-size: 0.95rem; text-decoration: none;
+    transition: all 0.18s;
+}
+.pw-social-icons a:hover { border-color: #6D28D9; color: #6D28D9; }
+
+/* CHAT AREA */
+.pw-chat { display: none; flex-direction: column; }
+.pw-chat.on { display: flex; }
+
+.pw-msgs {
+    height: 320px; overflow-y: auto;
+    padding: 14px; display: flex; flex-direction: column; gap: 12px;
+    background: #F9FAFB;
+}
+.pw-msgs::-webkit-scrollbar { width: 3px; }
+.pw-msgs::-webkit-scrollbar-thumb { background: #DDD6FE; border-radius: 4px; }
+
+/* MESSAGES */
+.pwm { display: flex; gap: 7px; max-width: 86%; }
+.pwm.bot { align-self: flex-start; }
+.pwm.me  { align-self: flex-end; flex-direction: row-reverse; }
+
+.pwm-av {
+    width: 26px; height: 26px; border-radius: 50%; flex-shrink: 0;
+    background: #3B0764;
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'Syne', sans-serif; font-weight: 800;
+    font-size: 0.65rem; color: #fff; margin-top: 2px;
+}
+.pwm-body { display: flex; flex-direction: column; gap: 2px; }
+.pwm.me .pwm-body { align-items: flex-end; }
+
+.pwm-bbl {
+    padding: 9px 13px; font-size: 0.82rem; line-height: 1.55;
+    word-break: break-word;
+}
+.pwm.bot .pwm-bbl {
+    background: #fff; color: #111827;
+    border-radius: 4px 12px 12px 12px;
+    border: 1px solid #E5E7EB;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+}
+.pwm.me .pwm-bbl {
+    background: #6D28D9; color: #fff;
+    border-radius: 12px 4px 12px 12px;
+}
+.pwm-t { font-size: 0.6rem; color: #9CA3AF; padding: 0 2px; }
+.pwm.me .pwm-t { text-align: right; }
+
+/* TYPING */
+.pw-typing {
+    padding: 10px 13px; background: #fff;
+    border-radius: 4px 12px 12px 12px;
+    border: 1px solid #E5E7EB;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+    display: flex; gap: 4px; align-items: center;
+    width: fit-content;
+}
+.pw-typing span {
+    width: 6px; height: 6px; background: #A855F7;
+    border-radius: 50%; animation: ptd 1.3s infinite;
+}
+.pw-typing span:nth-child(2) { animation-delay: 0.18s; }
+.pw-typing span:nth-child(3) { animation-delay: 0.36s; }
+@keyframes ptd {
+    0%,60%,100% { transform:translateY(0); opacity:0.35; }
+    30%          { transform:translateY(-5px); opacity:1; }
+}
+
+/* CHIPS */
+.pw-chips {
+    padding: 8px 12px;
+    display: flex; gap: 6px; flex-wrap: wrap;
+    background: #F9FAFB; border-top: 1px solid #F3F4F6;
+}
+.pw-chip {
+    background: #fff; color: #374151;
+    border: 1.5px solid #E5E7EB; border-radius: 20px;
+    padding: 5px 12px; font-size: 0.75rem; font-weight: 500;
+    cursor: pointer; white-space: nowrap;
+    font-family: 'DM Sans', sans-serif;
+    transition: all 0.18s;
+}
+.pw-chip:hover { border-color: #6D28D9; color: #6D28D9; background: #F5F3FF; }
+
+/* INPUT */
+.pw-input-row {
+    display: flex; gap: 8px; align-items: flex-end;
+    padding: 10px 12px; background: #fff;
+    border-top: 1px solid #F3F4F6;
+}
+.pw-txt {
+    flex: 1; border: 1.5px solid #E5E7EB; border-radius: 8px;
+    padding: 9px 12px; font-size: 0.83rem;
+    font-family: 'DM Sans', sans-serif; outline: none;
+    resize: none; max-height: 80px; line-height: 1.45;
+    color: #111827; transition: border-color 0.2s;
+}
+.pw-txt:focus { border-color: #6D28D9; }
+.pw-txt::placeholder { color: #9CA3AF; }
+.pw-sbtn {
+    width: 36px; height: 36px; border-radius: 8px; border: none;
+    background: #6D28D9; color: #fff; cursor: pointer;
+    display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+    transition: background 0.18s;
+}
+.pw-sbtn:hover { background: #3B0764; }
+.pw-sbtn:disabled { background: #DDD6FE; cursor: not-allowed; }
+
+/* FOOTER */
+.pw-foot {
+    padding: 7px 0 8px; text-align: center;
+    font-size: 0.65rem; color: #9CA3AF;
+    background: #fff; border-top: 1px solid #F3F4F6;
+}
+.pw-foot b { color: #6D28D9; font-weight: 600; }
+</style>
+
+<button class="pw-fab" onclick="pwToggle()" aria-label="Chat with Pwnie">
+    <span class="pw-unread" id="pwUnread"></span>
+    <svg viewBox="0 0 24 24"><path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm-2 12H6v-2h12v2zm0-3H6V9h12v2zm0-3H6V6h12v2z"/></svg>
+</button>
+
+<div class="pw-win" id="pwWin">
+
+
+    <div class="pw-head">
+        <div class="pw-head-left">
+            <div class="pw-logo">P</div>
+            <div>
+                <div class="pw-head-name">Pwnshop Support</div>
+                <div class="pw-head-status">Online now</div>
+            </div>
+        </div>
+        <button class="pw-close" onclick="pwToggle()">&#x2715;</button>
+    </div>
+
+
+    <div class="pw-greet">
+        <h3>Hi there 👋</h3>
+        <p>We're here to help with your orders, products, and anything else.</p>
+    </div>
+
+
+    <div class="pw-gate" id="pwGate">
+        <div class="pw-field">
+            <label>Full Name</label>
+            <input type="text" id="pwName" placeholder="Enter your name">
+        </div>
+        <div class="pw-field">
+            <label>Email Address</label>
+            <input type="email" id="pwEmail" placeholder="Enter your email"
+                   onkeydown="if(event.key==='Enter') pwStart()">
+        </div>
+        <div class="pw-gate-err" id="pwErr"></div>
+        <button class="pw-start-btn" onclick="pwStart()">Start Chat</button>
+        <div class="pw-social-row">
+            <div class="pw-social-label">Or reach us on</div>
+            <div class="pw-social-icons">
+                <a href="#" title="WhatsApp"><i class="bi bi-whatsapp"></i></a>
+                <a href="#" title="Instagram"><i class="bi bi-instagram"></i></a>
+                <a href="#" title="Facebook"><i class="bi bi-facebook"></i></a>
+            </div>
+        </div>
+    </div>
+
+
+    <div class="pw-chat" id="pwChat">
+        <div class="pw-msgs" id="pwMsgs"></div>
+
+        <div class="pw-chips" id="pwChips">
+            <span class="pw-chip" onclick="pwChip(this)">Track my order</span>
+            <span class="pw-chip" onclick="pwChip(this)">Browse products</span>
+            <span class="pw-chip" onclick="pwChip(this)">My wallet balance</span>
+            <span class="pw-chip" onclick="pwChip(this)">Use a coupon</span>
+        </div>
+
+        <div class="pw-input-row">
+            <textarea class="pw-txt" id="pwTxt" rows="1" placeholder="Type a message…"
+                onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();pwSend();}"
+                oninput="pwResize(this)"></textarea>
+            <button class="pw-sbtn" id="pwSBtn" onclick="pwSend()">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="white">
+                    <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/>
+                </svg>
+            </button>
+        </div>
+
+        <div class="pw-foot">Powered by <b>Pwnie AI</b> &middot; Pwnshop</div>
+    </div>
+
+</div>
+
+<script>
+(function(){
+var isOpen=false, hist=[], uEmail=null, uName=null, uData=null;
+
+window.pwToggle=function(){
+    isOpen=!isOpen;
+    document.getElementById('pwWin').classList.toggle('on',isOpen);
+    document.getElementById('pwUnread').classList.remove('on');
+    if(isOpen) setTimeout(function(){ document.getElementById('pwName').focus(); },200);
+};
+
+window.pwStart=function(){
+    var name=document.getElementById('pwName').value.trim();
+    var email=document.getElementById('pwEmail').value.trim();
+    var err=document.getElementById('pwErr');
+    if(!name){ err.textContent='Please enter your name.'; err.style.display='block'; return; }
+    if(!email||!email.includes('@')){ err.textContent='Please enter a valid email.'; err.style.display='block'; return; }
+    err.style.display='none';
+    uName=name; uEmail=email;
+
+    fetch('/chat/init',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email:email})})
+    .then(function(r){return r.json();})
+    .then(function(d){
+        uData=d.user||null;
+
+        openChat(d.user, name, d.found);
+    })
+    .catch(function(){ openChat(null,name,false); });
+};
+
+function openChat(user, name, found) {
+    document.getElementById('pwGate').style.display='none';
+    document.getElementById('pwChat').classList.add('on');
+
+    if (!user) {
+        document.querySelectorAll('.pw-chip').forEach(function(c){
+            if (c.textContent==='My wallet balance' || c.textContent==='Track my order') {
+                c.style.display='none';
+            }
+        });
+    }
+
+    var greet;
+    if (user) {
+        greet = 'Hi ' + user.username + '! \uD83D\uDC4B Great to have you here. I can check your orders, track packages, help with products and more. What do you need?';
+    } else if (found === false) {
+        greet = 'Hi ' + name + '! I couldn\'t find a Pwnshop account linked to that email, so you\'re chatting as a guest. I can still help with products and general questions. To access your orders and account, please log in first.';
+    } else {
+        greet = 'Hi ' + name + '! You\'re browsing as a guest. I can help with product info and general store questions. Log in to access order tracking and your account details.';
+    }
+
+    botMsg(greet);
+    document.getElementById('pwTxt').focus();
+}
+
+window.pwChip=function(el){
+    document.getElementById('pwChips').style.display='none';
+    var map={
+        'Track my order':'I want to track my order',
+        'Browse products':'What products do you have?',
+        'My wallet balance':'What is my wallet balance?',
+        'Use a coupon':'How do I apply a coupon code?'
+    };
+    var txt=map[el.textContent]||el.textContent;
+    userMsg(txt); ask(txt);
+};
+
+window.pwSend=function(){
+    var t=document.getElementById('pwTxt');
+    var v=t.value.trim(); if(!v)return;
+    t.value=''; pwResize(t);
+    document.getElementById('pwChips').style.display='none';
+    userMsg(v); ask(v);
+};
+
+function ask(msg){
+    document.getElementById('pwSBtn').disabled=true;
+    var tid=typing();
+    fetch('/chat',{method:'POST',headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({message:msg,email:uEmail,history:hist})})
+    .then(function(r){return r.json();})
+    .then(function(d){
+        rmTyping(tid);
+        document.getElementById('pwSBtn').disabled=false;
+        var rep=d.reply||'Sorry, something went wrong. Please try again.';
+        botMsg(rep);
+        hist.push({role:'user',parts:[{text:msg}]});
+        hist.push({role:'model',parts:[{text:rep}]});
+    })
+    .catch(function(){
+        rmTyping(tid);
+        document.getElementById('pwSBtn').disabled=false;
+        botMsg('Connection issue. Please try again.');
+    });
+}
+
+function botMsg(text){
+    var b=document.getElementById('pwMsgs');
+    var t=new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'});
+    var d=document.createElement('div'); d.className='pwm bot';
+
+
+
+    d.innerHTML='<div class="pwm-av">P</div><div class="pwm-body"><div class="pwm-bbl">'+text+'</div><div class="pwm-t">'+t+'</div></div>';
+    b.appendChild(d); b.scrollTop=b.scrollHeight;
+}
+
+function userMsg(text){
+    var b=document.getElementById('pwMsgs');
+    var t=new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'});
+    var d=document.createElement('div'); d.className='pwm me';
+    d.innerHTML='<div class="pwm-body"><div class="pwm-bbl">'+esc(text)+'</div><div class="pwm-t">'+t+'</div></div>';
+    b.appendChild(d); b.scrollTop=b.scrollHeight;
+}
+
+function typing(){
+    var b=document.getElementById('pwMsgs');
+    var id='pt'+Date.now();
+    var d=document.createElement('div'); d.className='pwm bot'; d.id=id;
+    d.innerHTML='<div class="pwm-av">P</div><div class="pw-typing"><span></span><span></span><span></span></div>';
+    b.appendChild(d); b.scrollTop=b.scrollHeight; return id;
+}
+
+function rmTyping(id){ var e=document.getElementById(id); if(e)e.remove(); }
+
+function esc(s){
+    return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\n/g,'<br>');
+}
+
+window.pwResize=function(el){
+    el.style.height='auto';
+    el.style.height=Math.min(el.scrollHeight,80)+'px';
+};
+})();
+</script>

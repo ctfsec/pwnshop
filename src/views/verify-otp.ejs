@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Verify Your Identity - Pwnshop</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --purple-deep:  #3B0764;
+            --purple-mid:   #6D28D9;
+            --purple-light: #A855F7;
+            --purple-pale:  #F3E8FF;
+            --black:        #0D0D0D;
+            --white:        #FFFFFF;
+            --gray-100:     #F8F5FF;
+            --gray-200:     #EDE9F6;
+            --gray-500:     #6B7280;
+            --accent:       #C026D3;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: 'DM Sans', sans-serif;
+            background: var(--gray-100);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 24px;
+        }
+
+        .auth-card {
+            background: var(--white);
+            border-radius: 20px;
+            box-shadow: 0 8px 40px rgba(59,7,100,0.13);
+            width: 100%;
+            max-width: 920px;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            overflow: hidden;
+            min-height: 520px;
+        }
+
+        /* ── LEFT PANEL ── */
+        .panel-left {
+            background: linear-gradient(145deg, var(--purple-deep), var(--purple-mid));
+            padding: 48px 40px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            position: relative;
+            overflow: hidden;
+        }
+        .panel-left::before { content:''; position:absolute; width:260px; height:260px; background:rgba(168,85,247,0.15); border-radius:50%; top:-60px; right:-80px; }
+        .panel-left::after  { content:''; position:absolute; width:180px; height:180px; background:rgba(192,38,211,0.12); border-radius:50%; bottom:-40px; left:-40px; }
+
+        .brand-logo { font-family:'Syne',sans-serif; font-weight:800; font-size:1.7rem; color:var(--white); text-decoration:none; display:flex; align-items:center; gap:8px; position:relative; z-index:1; }
+        .brand-logo .dot { width:8px; height:8px; background:var(--purple-light); border-radius:50%; }
+
+        .panel-mid { position:relative; z-index:1; }
+        .panel-mid h2 { font-family:'Syne',sans-serif; font-weight:800; font-size:1.9rem; color:var(--white); line-height:1.25; margin-bottom:12px; }
+        .panel-mid p  { color:rgba(255,255,255,0.68); font-size:0.9rem; line-height:1.6; }
+
+        .panel-perks { position:relative; z-index:1; display:flex; flex-direction:column; gap:10px; }
+        .perk-item   { display:flex; align-items:center; gap:10px; color:rgba(255,255,255,0.82); font-size:0.84rem; }
+        .perk-item i { color:var(--purple-light); font-size:1rem; flex-shrink:0; }
+
+        /* ── RIGHT PANEL ── */
+        .panel-right { padding: 48px 44px; display:flex; flex-direction:column; justify-content:center; }
+        .panel-right h3 { font-family:'Syne',sans-serif; font-weight:800; font-size:1.5rem; color:var(--black); margin-bottom:6px; }
+        .subtitle { color:var(--gray-500); font-size:0.875rem; margin-bottom:28px; line-height:1.55; }
+
+        /* OTP input group */
+        .otp-inputs {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 24px;
+        }
+        .otp-digit {
+            flex: 1;
+            border: 1.5px solid var(--gray-200);
+            border-radius: 10px;
+            padding: 14px 0;
+            font-size: 1.4rem;
+            font-family: 'Syne', sans-serif;
+            font-weight: 800;
+            text-align: center;
+            outline: none;
+            color: var(--black);
+            transition: border-color 0.2s, box-shadow 0.2s;
+            width: 100%;
+            -moz-appearance: textfield;
+        }
+        .otp-digit::-webkit-outer-spin-button,
+        .otp-digit::-webkit-inner-spin-button { -webkit-appearance: none; }
+        .otp-digit:focus { border-color: var(--purple-mid); box-shadow: 0 0 0 3px rgba(109,40,217,0.1); }
+
+        /* hidden real input */
+        .otp-real { display:none; }
+
+        .btn-submit {
+            background: var(--purple-deep);
+            color: var(--white);
+            border: none;
+            border-radius: 10px;
+            padding: 13px;
+            font-size: 0.9rem;
+            font-weight: 700;
+            font-family: 'DM Sans', sans-serif;
+            width: 100%;
+            cursor: pointer;
+            transition: background 0.2s, transform 0.15s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+        .btn-submit:hover { background: var(--purple-mid); transform: translateY(-1px); }
+
+        .alert-err {
+            background: #fef2f2;
+            border: 1px solid #fecaca;
+            color: #dc2626;
+            border-radius: 8px;
+            padding: 10px 14px;
+            font-size: 0.83rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 20px;
+        }
+
+        .btn-inbox { display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%; background: var(--purple-pale); color: var(--purple-deep); border: 1.5px solid rgba(109,40,217,0.25); border-radius: 10px; padding: 11px; font-size: 0.88rem; font-weight: 700; font-family: 'DM Sans', sans-serif; text-decoration: none; transition: all 0.2s; margin-top: 20px; }
+        .btn-inbox:hover { background: var(--purple-deep); color: var(--white); border-color: var(--purple-deep); }
+
+        .back-link { display: block; text-align: center; margin-top: 16px; font-size: 0.82rem; color: var(--gray-500); text-decoration: none; }
+        .back-link:hover { color: var(--purple-mid); }
+
+        @media (max-width:640px) {
+            .auth-card { grid-template-columns: 1fr; }
+            .panel-left { display: none; }
+            .panel-right { padding: 36px 28px; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="auth-card">
+
+
+    <div class="panel-left">
+        <a href="/" class="brand-logo">Pwnshop<span class="dot"></span></a>
+
+        <div class="panel-mid">
+            <h2>One last step.</h2>
+            <p>We sent a 6-digit verification code to the email linked to your account. Enter it to complete sign in.</p>
+        </div>
+
+        <div class="panel-perks">
+            <div class="perk-item"><i class="bi bi-envelope-check-fill"></i><span>Code sent to your inbox</span></div>
+            <div class="perk-item"><i class="bi bi-clock"></i><span>Valid for 10 minutes</span></div>
+            <div class="perk-item"><i class="bi bi-shield-check-fill"></i><span>Keeps your account secure</span></div>
+        </div>
+    </div>
+
+
+    <div class="panel-right">
+        <h3>Verify your identity</h3>
+        <p class="subtitle">Enter the 6-digit code sent to your registered email address.</p>
+
+        <% if (error) { %>
+            <div class="alert-err"><i class="bi bi-exclamation-circle-fill"></i> <%= error %></div>
+        <% } %>
+
+        <form method="POST" action="/verify-otp" id="otpForm">
+
+            <div class="otp-inputs" id="otpBoxes">
+                <input class="otp-digit" type="number" maxlength="1" min="0" max="9" id="d0">
+                <input class="otp-digit" type="number" maxlength="1" min="0" max="9" id="d1">
+                <input class="otp-digit" type="number" maxlength="1" min="0" max="9" id="d2">
+                <input class="otp-digit" type="number" maxlength="1" min="0" max="9" id="d3">
+                <input class="otp-digit" type="number" maxlength="1" min="0" max="9" id="d4">
+                <input class="otp-digit" type="number" maxlength="1" min="0" max="9" id="d5">
+            </div>
+
+            <input type="hidden" name="otp" id="otpHidden">
+
+            <button type="submit" class="btn-submit" id="verifyBtn">
+                <i class="bi bi-shield-check"></i> Verify Code
+            </button>
+        </form>
+
+
+        <a href="/mail" target="_blank" class="btn-inbox">
+            <i class="bi bi-envelope-open"></i> Open Pwnshop Inbox
+        </a>
+
+        <a href="/login" class="back-link"><i class="bi bi-arrow-left"></i> Back to Login</a>
+    </div>
+
+</div>
+
+<script>
+    const digits  = Array.from(document.querySelectorAll('.otp-digit'));
+    const hidden  = document.getElementById('otpHidden');
+    const form    = document.getElementById('otpForm');
+
+    digits.forEach((input, i) => {
+        input.addEventListener('input', () => {
+
+            if (input.value.length > 1) input.value = input.value.slice(-1);
+
+            if (input.value && i < digits.length - 1) digits[i + 1].focus();
+
+            hidden.value = digits.map(d => d.value || '').join('');
+        });
+
+        input.addEventListener('keydown', (e) => {
+            if (e.key === 'Backspace' && !input.value && i > 0) {
+                digits[i - 1].focus();
+            }
+        });
+
+
+        input.addEventListener('paste', (e) => {
+            e.preventDefault();
+            const pasted = e.clipboardData.getData('text').replace(/\D/g, '').slice(0, 6);
+            pasted.split('').forEach((ch, j) => {
+                if (digits[j]) digits[j].value = ch;
+            });
+            hidden.value = pasted;
+            if (digits[pasted.length - 1]) digits[Math.min(pasted.length, 5)].focus();
+        });
+    });
+
+    form.addEventListener('submit', () => {
+        hidden.value = digits.map(d => d.value || '').join('');
+    });
+
+
+    digits[0].focus();
+</script>
+</body>
+</html>

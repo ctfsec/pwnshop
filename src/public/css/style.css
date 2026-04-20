@@ -1,0 +1,195 @@
+body { background: #f8f9fa; }
+.navbar { background: #ff0080 !important; }
+.topbar {
+    background: #ff0080;
+    color: #fff;
+    padding: 0.7rem 0;
+}
+.topbar .navbar-brand {
+    font-size: 1.5rem;
+    font-weight: bold;
+    color: #fff !important;
+    letter-spacing: 1px;
+    white-space: nowrap;
+}
+.topbar .navbar-nav.flex-row .nav-link,
+.topbar .navbar-nav.flex-row .navbar-text {
+    font-size: 0.95rem;
+    margin-right: 0.7rem;
+    white-space: nowrap;
+    padding-left: 0.5rem;
+    padding-right: 0.5rem;
+}
+.topbar .search-bar {
+    width: 40vw;
+    min-width: 200px;
+    border-radius: 0.3rem 0 0 0.3rem;
+    border-right: none;
+}
+.topbar .btn-search {
+    border-radius: 0 0.3rem 0.3rem 0;
+    background: #ffb300;
+    color: #fff;
+    border: none;
+    font-weight: bold;
+}
+.topbar .btn-cart {
+    background: #36c18a;
+    color: #fff;
+    font-weight: bold;
+    border: none;
+    border-radius: 0.3rem;
+    margin-left: 1rem;
+    font-size: 0.95rem;
+    display: flex;
+    align-items: center;
+    white-space: nowrap;
+    padding: 0.3rem 0.8rem;
+}
+.topbar .btn-cart .badge {
+    font-size: 0.95rem;
+    margin-left: 0.3rem;
+    padding: 0.2em 0.5em;
+    vertical-align: middle;
+}
+.category-bar {
+    background: #a0004d;
+    color: #fff;
+    font-size: 1rem;
+    padding: 0.5rem 0;
+}
+.category-bar .nav-link {
+    color: #fff !important;
+    margin-right: 1.2rem;
+    font-weight: 500;
+    font-size: 0.95rem;
+    white-space: nowrap;
+}
+.category-bar .nav-link.active {
+    text-decoration: underline;
+}
+@media (max-width: 1200px) {
+    .topbar .navbar-brand { font-size: 1.1rem; }
+    .topbar .navbar-nav.flex-row .nav-link,
+    .topbar .navbar-nav.flex-row .navbar-text,
+    .category-bar .nav-link,
+    .topbar .btn-cart,
+    .topbar .btn-cart .badge { font-size: 0.85rem; }
+}
+/* Make all topbar nav links white */
+.topbar .navbar-nav .nav-link {
+    color: white !important;
+}
+
+/* Specifically target the login/signup link */
+.topbar .navbar-nav .nav-link[href="#"] {
+    color: white !important;
+}
+
+/* Make sure the dropdown menu items (if any) are also white */
+.topbar .dropdown-menu .nav-link {
+    color: white !important;
+}
+.form-floating > label {
+    padding-left: 0.5rem;
+    font-size: 0.85rem;
+    top: 8px;
+}
+.form-select {
+    border-top-right-radius: 0;
+    border-bottom-right-radius: 0;
+}
+.form-control {
+    border-top-left-radius: 0;
+    border-bottom-left-radius: 0;
+}
+.product-card {
+    min-height: 320px;
+    max-height: 320px;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    position: relative;
+    background: #fff;
+    border-radius: 10px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+    overflow: hidden;
+    transition: box-shadow 0.2s;
+    padding-bottom: 70px; /* Space for buttons */
+}
+.product-card:hover {
+    box-shadow: 0 4px 16px rgba(153,76,141,0.12);
+}
+.product-actions {
+    position: absolute;
+    bottom: 20px;
+    left: 0;
+    width: 100%;
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+}
+.btn-buy {
+    background: #994c8d;
+    color: #fff;
+    font-weight: bold;
+    border: none;
+    border-radius: 8px;
+    transition: background 0.2s;
+}
+.btn-buy:hover {
+    background: #fe02d9;
+}
+.btn-cart {
+    background: #ffb300;
+    color: #fff;
+    font-weight: bold;
+    border: none;
+    border-radius: 8px;
+    transition: background 0.2s;
+}
+.btn-cart:hover {
+    background: #ff9800;
+}
+.product-img, .featured-seller-img {
+    width: 110px;
+    height: 110px;
+    object-fit: cover;
+    aspect-ratio: 1/1;
+    border-radius: 10px;
+    background: #f6f6f6;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+    margin-bottom: 10px;
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+}
+.featured-seller-card {
+    min-height: 180px;
+    max-height: 180px;
+    background: #fff;
+    border-radius: 12px;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    padding: 12px 8px 8px 8px;
+}
+.featured-seller-img {
+    width: 48px;
+    height: 48px;
+    object-fit: cover;
+    aspect-ratio: 1/1;
+    border-radius: 8px;
+    margin-bottom: 6px;
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+}
+.sidebar {
+    min-height: 400px;
+    background: #fff;
+    border-radius: 10px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+}

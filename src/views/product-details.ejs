@@ -1,0 +1,352 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><%= product.name %> - Pwnshop</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --purple-deep:  #3B0764;
+            --purple-mid:   #6D28D9;
+            --purple-light: #A855F7;
+            --purple-pale:  #F3E8FF;
+            --black:        #0D0D0D;
+            --white:        #FFFFFF;
+            --gray-100:     #F8F5FF;
+            --gray-200:     #EDE9F6;
+            --gray-500:     #6B7280;
+            --accent:       #C026D3;
+        }
+        * { box-sizing: border-box; }
+        body { font-family: 'DM Sans', sans-serif; background: var(--gray-100); color: var(--black); margin: 0; }
+
+        /* ── NAVBAR ── */
+        .topbar { background: var(--purple-deep); padding: 0; position: sticky; top: 0; z-index: 1000; box-shadow: 0 2px 16px rgba(59,7,100,0.4); }
+        .topbar .container { display: flex; align-items: center; gap: 16px; padding: 12px 24px; }
+        .navbar-brand { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 1.6rem; color: var(--white) !important; text-decoration: none; display: flex; align-items: center; gap: 6px; white-space: nowrap; }
+        .navbar-brand .dot { width: 8px; height: 8px; background: var(--purple-light); border-radius: 50%; }
+        .nav-links { display: flex; gap: 4px; list-style: none; margin: 0; padding: 0; }
+        .nav-links .nav-link { color: rgba(255,255,255,0.75) !important; font-size: 0.88rem; font-weight: 500; padding: 6px 12px; border-radius: 6px; transition: all 0.2s; }
+        .nav-links .nav-link:hover { color: var(--white) !important; background: rgba(255,255,255,0.1); }
+        .search-wrap { flex: 1; max-width: 560px; display: flex; }
+        .search-wrap input { border: none; border-radius: 8px 0 0 8px; padding: 10px 16px; font-size: 0.9rem; outline: none; width: 100%; background: rgba(255,255,255,0.12); color: var(--white); }
+        .search-wrap input::placeholder { color: rgba(255,255,255,0.5); }
+        .search-wrap input:focus { background: rgba(255,255,255,0.2); }
+        .search-wrap button { background: var(--purple-light); border: none; border-radius: 0 8px 8px 0; padding: 10px 16px; color: var(--white); cursor: pointer; transition: background 0.2s; }
+        .search-wrap button:hover { background: var(--accent); }
+        .nav-right { display: flex; align-items: center; gap: 8px; list-style: none; margin: 0; padding: 0; }
+        .nav-right .nav-link { color: rgba(255,255,255,0.75) !important; font-size: 0.88rem; padding: 6px 10px; }
+        .user-chip { text-decoration: none; background: rgba(168,85,247,0.2); border: 1px solid rgba(168,85,247,0.4); color: var(--white) !important; border-radius: 20px; padding: 5px 14px; font-size: 0.85rem; font-weight: 600; }
+        .btn-logout { background: transparent; border: 1px solid rgba(255,255,255,0.3); color: rgba(255,255,255,0.8) !important; border-radius: 8px; padding: 5px 12px; font-size: 0.83rem; text-decoration: none; transition: all 0.2s; }
+        .btn-logout:hover { border-color: #f87171; color: #f87171 !important; }
+        .btn-login { background: var(--white); color: var(--purple-deep) !important; border: none; border-radius: 8px; padding: 7px 16px; font-size: 0.88rem; font-weight: 700; text-decoration: none; transition: all 0.2s; }
+        .btn-cart { background: rgba(255,255,255,0.12); border: 1px solid rgba(255,255,255,0.2); color: var(--white) !important; border-radius: 8px; padding: 7px 14px; font-size: 0.88rem; font-weight: 600; text-decoration: none; display: flex; align-items: center; gap: 6px; transition: all 0.2s; }
+        .btn-cart:hover { background: rgba(255,255,255,0.22); }
+        .btn-cart .badge { background: var(--purple-light) !important; color: var(--white) !important; border-radius: 50px; font-size: 0.75rem; }
+        .btn-seller { background: var(--accent); color: var(--white) !important; border: none; border-radius: 8px; padding: 7px 14px; font-size: 0.85rem; font-weight: 600; text-decoration: none; transition: all 0.2s; }
+        .btn-seller:hover { background: #a21caf; }
+        .btn-add-product { background: #16a34a; color: var(--white) !important; border: none; border-radius: 8px; padding: 7px 14px; font-size: 0.85rem; font-weight: 600; text-decoration: none; transition: all 0.2s; }
+        .btn-add-product:hover { background: #15803d; }
+
+        /* ── LAYOUT ── */
+        .page-wrap { display: grid; grid-template-columns: 220px 1fr; gap: 24px; max-width: 1400px; margin: 28px auto; padding: 0 20px; }
+
+        /* ── SIDEBAR ── */
+        .sidebar { background: var(--white); border-radius: 14px; box-shadow: 0 2px 12px rgba(109,40,217,0.07); padding: 20px 16px; height: fit-content; position: sticky; top: 80px; }
+        .sidebar h5 { font-family: 'Syne', sans-serif; font-weight: 700; font-size: 0.82rem; text-transform: uppercase; letter-spacing: 1.2px; color: var(--purple-mid); margin-bottom: 14px; padding-bottom: 10px; border-bottom: 2px solid var(--purple-pale); }
+        .cat-btn { display: flex; align-items: center; gap: 10px; width: 100%; padding: 9px 12px; margin-bottom: 4px; background: transparent; border: none; border-radius: 8px; color: var(--black); font-size: 0.9rem; font-weight: 500; text-decoration: none; cursor: pointer; transition: all 0.18s; }
+        .cat-btn:hover { background: var(--purple-pale); color: var(--purple-deep); padding-left: 16px; text-decoration: none; }
+        .cat-btn .cat-icon { font-size: 1.05rem; width: 20px; text-align: center; flex-shrink: 0; color: var(--purple-mid); }
+        .cat-btn:hover .cat-icon { color: var(--purple-deep); }
+
+        /* ── BREADCRUMB ── */
+        .breadcrumb-bar { display: flex; align-items: center; gap: 6px; font-size: 0.82rem; color: var(--gray-500); margin-bottom: 24px; }
+        .breadcrumb-bar a { color: var(--purple-mid); text-decoration: none; font-weight: 500; }
+        .breadcrumb-bar a:hover { color: var(--accent); }
+        .breadcrumb-bar i { font-size: 0.7rem; }
+
+        /* ── PRODUCT LAYOUT ── */
+        .product-wrap { display: grid; grid-template-columns: 1fr 1fr; gap: 32px; align-items: start; }
+
+        /* ── IMAGE PANEL ── */
+        .img-panel { background: var(--white); border-radius: 16px; overflow: hidden; border: 1.5px solid var(--gray-200); }
+        .img-panel img { width: 100%; aspect-ratio: 1; object-fit: cover; display: block; }
+        .img-panel .img-placeholder { width: 100%; aspect-ratio: 1; display: flex; align-items: center; justify-content: center; background: var(--gray-100); color: var(--gray-500); font-size: 4rem; }
+
+        /* ── INFO PANEL ── */
+        .info-panel { background: var(--white); border-radius: 16px; border: 1.5px solid var(--gray-200); padding: 28px; }
+        .product-category-tag { display: inline-block; background: var(--purple-pale); color: var(--purple-mid); font-size: 0.75rem; font-weight: 600; border-radius: 20px; padding: 3px 12px; margin-bottom: 12px; text-transform: uppercase; letter-spacing: 0.5px; }
+        .product-title { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 1.7rem; color: var(--black); margin-bottom: 12px; line-height: 1.2; }
+        .product-price { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 2rem; color: var(--purple-mid); margin-bottom: 14px; }
+        .stock-badge { display: inline-flex; align-items: center; gap: 5px; font-size: 0.82rem; font-weight: 600; border-radius: 20px; padding: 4px 12px; margin-bottom: 16px; }
+        .stock-badge.in-stock { background: #dcfce7; color: #16a34a; }
+        .stock-badge.out-stock { background: #fee2e2; color: #dc2626; }
+        .product-desc { color: var(--gray-500); font-size: 0.9rem; line-height: 1.65; margin-bottom: 22px; }
+        .divider-line { height: 1px; background: var(--gray-200); margin: 20px 0; }
+
+        /* ── QTY + ADD TO CART ── */
+        .cart-row { display: flex; align-items: center; gap: 12px; margin-bottom: 16px; }
+        .qty-wrap { display: flex; align-items: center; border: 1.5px solid var(--gray-200); border-radius: 10px; overflow: hidden; }
+        .qty-wrap label { padding: 0 12px; font-size: 0.8rem; font-weight: 600; color: var(--gray-500); text-transform: uppercase; letter-spacing: 0.3px; white-space: nowrap; background: var(--gray-100); height: 44px; display: flex; align-items: center; border-right: 1.5px solid var(--gray-200); }
+        .qty-wrap input { border: none; outline: none; padding: 0 12px; width: 60px; font-size: 0.95rem; font-family: 'DM Sans', sans-serif; height: 44px; text-align: center; color: var(--black); }
+        .btn-addcart { flex: 1; background: var(--purple-deep); color: var(--white); border: none; border-radius: 10px; padding: 12px 20px; font-size: 0.9rem; font-weight: 700; font-family: 'DM Sans', sans-serif; cursor: pointer; transition: background 0.2s, transform 0.15s; display: flex; align-items: center; justify-content: center; gap: 8px; }
+        .btn-addcart:hover { background: var(--purple-mid); transform: translateY(-1px); }
+        .btn-addcart:disabled { background: var(--gray-200); color: var(--gray-500); cursor: not-allowed; transform: none; }
+        .seller-row { display: flex; align-items: center; gap: 8px; background: var(--gray-100); border-radius: 10px; padding: 12px 16px; margin-top: 4px; }
+        .seller-row i { color: var(--purple-mid); }
+        .seller-row span { font-size: 0.85rem; color: var(--gray-500); }
+        .seller-row strong { color: var(--black); font-size: 0.9rem; }
+        .btn-back { display: inline-flex; align-items: center; gap: 6px; margin-top: 16px; color: var(--gray-500); font-size: 0.85rem; text-decoration: none; transition: color 0.2s; }
+        .btn-back:hover { color: var(--purple-mid); }
+
+        /* ── WISHLIST BUTTON ── */
+        .btn-wishlist { display: inline-flex; align-items: center; gap: 7px; background: transparent; border: 1.5px solid var(--gray-200); color: var(--gray-500); border-radius: 10px; padding: 9px 18px; font-size: 0.85rem; font-weight: 600; font-family: 'DM Sans', sans-serif; cursor: pointer; transition: all 0.2s; width: 100%; justify-content: center; }
+        .btn-wishlist:hover { border-color: var(--accent); color: var(--accent); background: rgba(192,38,211,0.04); }
+        .btn-wishlist.saved { border-color: var(--accent); color: var(--accent); background: rgba(192,38,211,0.06); }
+        .btn-wishlist.saved i { color: var(--accent); }
+
+        /* ── REVIEWS SECTION ── */
+        .reviews-wrap { margin-top: 40px; }
+        .reviews-heading { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 1.2rem; color: var(--black); margin-bottom: 20px; display: flex; align-items: center; gap: 10px; }
+        .reviews-heading::after { content: ''; flex: 1; height: 2px; background: linear-gradient(90deg, var(--purple-pale), transparent); border-radius: 2px; }
+
+        .review-form-card { background: var(--white); border-radius: 14px; border: 1.5px solid var(--gray-200); padding: 22px 24px; margin-bottom: 24px; }
+        .review-form-card h4 { font-family: 'Syne', sans-serif; font-weight: 700; font-size: 0.88rem; color: var(--black); margin-bottom: 16px; }
+
+        /* Star rating input */
+        .star-picker { display: flex; flex-direction: row-reverse; gap: 4px; margin-bottom: 14px; }
+        .star-picker input[type="radio"] { display: none; }
+        .star-picker label { font-size: 1.5rem; color: var(--gray-200); cursor: pointer; transition: color 0.15s; line-height: 1; }
+        .star-picker input:checked ~ label,
+        .star-picker label:hover,
+        .star-picker label:hover ~ label { color: #f59e0b; }
+
+        .review-textarea { border: 1.5px solid var(--gray-200); border-radius: 10px; padding: 11px 14px; font-size: 0.9rem; font-family: 'DM Sans', sans-serif; width: 100%; outline: none; resize: vertical; min-height: 90px; transition: border-color 0.2s, box-shadow 0.2s; color: var(--black); }
+        .review-textarea:focus { border-color: var(--purple-mid); box-shadow: 0 0 0 3px rgba(109,40,217,0.08); }
+        .review-textarea::placeholder { color: #b0afc0; }
+        .btn-submit-review { background: var(--purple-deep); color: var(--white); border: none; border-radius: 10px; padding: 10px 24px; font-size: 0.85rem; font-weight: 700; font-family: 'DM Sans', sans-serif; cursor: pointer; transition: background 0.2s; margin-top: 10px; display: inline-flex; align-items: center; gap: 6px; }
+        .btn-submit-review:hover { background: var(--purple-mid); }
+
+        /* Review cards */
+        .review-card { background: var(--white); border-radius: 14px; border: 1.5px solid var(--gray-200); padding: 18px 20px; margin-bottom: 12px; }
+        .review-card-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
+        .reviewer-name { font-weight: 600; font-size: 0.88rem; color: var(--black); }
+        .review-date { font-size: 0.75rem; color: var(--gray-500); }
+        .star-display { color: #f59e0b; font-size: 0.85rem; letter-spacing: 1px; }
+        .review-body { font-size: 0.88rem; color: var(--black); line-height: 1.65; }
+        .no-reviews { text-align: center; padding: 40px 20px; background: var(--white); border-radius: 14px; border: 1.5px solid var(--gray-200); color: var(--gray-500); font-size: 0.88rem; }
+        .no-reviews i { font-size: 2rem; color: var(--gray-200); display: block; margin-bottom: 10px; }
+
+        /* ── FOOTER ── */
+        footer { background: var(--purple-deep); color: rgba(255,255,255,0.6); text-align: center; padding: 24px; font-size: 0.85rem; margin-top: 48px; }
+        footer strong { color: var(--purple-light); }
+    </style>
+</head>
+<body>
+
+<nav class="topbar">
+    <div class="container">
+        <a class="navbar-brand" href="/">Pwnshop<span class="dot"></span></a>
+        <ul class="nav-links">
+            <li><a class="nav-link" href="#">Store Locator</a></li>
+            <li><a class="nav-link" href="#">Sell on Pwnshop</a></li>
+        </ul>
+        <form class="search-wrap" action="/search" method="GET">
+            <input type="search" name="q" placeholder="Search products, brands, categories...">
+            <button type="submit"><i class="bi bi-search"></i></button>
+        </form>
+        <ul class="nav-right">
+            <li><a class="nav-link" href="#">Help</a></li>
+            <li>
+                <% if (user) { %>
+                    <a href="/profile" class="user-chip"><%= user.username %></a>
+                    <a href="/logout" class="btn-logout ms-2">Logout</a>
+                <% } else { %>
+                    <a href="/login" class="btn-login">Login / Signup</a>
+                <% } %>
+            </li>
+            <li>
+                <a class="btn-cart" href="/cart">
+                    <i class="bi bi-bag"></i> My Cart <span class="badge ms-1"><%= cartCount %></span>
+                </a>
+            </li>
+            <% if (user && user.role === 'user') { %>
+                <li><a href="/register-seller" class="btn-seller">Become a Seller</a></li>
+            <% } %>
+            <% if (user && user.role === 'seller') { %>
+                <li><a href="/add-product" class="btn-add-product">+ Add Product</a></li>
+            <% } %>
+        </ul>
+    </div>
+</nav>
+
+<div class="page-wrap">
+
+
+    <aside>
+        <div class="sidebar">
+            <h5>Categories</h5>
+            <a href="/category/all"         class="cat-btn"><span class="cat-icon"><i class="bi bi-grid-fill"></i></span> All Categories</a>
+            <a href="/category/computers"   class="cat-btn"><span class="cat-icon"><i class="bi bi-laptop"></i></span> Computers & Accessories</a>
+            <a href="/category/phones"      class="cat-btn"><span class="cat-icon"><i class="bi bi-phone"></i></span> Phones & Tablets</a>
+            <a href="/category/electronics" class="cat-btn"><span class="cat-icon"><i class="bi bi-lightning-charge"></i></span> Electronics</a>
+            <a href="/category/fashion"     class="cat-btn"><span class="cat-icon"><i class="bi bi-bag"></i></span> Fashion</a>
+            <a href="/category/home"        class="cat-btn"><span class="cat-icon"><i class="bi bi-house"></i></span> Home & Kitchen</a>
+            <a href="/category/kids"        class="cat-btn"><span class="cat-icon"><i class="bi bi-star"></i></span> Kids & Toys</a>
+            <a href="/category/beauty"      class="cat-btn"><span class="cat-icon"><i class="bi bi-heart"></i></span> Beauty & Health</a>
+        </div>
+    </aside>
+
+
+    <main>
+
+        <div class="breadcrumb-bar">
+            <a href="/">Home</a>
+            <i class="bi bi-chevron-right"></i>
+            <a href="/category/<%= product.category %>"><%= product.category %></a>
+            <i class="bi bi-chevron-right"></i>
+            <span><%= product.name %></span>
+        </div>
+
+        <div class="product-wrap">
+
+            <div class="img-panel">
+                <% if (product.image && product.image !== '') { %>
+                    <img src="<%= product.image %>" alt="<%= product.name %>">
+                <% } else { %>
+                    <div class="img-placeholder"><i class="bi bi-image"></i></div>
+                <% } %>
+            </div>
+
+
+            <div class="info-panel">
+                <span class="product-category-tag"><%= product.category %></span>
+                <h1 class="product-title"><%= product.name %></h1>
+                <div class="product-price">₦<%= product.price.toLocaleString() %></div>
+
+                <% if (product.available && product.stock > 0) { %>
+                    <span class="stock-badge in-stock"><i class="bi bi-check-circle-fill"></i> In Stock (<%= product.stock %> available)</span>
+                <% } else { %>
+                    <span class="stock-badge out-stock"><i class="bi bi-x-circle-fill"></i> Out of Stock</span>
+                <% } %>
+
+                <p class="product-desc"><%= product.description %></p>
+                <div class="divider-line"></div>
+
+                <form method="POST" action="/cart/add">
+                    <input type="hidden" name="product_id" value="<%= product.id %>">
+                    <div class="cart-row">
+                        <div class="qty-wrap">
+                            <label for="qty">Qty</label>
+                            <input type="number" id="qty" name="quantity"
+                                   min="1"
+                                   max="<%= product.stock %>"
+                                   value="1"
+                                   <%= (!product.available || product.stock === 0) ? 'disabled' : '' %>>
+                        </div>
+                        <button class="btn-addcart" type="submit"
+                                <%= (!product.available || product.stock === 0) ? 'disabled' : '' %>>
+                            <i class="bi bi-bag-plus"></i> Add to Cart
+                        </button>
+                    </div>
+                </form>
+
+                <div class="seller-row">
+                    <i class="bi bi-shop"></i>
+                    <span>Sold by:</span>
+                    <strong><%= product.seller_username || 'Unknown Seller' %></strong>
+                </div>
+
+                <% if (user) { %>
+                <div style="margin-top:12px;">
+                    <% if (wishlisted) { %>
+                        <form method="POST" action="/wishlist/remove">
+                            <input type="hidden" name="product_id" value="<%= product.id %>">
+                            <button type="submit" class="btn-wishlist saved">
+                                <i class="bi bi-heart-fill"></i> Saved to Wishlist
+                            </button>
+                        </form>
+                    <% } else { %>
+                        <form method="POST" action="/wishlist/add">
+                            <input type="hidden" name="product_id" value="<%= product.id %>">
+                            <button type="submit" class="btn-wishlist">
+                                <i class="bi bi-heart"></i> Save to Wishlist
+                            </button>
+                        </form>
+                    <% } %>
+                </div>
+                <% } %>
+
+                <a href="/" class="btn-back"><i class="bi bi-arrow-left"></i> Back to Products</a>
+            </div>
+        </div>
+
+        <div class="reviews-wrap">
+            <h2 class="reviews-heading">Customer Reviews</h2>
+
+
+            <% if (user) { %>
+            <div class="review-form-card">
+                <h4><i class="bi bi-pencil-square" style="color:var(--purple-mid)"></i> Write a Review</h4>
+                <form method="POST" action="/review">
+                    <input type="hidden" name="product_id" value="<%= product.id %>">
+
+                    <div class="star-picker">
+                        <input type="radio" name="rating" id="s5" value="5">
+                        <label for="s5">&#9733;</label>
+                        <input type="radio" name="rating" id="s4" value="4">
+                        <label for="s4">&#9733;</label>
+                        <input type="radio" name="rating" id="s3" value="3" checked>
+                        <label for="s3">&#9733;</label>
+                        <input type="radio" name="rating" id="s2" value="2">
+                        <label for="s2">&#9733;</label>
+                        <input type="radio" name="rating" id="s1" value="1">
+                        <label for="s1">&#9733;</label>
+                    </div>
+
+                    <textarea class="review-textarea" name="comment" placeholder="Share your experience with this product..." required></textarea>
+                    <button type="submit" class="btn-submit-review">
+                        <i class="bi bi-send"></i> Post Review
+                    </button>
+                </form>
+            </div>
+            <% } %>
+
+
+            <% if (reviews.length === 0) { %>
+                <div class="no-reviews">
+                    <i class="bi bi-chat-square-text"></i>
+                    No reviews yet. Be the first to review this product.
+                </div>
+            <% } else { %>
+                <% reviews.forEach(function(review) { %>
+                    <div class="review-card">
+                        <div class="review-card-top">
+                            <div>
+                                <div class="reviewer-name"><%= review.username %></div>
+                                <div class="star-display">
+                                    <% for(var s=1; s<=5; s++) { %>
+                                        <% if(s <= review.rating) { %><i class="bi bi-star-fill"></i><% } else { %><i class="bi bi-star" style="color:var(--gray-200)"></i><% } %>
+                                    <% } %>
+                                </div>
+                            </div>
+                            <div class="review-date"><%= new Date(review.created_at).toLocaleDateString('en-US', {year:'numeric',month:'short',day:'numeric'}) %></div>
+                        </div>
+                        <%- review.comment %>
+                    </div>
+                <% }); %>
+            <% } %>
+        </div>
+    </main>
+</div>
+
+<footer>
+    &copy; <%= new Date().getFullYear() %> <strong>Pwnshop</strong>. All rights reserved.
+</footer>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Register - Pwnshop</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --purple-deep:  #3B0764;
+            --purple-mid:   #6D28D9;
+            --purple-light: #A855F7;
+            --purple-pale:  #F3E8FF;
+            --black:        #0D0D0D;
+            --white:        #FFFFFF;
+            --gray-100:     #F8F5FF;
+            --gray-200:     #EDE9F6;
+            --gray-500:     #6B7280;
+            --accent:       #C026D3;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: 'DM Sans', sans-serif; background: var(--gray-100); min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 24px; }
+        .auth-card { background: var(--white); border-radius: 20px; box-shadow: 0 8px 40px rgba(59,7,100,0.13); width: 100%; max-width: 920px; display: grid; grid-template-columns: 1fr 1fr; overflow: hidden; min-height: 600px; }
+        .auth-panel-left { background: linear-gradient(145deg, var(--purple-deep), var(--purple-mid)); padding: 48px 40px; display: flex; flex-direction: column; justify-content: space-between; position: relative; overflow: hidden; }
+        .auth-panel-left::before { content: ''; position: absolute; width: 260px; height: 260px; background: rgba(168,85,247,0.15); border-radius: 50%; top: -60px; right: -80px; }
+        .auth-panel-left::after { content: ''; position: absolute; width: 180px; height: 180px; background: rgba(192,38,211,0.12); border-radius: 50%; bottom: -40px; left: -40px; }
+        .brand-logo { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 1.7rem; color: var(--white); text-decoration: none; display: flex; align-items: center; gap: 8px; position: relative; z-index: 1; }
+        .brand-logo .dot { width: 8px; height: 8px; background: var(--purple-light); border-radius: 50%; }
+        .panel-body { position: relative; z-index: 1; }
+        .panel-body h2 { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 1.9rem; color: var(--white); line-height: 1.25; margin-bottom: 14px; }
+        .panel-body p { color: rgba(255,255,255,0.7); font-size: 0.9rem; line-height: 1.6; }
+        .panel-perks { position: relative; z-index: 1; display: flex; flex-direction: column; gap: 10px; }
+        .perk-item { display: flex; align-items: center; gap: 10px; color: rgba(255,255,255,0.85); font-size: 0.85rem; }
+        .perk-item i { font-size: 1rem; color: var(--purple-light); flex-shrink: 0; }
+        .auth-panel-right { padding: 44px 44px; display: flex; flex-direction: column; justify-content: center; }
+        .auth-panel-right h3 { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 1.5rem; color: var(--black); margin-bottom: 6px; }
+        .auth-panel-right .subtitle { color: var(--gray-500); font-size: 0.875rem; margin-bottom: 24px; }
+        .form-label { font-size: 0.78rem; font-weight: 600; color: var(--black); margin-bottom: 5px; letter-spacing: 0.3px; text-transform: uppercase; display: block; }
+        .form-field { border: 1.5px solid var(--gray-200); border-radius: 10px; padding: 11px 14px; font-size: 0.9rem; font-family: 'DM Sans', sans-serif; width: 100%; outline: none; transition: border-color 0.2s, box-shadow 0.2s; color: var(--black); background: var(--white); }
+        .form-field:focus { border-color: var(--purple-mid); box-shadow: 0 0 0 3px rgba(109,40,217,0.08); }
+        .form-field::placeholder { color: #b0afc0; }
+        .pw-wrap { position: relative; }
+        .pw-wrap .form-field { padding-right: 42px; }
+        .pw-toggle { position: absolute; right: 13px; top: 50%; transform: translateY(-50%); background: none; border: none; color: var(--gray-500); cursor: pointer; font-size: 1rem; padding: 0; }
+        .pw-toggle:hover { color: var(--purple-mid); }
+        .role-toggle { display: flex; border: 1.5px solid var(--gray-200); border-radius: 10px; overflow: hidden; }
+        .role-toggle input[type="radio"] { display: none; }
+        .role-toggle label { flex: 1; text-align: center; padding: 10px 12px; font-size: 0.85rem; font-weight: 600; cursor: pointer; color: var(--gray-500); transition: all 0.2s; display: flex; align-items: center; justify-content: center; gap: 6px; border-right: 1.5px solid var(--gray-200); }
+        .role-toggle label:last-of-type { border-right: none; }
+        .role-toggle input[type="radio"]:checked + label { background: var(--purple-deep); color: var(--white); }
+        .btn-auth-primary { background: var(--purple-deep); color: var(--white); border: none; border-radius: 10px; padding: 12px; font-size: 0.9rem; font-weight: 700; font-family: 'DM Sans', sans-serif; width: 100%; cursor: pointer; transition: background 0.2s, transform 0.15s; letter-spacing: 0.3px; margin-top: 4px; }
+        .btn-auth-primary:hover { background: var(--purple-mid); transform: translateY(-1px); }
+        .alert-auth { background: #fef2f2; border: 1px solid #fecaca; color: #dc2626; border-radius: 8px; padding: 10px 14px; font-size: 0.83rem; display: flex; align-items: center; gap: 8px; margin-bottom: 16px; }
+        .auth-footer { margin-top: 18px; text-align: center; font-size: 0.82rem; color: var(--gray-500); }
+        .auth-footer a { color: var(--purple-mid); font-weight: 600; text-decoration: none; }
+        .auth-footer a:hover { color: var(--accent); }
+        .terms-note { font-size: 0.75rem; color: var(--gray-500); text-align: center; margin-top: 12px; line-height: 1.5; }
+        .terms-note a { color: var(--purple-mid); font-weight: 600; text-decoration: none; }
+        .row-half { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+        @media (max-width: 640px) { .auth-card { grid-template-columns: 1fr; } .auth-panel-left { display: none; } .auth-panel-right { padding: 36px 28px; } .row-half { grid-template-columns: 1fr; } }
+    </style>
+</head>
+<body>
+<div class="auth-card">
+    <div class="auth-panel-left">
+        <a href="/" class="brand-logo">Pwnshop<span class="dot"></span></a>
+        <div class="panel-body">
+            <h2>Join thousands of shoppers.</h2>
+            <p>Create a free account and start discovering the best deals across every category.</p>
+        </div>
+        <div class="panel-perks">
+            <div class="perk-item"><i class="bi bi-bag-check-fill"></i><span>Shop from verified sellers</span></div>
+            <div class="perk-item"><i class="bi bi-bell-fill"></i><span>Get alerts on price drops</span></div>
+            <div class="perk-item"><i class="bi bi-truck"></i><span>Track deliveries end-to-end</span></div>
+            <div class="perk-item"><i class="bi bi-patch-check-fill"></i><span>Buyer protection on every order</span></div>
+        </div>
+    </div>
+
+    <div class="auth-panel-right">
+        <h3>Create account</h3>
+        <p class="subtitle">Fill in the details below to get started.</p>
+
+        <% if (error) { %>
+            <div class="alert-auth"><i class="bi bi-exclamation-circle-fill"></i> <%= error %></div>
+        <% } %>
+
+        <form method="POST" action="/register">
+
+            <input type="hidden" name="next" value="<%= next || '' %>">
+
+            <div class="row-half mb-3">
+                <div>
+                    <label class="form-label">Username</label>
+                    <input type="text" class="form-field" name="username" placeholder="e.g. johndoe" required>
+                </div>
+                <div>
+                    <label class="form-label">Phone Number</label>
+                    <input type="text" class="form-field" name="phone" placeholder="+234 800 000 0000" required>
+                </div>
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">Email Address</label>
+                <input type="email" class="form-field" name="email" placeholder="you@example.com" required>
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">Password</label>
+                <div class="pw-wrap">
+                    <input type="password" class="form-field" name="password" id="pwField" placeholder="Minimum 8 characters" required>
+                    <button type="button" class="pw-toggle" id="pwToggle"><i class="bi bi-eye" id="pwIcon"></i></button>
+                </div>
+            </div>
+
+            <div class="mb-4">
+                <label class="form-label">I want to</label>
+                <div class="role-toggle">
+                    <input type="radio" name="role" id="role-user" value="user" checked>
+                    <label for="role-user"><i class="bi bi-person"></i> Shop</label>
+                    <input type="radio" name="role" id="role-seller" value="seller">
+                    <label for="role-seller"><i class="bi bi-shop"></i> Sell</label>
+                </div>
+            </div>
+
+            <button type="submit" class="btn-auth-primary">Create Account</button>
+        </form>
+
+        <div class="auth-footer">Already have an account? <a href="/login">Sign in</a></div>
+        <p class="terms-note">By registering you agree to Pwnshop's <a href="#">Terms &amp; Conditions</a> and <a href="#">Privacy Policy</a>.</p>
+    </div>
+</div>
+
+<script>
+    document.getElementById('pwToggle').addEventListener('click', function () {
+        const field = document.getElementById('pwField');
+        const icon  = document.getElementById('pwIcon');
+        if (field.type === 'password') { field.type = 'text'; icon.className = 'bi bi-eye-slash'; }
+        else { field.type = 'password'; icon.className = 'bi bi-eye'; }
+    });
+</script>
+</body>
+</html>

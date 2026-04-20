@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Pwnshop - Home</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --purple-deep:   #3B0764;
+            --purple-mid:    #6D28D9;
+            --purple-light:  #A855F7;
+            --purple-pale:   #F3E8FF;
+            --black:         #0D0D0D;
+            --white:         #FFFFFF;
+            --gray-100:      #F8F5FF;
+            --gray-200:      #EDE9F6;
+            --gray-500:      #6B7280;
+            --accent:        #C026D3;
+        }
+        * { box-sizing: border-box; }
+        body { font-family: 'DM Sans', sans-serif; background: var(--gray-100); color: var(--black); margin: 0; }
+        .topbar { background: var(--purple-deep); padding: 0 0; position: sticky; top: 0; z-index: 1000; box-shadow: 0 2px 16px rgba(59,7,100,0.4); }
+        .topbar .container { display: flex; align-items: center; gap: 16px; padding: 12px 24px; }
+        .navbar-brand { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 1.6rem; color: var(--white) !important; letter-spacing: -0.5px; text-decoration: none; white-space: nowrap; display: flex; align-items: center; gap: 6px; }
+        .navbar-brand span.dot { display: inline-block; width: 8px; height: 8px; background: var(--purple-light); border-radius: 50%; margin-bottom: 2px; }
+        .nav-links { display: flex; gap: 4px; list-style: none; margin: 0; padding: 0; }
+        .nav-links .nav-link { color: rgba(255,255,255,0.75) !important; font-size: 0.88rem; font-weight: 500; padding: 6px 12px; border-radius: 6px; transition: all 0.2s; }
+        .nav-links .nav-link:hover { color: var(--white) !important; background: rgba(255,255,255,0.1); }
+        .search-wrap { flex: 1; max-width: 720px; display: flex; gap: 0; }
+        .search-wrap input { border: none; border-radius: 8px 0 0 8px; padding: 10px 16px; font-size: 0.9rem; outline: none; width: 100%; background: rgba(255,255,255,0.12); color: var(--white); }
+        .search-wrap input::placeholder { color: rgba(255,255,255,0.5); }
+        .search-wrap input:focus { background: rgba(255,255,255,0.2); }
+        .search-wrap button { background: var(--purple-light); border: none; border-radius: 0 8px 8px 0; padding: 10px 16px; color: var(--white); cursor: pointer; font-size: 1rem; transition: background 0.2s; }
+        .search-wrap button:hover { background: var(--accent); }
+        .nav-right { display: flex; align-items: center; gap: 8px; list-style: none; margin: 0; padding: 0; }
+        .nav-right .nav-link { color: rgba(255,255,255,0.75) !important; font-size: 0.88rem; padding: 6px 10px; }
+        .btn-cart { background: rgba(255,255,255,0.12); border: 1px solid rgba(255,255,255,0.2); color: var(--white) !important; border-radius: 8px; padding: 7px 14px; font-size: 0.88rem; font-weight: 600; text-decoration: none; display: flex; align-items: center; gap: 6px; transition: all 0.2s; }
+        .btn-cart:hover { background: rgba(255,255,255,0.22); color: var(--white); }
+        .btn-cart .badge { background: var(--purple-light) !important; color: var(--white) !important; border-radius: 50px; font-size: 0.75rem; }
+        .btn-seller { background: var(--accent); color: var(--white) !important; border: none; border-radius: 8px; padding: 7px 14px; font-size: 0.85rem; font-weight: 600; text-decoration: none; transition: all 0.2s; }
+        .btn-seller:hover { background: #a21caf; }
+        .btn-add-product { background: #16a34a; color: var(--white) !important; border: none; border-radius: 8px; padding: 7px 14px; font-size: 0.85rem; font-weight: 600; text-decoration: none; transition: all 0.2s; }
+        .btn-add-product:hover { background: #15803d; }
+        .btn-dashboard { background: rgba(255,255,255,0.12); border: 1px solid rgba(255,255,255,0.25); color: var(--white) !important; border-radius: 8px; padding: 7px 14px; font-size: 0.85rem; font-weight: 600; text-decoration: none; transition: all 0.2s; }
+        .btn-dashboard:hover { background: rgba(255,255,255,0.22); }
+        .user-chip { text-decoration: none; background: rgba(168,85,247,0.2); border: 1px solid rgba(168,85,247,0.4); color: var(--white) !important; border-radius: 20px; padding: 5px 14px; font-size: 0.85rem; font-weight: 600; }
+        .btn-logout { background: transparent; border: 1px solid rgba(255,255,255,0.3); color: rgba(255,255,255,0.8) !important; border-radius: 8px; padding: 5px 12px; font-size: 0.83rem; text-decoration: none; transition: all 0.2s; }
+        .btn-logout:hover { border-color: #f87171; color: #f87171 !important; }
+        .btn-login { background: var(--white); color: var(--purple-deep) !important; border: none; border-radius: 8px; padding: 7px 16px; font-size: 0.88rem; font-weight: 700; text-decoration: none; transition: all 0.2s; }
+        .btn-login:hover { background: var(--purple-pale); }
+        .page-wrap { display: grid; grid-template-columns: 220px 1fr; gap: 24px; max-width: 1400px; margin: 28px auto; padding: 0 20px; }
+        .sidebar { background: var(--white); border-radius: 14px; box-shadow: 0 2px 12px rgba(109,40,217,0.07); padding: 20px 16px; height: fit-content; position: sticky; top: 80px; }
+        .sidebar h5 { font-family: 'Syne', sans-serif; font-weight: 700; font-size: 0.82rem; text-transform: uppercase; letter-spacing: 1.2px; color: var(--purple-mid); margin-bottom: 14px; padding-bottom: 10px; border-bottom: 2px solid var(--purple-pale); }
+        .cat-btn { display: flex; align-items: center; gap: 10px; width: 100%; padding: 9px 12px; margin-bottom: 4px; background: transparent; border: none; border-radius: 8px; color: var(--black); font-size: 0.9rem; font-weight: 500; text-decoration: none; cursor: pointer; transition: all 0.18s; text-align: left; }
+        .cat-btn:hover { background: var(--purple-pale); color: var(--purple-deep); padding-left: 16px; text-decoration: none; }
+        .cat-btn.active { background: var(--purple-deep); color: var(--white); font-weight: 600; }
+        .cat-btn .cat-icon { font-size: 1.05rem; width: 20px; text-align: center; flex-shrink: 0; color: var(--purple-mid); }
+        .cat-btn.active .cat-icon { color: var(--white); }
+        .sidebar-ad { margin-top: 20px; border-radius: 12px; overflow: hidden; background: linear-gradient(135deg, var(--purple-deep), var(--purple-mid)); padding: 20px; color: var(--white); text-align: center; }
+        .sidebar-ad p { font-size: 0.8rem; margin: 6px 0 12px; opacity: 0.8; }
+        .sidebar-ad h6 { font-family: 'Syne', sans-serif; font-weight: 700; font-size: 1rem; margin: 0; }
+        .sidebar-ad .ad-btn { display: inline-block; background: var(--white); color: var(--purple-deep); font-weight: 700; font-size: 0.8rem; border-radius: 6px; padding: 6px 14px; text-decoration: none; transition: all 0.2s; }
+        .sidebar-ad .ad-btn:hover { background: var(--purple-pale); }
+        .carousel { border-radius: 16px; overflow: hidden; box-shadow: 0 8px 32px rgba(59,7,100,0.18); margin-bottom: 32px; }
+        .carousel-item img { height: 320px; object-fit: cover; filter: brightness(0.75); }
+        .carousel-caption { bottom: 36px; text-align: left; left: 48px; }
+        .carousel-caption h2 { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 2rem; text-shadow: 0 2px 12px rgba(0,0,0,0.4); }
+        .carousel-caption p { font-size: 1rem; opacity: 0.9; margin-bottom: 14px; }
+        .carousel-caption .btn { border-radius: 8px; font-weight: 700; padding: 10px 24px; font-size: 0.9rem; }
+        .section-heading { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 1.5rem; color: var(--purple-deep); margin-bottom: 20px; display: flex; align-items: center; gap: 10px; }
+        .section-heading::after { content: ''; flex: 1; height: 2px; background: linear-gradient(90deg, var(--purple-pale), transparent); border-radius: 2px; }
+        .seller-card { background: var(--white); border-radius: 14px; border: 1.5px solid var(--gray-200); padding: 20px 16px; text-align: center; transition: all 0.22s; cursor: pointer; }
+        .seller-card:hover { border-color: var(--purple-light); box-shadow: 0 6px 24px rgba(109,40,217,0.14); transform: translateY(-3px); }
+        .seller-img { width: 72px; height: 72px; object-fit: cover; border-radius: 10px; margin: 0 auto 12px; display: block; border: 2px solid var(--purple-pale); }
+        .seller-img-placeholder { width: 72px; height: 72px; background: var(--gray-200); border-radius: 10px; margin: 0 auto 12px; display: flex; align-items: center; justify-content: center; font-size: 1.8rem; }
+        .seller-name { font-family: 'Syne', sans-serif; font-weight: 700; font-size: 1rem; color: var(--purple-deep); margin-bottom: 2px; }
+        .seller-badge { display: inline-block; background: var(--purple-pale); color: var(--purple-mid); font-size: 0.75rem; font-weight: 600; border-radius: 20px; padding: 2px 10px; margin-top: 4px; }
+        .seller-stock { font-size: 0.82rem; color: var(--gray-500); margin: 4px 0 0; }
+        .product-card { background: var(--white); border-radius: 14px; border: 1.5px solid var(--gray-200); overflow: hidden; transition: all 0.22s; display: flex; flex-direction: column; }
+        .product-card:hover { border-color: var(--purple-light); box-shadow: 0 8px 28px rgba(109,40,217,0.13); transform: translateY(-4px); }
+        .product-card img { height: 190px; width: 100%; object-fit: cover; }
+        .product-card-body { padding: 14px 16px 16px; display: flex; flex-direction: column; flex: 1; }
+        .product-name { font-weight: 600; font-size: 0.95rem; color: var(--black); margin-bottom: 4px; line-height: 1.3; }
+        .product-price { font-family: 'Syne', sans-serif; font-weight: 700; font-size: 1.1rem; color: var(--purple-mid); margin-bottom: 4px; }
+        .product-category { font-size: 0.78rem; color: var(--gray-500); background: var(--gray-100); display: inline-block; padding: 2px 8px; border-radius: 4px; margin-bottom: 14px; }
+        .product-actions { display: flex; gap: 8px; margin-top: auto; }
+        .btn-view { flex: 1; background: transparent; border: 1.5px solid var(--purple-mid); color: var(--purple-mid); border-radius: 8px; padding: 7px 0; font-size: 0.85rem; font-weight: 600; text-align: center; text-decoration: none; transition: all 0.18s; }
+        .btn-view:hover { background: var(--purple-pale); color: var(--purple-deep); text-decoration: none; }
+        .btn-addcart { flex: 1; background: var(--purple-deep); border: none; color: var(--white); border-radius: 8px; padding: 7px 0; font-size: 0.85rem; font-weight: 600; text-align: center; text-decoration: none; transition: all 0.18s; cursor: pointer; }
+        .btn-addcart:hover { background: var(--purple-mid); color: var(--white); text-decoration: none; }
+        footer { background: var(--purple-deep); color: rgba(255,255,255,0.6); text-align: center; padding: 24px; font-size: 0.85rem; margin-top: 48px; }
+        footer strong { color: var(--purple-light); }
+    </style>
+</head>
+<body>
+    <nav class="topbar">
+        <div class="container">
+            <a class="navbar-brand" href="/">Pwnshop<span class="dot"></span></a>
+            <ul class="nav-links">
+                <li><a class="nav-link" href="#">Store Locator</a></li>
+            </ul>
+            <form class="search-wrap" action="/search" method="GET">
+                <input type="search" name="q" placeholder="Search products, brands, categories...">
+                <button type="submit"><i class="bi bi-search"></i></button>
+            </form>
+            <ul class="nav-right">
+                <li><a class="nav-link" href="#">Help</a></li>
+                <li>
+                    <% if (user) { %>
+                        <a href="/profile" class="user-chip"><%= user.username %></a>
+                        <a href="/logout" class="btn-logout ms-2">Logout</a>
+                    <% } else { %>
+                        <a href="/login" class="btn-login">Login / Signup</a>
+                    <% } %>
+                </li>
+                <li>
+                    <a class="btn-cart" href="/cart">
+                        🛒 My Cart <span class="badge ms-1"><%= cartCount %></span>
+                    </a>
+                </li>
+                <% if (user && user.role === 'user') { %>
+                    <li><a href="/register-seller" class="btn-seller">Become a Seller</a></li>
+                <% } %>
+                <% if (user && user.isSeller) { %>
+                    <li><a href="/seller/dashboard" class="btn-dashboard"><i class="bi bi-graph-up"></i> Dashboard</a></li>
+                    <li><a href="/add-product" class="btn-add-product">+ Add Product</a></li>
+                <% } %>
+            </ul>
+        </div>
+    </nav>
+
+    <div class="page-wrap">
+        <aside>
+            <div class="sidebar">
+                <h5>Categories</h5>
+                <a href="/category/all"         class="cat-btn active"><span class="cat-icon"><i class="bi bi-grid-fill"></i></span> All Categories</a>
+                <a href="/category/computers"   class="cat-btn"><span class="cat-icon"><i class="bi bi-laptop"></i></span> Computers &amp; Accessories</a>
+                <a href="/category/phones"      class="cat-btn"><span class="cat-icon"><i class="bi bi-phone"></i></span> Phones &amp; Tablets</a>
+                <a href="/category/electronics" class="cat-btn"><span class="cat-icon"><i class="bi bi-lightning-charge"></i></span> Electronics</a>
+                <a href="/category/fashion"     class="cat-btn"><span class="cat-icon"><i class="bi bi-bag"></i></span> Fashion</a>
+                <a href="/category/home"        class="cat-btn"><span class="cat-icon"><i class="bi bi-house"></i></span> Home &amp; Kitchen</a>
+                <a href="/category/kids"        class="cat-btn"><span class="cat-icon"><i class="bi bi-star"></i></span> Kids &amp; Toys</a>
+                <a href="/category/beauty"      class="cat-btn"><span class="cat-icon"><i class="bi bi-heart"></i></span> Beauty &amp; Health</a>
+            </div>
+            <div class="sidebar-ad mt-3">
+                <h6>Flash Sale 🔥</h6>
+                <p>Up to 60% off selected items today only</p>
+                <a href="#" class="ad-btn">Shop Now</a>
+            </div>
+        </aside>
+
+        <main>
+            <div id="promoCarousel" class="carousel slide mb-4" data-bs-ride="carousel">
+                <div class="carousel-inner">
+                    <div class="carousel-item active">
+                        <img src="https://images.unsplash.com/photo-1498049794561-7780e7231661?w=1200&h=400&fit=crop" alt="Electronics Sale">
+                        <div class="carousel-caption">
+                            <h2>Big Summer Sale!</h2>
+                            <p>Up to 50% off on Electronics</p>
+                            <a href="/category/electronics" class="btn btn-light btn-lg">Shop Now →</a>
+                        </div>
+                    </div>
+                    <div class="carousel-item">
+                        <img src="https://images.unsplash.com/photo-1445205170230-053b83016050?w=1200&h=400&fit=crop" alt="Fashion">
+                        <div class="carousel-caption">
+                            <h2>Fashion Fiesta</h2>
+                            <p>Trendy styles for everyone</p>
+                            <a href="/category/fashion" class="btn btn-light btn-lg">See Deals →</a>
+                        </div>
+                    </div>
+                    <div class="carousel-item">
+                        <img src="https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?w=1200&h=400&fit=crop" alt="Home & Kitchen">
+                        <div class="carousel-caption">
+                            <h2>Home &amp; Kitchen Essentials</h2>
+                            <p>Upgrade your space with great offers</p>
+                            <a href="/category/home" class="btn btn-light btn-lg">Shop Home →</a>
+                        </div>
+                    </div>
+                </div>
+                <button class="carousel-control-prev" type="button" data-bs-target="#promoCarousel" data-bs-slide="prev"><span class="carousel-control-prev-icon"></span></button>
+                <button class="carousel-control-next" type="button" data-bs-target="#promoCarousel" data-bs-slide="next"><span class="carousel-control-next-icon"></span></button>
+            </div>
+
+            <h2 class="section-heading">Featured Sellers</h2>
+            <div class="row g-3 mb-5">
+                <% if (users && users.length > 0) { %>
+                    <% users.forEach(function(seller) {
+                        const sellerProducts = products.filter(p => p.seller_id === seller.id);
+                        const sellerProduct = sellerProducts.length > 0 ? sellerProducts[Math.floor(Math.random() * sellerProducts.length)] : null;
+                    %>
+                        <div class="col-md-3 col-sm-6">
+                            <div class="seller-card">
+                                <% if (sellerProduct && sellerProduct.image) { %>
+                                    <img src="<%= sellerProduct.image %>" alt="<%= sellerProduct.name %>" class="seller-img">
+                                    <div class="product-name"><%= sellerProduct.name %></div>
+                                    <div class="seller-stock"><%= sellerProduct.available %> pcs available</div>
+                                <% } else { %>
+                                    <div class="seller-img-placeholder">🛍️</div>
+                                    <div class="product-name">No product yet</div>
+                                    <div class="seller-stock">0 pcs available</div>
+                                <% } %>
+                                <div class="seller-name mt-2"><%= seller.username %></div>
+                                <span class="seller-badge">⭐ Featured Seller</span>
+                                <% if (seller.seller_tagline) { %>
+                                    <div style="font-size:0.78rem;color:var(--gray-500);margin-top:8px;line-height:1.5;text-align:left;padding-top:8px;border-top:1px solid var(--gray-200);"><%= seller.seller_tagline %></div>
+                                <% } %>
+                            </div>
+                        </div>
+                    <% }); %>
+                <% } %>
+            </div>
+
+            <h2 class="section-heading">Popular Products</h2>
+            <div class="row g-4">
+                <% products.forEach(function(product) { %>
+                    <div class="col-xl-3 col-lg-4 col-md-6">
+                        <div class="product-card">
+                            <img src="<%= product.image && product.image !== '' ? product.image : '/images/pc.jpg' %>" alt="<%= product.name %>">
+                            <div class="product-card-body">
+                                <div class="product-name"><%= product.name %></div>
+                                <div class="product-price">₦<%= product.price.toLocaleString() %></div>
+                                <span class="product-category"><%= product.category %></span>
+                                <div class="product-actions">
+                                    <a href="/product/<%= product.id %>" class="btn-view">View</a>
+                                    <form method="POST" action="/cart/add" style="flex:1;display:flex;">
+                                        <input type="hidden" name="product_id" value="<%= product.id %>">
+                                        <input type="hidden" name="quantity" value="1">
+                                        <button type="submit" class="btn-addcart" style="width:100%">Add to Cart</button>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                <% }); %>
+            </div>
+        </main>
+    </div>
+
+    <footer>&copy; <%= new Date().getFullYear() %> <strong>Pwnshop</strong>. All rights reserved.</footer>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <%- include('chat-widget') %>
+</body>
+</html>

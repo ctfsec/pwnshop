@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Checkout - Pwnshop</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --purple-deep:  #3B0764;
+            --purple-mid:   #6D28D9;
+            --purple-light: #A855F7;
+            --purple-pale:  #F3E8FF;
+            --black:        #0D0D0D;
+            --white:        #FFFFFF;
+            --gray-100:     #F8F5FF;
+            --gray-200:     #EDE9F6;
+            --gray-500:     #6B7280;
+            --accent:       #C026D3;
+        }
+        * { box-sizing: border-box; }
+        body { font-family: 'DM Sans', sans-serif; background: var(--gray-100); color: var(--black); margin: 0; }
+
+        /* ── NAVBAR ── */
+        .topbar { background: var(--purple-deep); padding: 0; position: sticky; top: 0; z-index: 1000; box-shadow: 0 2px 16px rgba(59,7,100,0.4); }
+        .topbar .container { display: flex; align-items: center; gap: 16px; padding: 12px 24px; }
+        .navbar-brand { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 1.6rem; color: var(--white) !important; text-decoration: none; display: flex; align-items: center; gap: 6px; }
+        .navbar-brand .dot { width: 8px; height: 8px; background: var(--purple-light); border-radius: 50%; }
+        .nav-right { display: flex; align-items: center; gap: 8px; list-style: none; margin: 0 0 0 auto; padding: 0; }
+        .user-chip { text-decoration: none; background: rgba(168,85,247,0.2); border: 1px solid rgba(168,85,247,0.4); color: var(--white) !important; border-radius: 20px; padding: 5px 14px; font-size: 0.85rem; font-weight: 600; }
+        .btn-logout { background: transparent; border: 1px solid rgba(255,255,255,0.3); color: rgba(255,255,255,0.8) !important; border-radius: 8px; padding: 5px 12px; font-size: 0.83rem; text-decoration: none; }
+        .nav-link-plain { color: rgba(255,255,255,0.75) !important; font-size: 0.88rem; padding: 6px 12px; border-radius: 6px; text-decoration: none; }
+        .nav-link-plain:hover { background: rgba(255,255,255,0.1); color: var(--white) !important; }
+
+        /* ── STEPS ── */
+        .checkout-steps { display: flex; align-items: center; gap: 0; max-width: 400px; margin: 0 auto 32px; padding: 0; }
+        .step { display: flex; flex-direction: column; align-items: center; flex: 1; }
+        .step-circle { width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.8rem; font-weight: 700; margin-bottom: 4px; }
+        .step.done .step-circle { background: var(--purple-mid); color: var(--white); }
+        .step.active .step-circle { background: var(--purple-deep); color: var(--white); }
+        .step.pending .step-circle { background: var(--gray-200); color: var(--gray-500); }
+        .step-label { font-size: 0.72rem; color: var(--gray-500); font-weight: 500; }
+        .step.active .step-label { color: var(--purple-deep); font-weight: 700; }
+        .step-line { flex: 1; height: 2px; background: var(--gray-200); margin: 0 4px; margin-top: -18px; align-self: flex-start; }
+        .step-line.done { background: var(--purple-mid); }
+
+        /* ── PAGE ── */
+        .page-wrap { max-width: 1100px; margin: 36px auto; padding: 0 20px 60px; }
+        .page-title { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 1.6rem; color: var(--black); margin-bottom: 8px; }
+        .page-subtitle { color: var(--gray-500); font-size: 0.88rem; margin-bottom: 32px; }
+
+        /* ── LAYOUT ── */
+        .checkout-layout { display: grid; grid-template-columns: 1fr 380px; gap: 24px; align-items: start; }
+
+        /* ── FORM CARD ── */
+        .form-card { background: var(--white); border-radius: 16px; border: 1.5px solid var(--gray-200); padding: 28px; }
+        .form-card h3 { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 1rem; color: var(--black); margin-bottom: 20px; display: flex; align-items: center; gap: 8px; }
+        .f-label { font-size: 0.78rem; font-weight: 600; color: var(--black); margin-bottom: 6px; letter-spacing: 0.3px; text-transform: uppercase; display: block; }
+        .f-field { border: 1.5px solid var(--gray-200); border-radius: 10px; padding: 11px 14px; font-size: 0.9rem; font-family: 'DM Sans', sans-serif; width: 100%; outline: none; transition: border-color 0.2s, box-shadow 0.2s; color: var(--black); background: var(--white); }
+        .f-field:focus { border-color: var(--purple-mid); box-shadow: 0 0 0 3px rgba(109,40,217,0.08); }
+        .f-field::placeholder { color: #b0afc0; }
+        textarea.f-field { resize: vertical; min-height: 100px; }
+        .divider-line { height: 1px; background: var(--gray-200); margin: 24px 0; }
+
+        /* ── COUPON ── */
+        .coupon-wrap { border: 1.5px solid var(--gray-200); border-radius: 12px; padding: 16px 18px; margin-bottom: 20px; background: var(--gray-100); }
+        .coupon-wrap h4 { font-family: 'Syne', sans-serif; font-weight: 700; font-size: 0.82rem; color: var(--black); margin-bottom: 12px; display: flex; align-items: center; gap: 6px; }
+        .coupon-row { display: flex; gap: 8px; }
+        .coupon-input { flex: 1; border: 1.5px solid var(--gray-200); border-radius: 9px; padding: 10px 14px; font-size: 0.88rem; font-family: 'DM Sans', sans-serif; outline: none; background: var(--white); color: var(--black); text-transform: uppercase; letter-spacing: 1px; transition: border-color 0.2s; }
+        .coupon-input:focus { border-color: var(--purple-mid); }
+        .coupon-input::placeholder { text-transform: none; letter-spacing: 0; color: #b0afc0; }
+        .btn-apply { background: var(--purple-deep); color: var(--white); border: none; border-radius: 9px; padding: 10px 20px; font-size: 0.85rem; font-weight: 700; font-family: 'DM Sans', sans-serif; cursor: pointer; white-space: nowrap; transition: background 0.2s; }
+        .btn-apply:hover { background: var(--purple-mid); }
+        .coupon-msg { margin-top: 8px; font-size: 0.8rem; font-weight: 600; display: none; }
+        .coupon-msg.ok  { color: #16a34a; }
+        .coupon-msg.err { color: #dc2626; }
+        .discount-line { display: flex; justify-content: space-between; font-size: 0.88rem; color: #16a34a; font-weight: 600; margin-bottom: 8px; display: none; }
+
+        /* ── WALLET PANEL ── */
+        .wallet-panel { background: linear-gradient(135deg, var(--purple-deep), var(--purple-mid)); border-radius: 12px; padding: 20px; color: var(--white); margin-bottom: 20px; }
+        .wallet-panel .w-label { font-size: 0.78rem; opacity: 0.7; margin-bottom: 4px; }
+        .wallet-panel .w-amount { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 1.6rem; }
+        .wallet-panel .w-desc { font-size: 0.8rem; opacity: 0.75; margin-top: 8px; display: flex; align-items: center; gap: 5px; }
+        .alert-insufficient { background: #fef2f2; border: 1.5px solid #fecaca; color: #dc2626; border-radius: 10px; padding: 14px 16px; font-size: 0.85rem; display: flex; align-items: center; gap: 8px; margin-bottom: 16px; }
+        .btn-place-order { background: var(--purple-deep); color: var(--white); border: none; border-radius: 10px; padding: 13px; font-size: 0.92rem; font-weight: 700; font-family: 'DM Sans', sans-serif; width: 100%; cursor: pointer; transition: background 0.2s, transform 0.15s; display: flex; align-items: center; justify-content: center; gap: 8px; }
+        .btn-place-order:hover { background: var(--purple-mid); transform: translateY(-1px); }
+        .btn-place-order:disabled { background: var(--gray-200); color: var(--gray-500); cursor: not-allowed; transform: none; }
+        .btn-back-cart { display: block; text-align: center; margin-top: 12px; color: var(--gray-500); font-size: 0.82rem; text-decoration: none; }
+        .btn-back-cart:hover { color: var(--purple-mid); }
+
+        /* ── ORDER SUMMARY CARD ── */
+        .summary-card { background: var(--white); border-radius: 16px; border: 1.5px solid var(--gray-200); padding: 24px; position: sticky; top: 90px; }
+        .summary-card h3 { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 1rem; color: var(--black); margin-bottom: 16px; }
+        .order-item { display: flex; justify-content: space-between; align-items: flex-start; padding: 12px 0; border-bottom: 1px solid var(--gray-200); gap: 10px; }
+        .order-item:last-child { border-bottom: none; }
+        .order-item-name { font-weight: 600; font-size: 0.88rem; color: var(--black); }
+        .order-item-qty { font-size: 0.78rem; color: var(--gray-500); margin-top: 2px; }
+        .order-item-price { font-family: 'Syne', sans-serif; font-weight: 700; font-size: 0.9rem; color: var(--purple-mid); white-space: nowrap; }
+        .summary-row { display: flex; justify-content: space-between; align-items: center; font-size: 0.88rem; color: var(--gray-500); margin-bottom: 8px; }
+        .summary-row.free { color: #16a34a; font-weight: 600; }
+        .summary-total { display: flex; justify-content: space-between; align-items: center; padding-top: 14px; margin-top: 8px; border-top: 2px solid var(--gray-200); }
+        .summary-total span:first-child { font-weight: 700; font-size: 0.95rem; }
+        .summary-total span:last-child { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 1.3rem; color: var(--purple-mid); }
+
+        /* ── FOOTER ── */
+        footer { background: var(--purple-deep); color: rgba(255,255,255,0.6); text-align: center; padding: 24px; font-size: 0.85rem; margin-top: 48px; }
+        footer strong { color: var(--purple-light); }
+    </style>
+</head>
+<body>
+
+<nav class="topbar">
+    <div class="container">
+        <a class="navbar-brand" href="/">Pwnshop<span class="dot"></span></a>
+        <ul class="nav-right">
+            <li><a class="nav-link-plain" href="/">Home</a></li>
+            <li><a class="nav-link-plain" href="/cart">Cart</a></li>
+            <li><a href="/profile" class="user-chip"><%= user.username %></a></li>
+            <li><a href="/logout" class="btn-logout">Logout</a></li>
+        </ul>
+    </div>
+</nav>
+
+<div class="page-wrap">
+    <h1 class="page-title">Checkout</h1>
+    <p class="page-subtitle">Review your order and enter your shipping details to complete your purchase.</p>
+
+    <div class="checkout-layout">
+
+
+        <div>
+            <div class="form-card">
+                <h3><i class="bi bi-geo-alt-fill" style="color:var(--purple-mid)"></i> Shipping Address</h3>
+                <form action="/checkout" method="POST">
+                    <div class="mb-4">
+                        <label class="f-label">Full Shipping Address</label>
+                        <textarea class="f-field" id="shipping_address" name="shipping_address" required placeholder="Enter your full address including street, city, state and postal code"></textarea>
+                    </div>
+
+                    <div class="divider-line"></div>
+
+
+                    <div class="coupon-wrap">
+                        <h4><i class="bi bi-tag" style="color:var(--purple-mid)"></i> Promo Code</h4>
+                        <div class="coupon-row">
+                            <input type="text" class="coupon-input" id="couponInput" placeholder="Enter code (e.g. HALFOFF)">
+                            <button type="button" class="btn-apply" id="applyBtn">Apply</button>
+                        </div>
+                        <div class="coupon-msg" id="couponMsg"></div>
+                        <input type="hidden" name="coupon_code" id="couponCode">
+                    </div>
+
+                    <div class="divider-line"></div>
+
+                    <h3 style="font-family:'Syne',sans-serif;font-weight:800;font-size:1rem;margin-bottom:16px;display:flex;align-items:center;gap:8px;">
+                        <i class="bi bi-wallet2" style="color:var(--purple-mid)"></i> Payment
+                    </h3>
+
+                    <div class="wallet-panel">
+                        <div class="w-label">Wallet Balance</div>
+                        <div class="w-amount">₦<%= parseFloat(user.wallet_amount || 0).toFixed(2) %></div>
+                        <div class="w-desc"><i class="bi bi-info-circle"></i> Payment will be deducted from your wallet</div>
+                    </div>
+
+
+                    <div class="alert-insufficient" id="insufficientAlert" style="display:<%= parseFloat(user.wallet_amount || 0) < parseFloat(total) ? 'flex' : 'none' %>;">
+                        <i class="bi bi-exclamation-triangle-fill"></i>
+                        Insufficient wallet balance. Please add funds before proceeding.
+                    </div>
+
+
+                    <button type="submit" class="btn-place-order" id="placeOrderBtn"
+                        <%= parseFloat(user.wallet_amount || 0) < parseFloat(total) ? 'disabled' : '' %>>
+                        <i class="bi bi-lock-fill"></i>
+                        <span id="placeOrderLabel">
+                            <%= parseFloat(user.wallet_amount || 0) < parseFloat(total) ? 'Insufficient Balance' : 'Place Order — ₦' + total %>
+                        </span>
+                    </button>
+                </form>
+                <a href="/cart" class="btn-back-cart"><i class="bi bi-arrow-left"></i> Back to Cart</a>
+            </div>
+        </div>
+
+
+        <div class="summary-card">
+            <h3>Order Summary</h3>
+            <div style="margin-bottom:16px;">
+                <% items.forEach(item => { %>
+                    <div class="order-item">
+                        <div>
+                            <div class="order-item-name"><%= item.name %></div>
+                            <div class="order-item-qty">Qty <%= item.quantity %> × ₦<%= parseFloat(item.price).toFixed(2) %></div>
+                        </div>
+                        <div class="order-item-price">₦<%= parseFloat(item.subtotal).toFixed(2) %></div>
+                    </div>
+                <% }); %>
+            </div>
+            <div class="summary-row"><span>Subtotal</span><span>₦<%= total %></span></div>
+            <div class="summary-row" id="discountRow" style="display:none;color:#16a34a;font-weight:600;"><span id="discountLabel">Discount</span><span id="discountAmt"></span></div>
+            <div class="summary-row free"><span>Shipping</span><span><i class="bi bi-check-circle-fill"></i> FREE</span></div>
+            <div class="summary-total"><span>Total</span><span id="totalDisplay">₦<%= total %></span></div>
+        </div>
+    </div>
+</div>
+
+<footer>
+    &copy; <%= new Date().getFullYear() %> <strong>Pwnshop</strong>. All rights reserved.
+</footer>
+
+<script>
+const baseTotal      = parseFloat('<%= total %>');
+const walletBalance  = parseFloat('<%= parseFloat(user.wallet_amount || 0).toFixed(2) %>');
+const applyBtn       = document.getElementById('applyBtn');
+const couponInput    = document.getElementById('couponInput');
+const couponCode     = document.getElementById('couponCode');
+const couponMsg      = document.getElementById('couponMsg');
+const totalDisplay   = document.getElementById('totalDisplay');
+const discountRow    = document.getElementById('discountRow');
+const discountAmt    = document.getElementById('discountAmt');
+const discountLbl    = document.getElementById('discountLabel');
+const placeBtn       = document.getElementById('placeOrderBtn');
+const placeLabel     = document.getElementById('placeOrderLabel');
+const alertBox       = document.getElementById('insufficientAlert');
+
+function updateButtonState(effectiveTotal) {
+    if (walletBalance < effectiveTotal) {
+        placeBtn.disabled = true;
+        placeLabel.textContent = 'Insufficient Balance';
+        alertBox.style.display = 'flex';
+    } else {
+        placeBtn.disabled = false;
+        placeLabel.textContent = 'Place Order — ₦' + effectiveTotal.toFixed(2);
+        alertBox.style.display = 'none';
+    }
+}
+
+applyBtn.addEventListener('click', async () => {
+    const code = couponInput.value.trim();
+    if (!code) return;
+
+    applyBtn.textContent = 'Checking…';
+    applyBtn.disabled = true;
+
+    try {
+        const resp = await fetch('/apply-coupon', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ code, cart_total: baseTotal })
+        });
+        const data = await resp.json();
+
+        couponMsg.style.display = 'block';
+        if (data.valid) {
+            couponMsg.className = 'coupon-msg ok';
+            couponMsg.textContent = data.message;
+            couponCode.value = code.toUpperCase();
+            totalDisplay.textContent = '₦' + data.new_total;
+            discountRow.style.display = 'flex';
+            discountLbl.textContent = data.discount_percent + '% off';
+            discountAmt.textContent = '−₦' + data.discount_amount;
+            applyBtn.textContent = '✓ Applied';
+            couponInput.disabled = true;
+
+
+            updateButtonState(parseFloat(data.new_total));
+        } else {
+            couponMsg.className = 'coupon-msg err';
+            couponMsg.textContent = data.message;
+            couponCode.value = '';
+            applyBtn.textContent = 'Apply';
+            applyBtn.disabled = false;
+        }
+    } catch(e) {
+        couponMsg.style.display = 'block';
+        couponMsg.className = 'coupon-msg err';
+        couponMsg.textContent = 'Could not apply coupon.';
+        applyBtn.textContent = 'Apply';
+        applyBtn.disabled = false;
+    }
+});
+</script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Storefront Description — Pwnshop Seller</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <style>
+        :root{--purple-deep:#3B0764;--purple-mid:#6D28D9;--purple-light:#A855F7;--purple-pale:#F3E8FF;--black:#0D0D0D;--white:#FFFFFF;--gray-100:#F8F5FF;--gray-200:#EDE9F6;--gray-500:#6B7280;--accent:#C026D3;}
+        *{box-sizing:border-box;margin:0;padding:0;}
+        body{font-family:"DM Sans",sans-serif;background:var(--gray-100);min-height:100vh;}
+        .topbar{background:var(--purple-deep);padding:0;position:sticky;top:0;z-index:1000;box-shadow:0 2px 16px rgba(59,7,100,0.4);}
+        .topbar .inner{display:flex;align-items:center;gap:16px;padding:12px 24px;max-width:1400px;margin:0 auto;}
+        .navbar-brand{font-family:"Syne",sans-serif;font-weight:800;font-size:1.6rem;color:var(--white)!important;text-decoration:none;display:flex;align-items:center;gap:6px;}
+        .navbar-brand .dot{width:8px;height:8px;background:var(--purple-light);border-radius:50%;}
+        .nav-right{display:flex;align-items:center;gap:8px;list-style:none;margin:0 0 0 auto;padding:0;}
+        .user-chip{background:rgba(168,85,247,0.2);border:1px solid rgba(168,85,247,0.4);color:var(--white)!important;border-radius:20px;padding:5px 14px;font-size:0.85rem;font-weight:600;}
+        .btn-logout{background:transparent;border:1px solid rgba(255,255,255,0.3);color:rgba(255,255,255,0.8)!important;border-radius:8px;padding:5px 12px;font-size:0.83rem;text-decoration:none;}
+        .nav-link-plain{color:rgba(255,255,255,0.75)!important;font-size:0.88rem;padding:6px 12px;border-radius:6px;text-decoration:none;}
+        .nav-link-plain:hover{background:rgba(255,255,255,0.1);color:var(--white)!important;}
+
+        .page-wrap{max-width:900px;margin:36px auto;padding:0 20px 60px;}
+
+        /* Header */
+        .page-header{margin-bottom:28px;}
+        .page-header .badge-tag{display:inline-flex;align-items:center;gap:6px;background:var(--purple-pale);color:var(--purple-mid);font-size:0.75rem;font-weight:700;border-radius:20px;padding:4px 12px;letter-spacing:0.4px;text-transform:uppercase;margin-bottom:12px;}
+        .page-header h1{font-family:"Syne",sans-serif;font-weight:800;font-size:1.8rem;color:var(--black);margin-bottom:6px;}
+        .page-header p{color:var(--gray-500);font-size:0.9rem;line-height:1.6;}
+
+        /* Two-column layout */
+        .editor-layout{display:grid;grid-template-columns:1fr 380px;gap:24px;align-items:start;}
+
+        /* Editor card */
+        .editor-card{background:var(--white);border-radius:16px;border:1.5px solid var(--gray-200);padding:28px;}
+        .editor-card h3{font-family:"Syne",sans-serif;font-weight:800;font-size:0.95rem;color:var(--black);margin-bottom:4px;display:flex;align-items:center;gap:8px;}
+        .editor-card h3 i{color:var(--purple-mid);}
+        .editor-card .sub{color:var(--gray-500);font-size:0.82rem;margin-bottom:20px;line-height:1.5;}
+        .f-label{font-size:0.78rem;font-weight:600;color:var(--black);margin-bottom:6px;letter-spacing:0.3px;text-transform:uppercase;display:block;}
+        .f-field{border:1.5px solid var(--gray-200);border-radius:10px;padding:11px 14px;font-size:0.9rem;font-family:"DM Sans",sans-serif;width:100%;outline:none;transition:border-color 0.2s,box-shadow 0.2s;color:var(--black);background:var(--white);}
+        .f-field:focus{border-color:var(--purple-mid);box-shadow:0 0 0 3px rgba(109,40,217,0.08);}
+        .f-field::placeholder{color:#b0afc0;}
+        textarea.f-field{resize:vertical;min-height:130px;line-height:1.6;}
+        .char-count{font-size:0.72rem;color:var(--gray-500);text-align:right;margin-top:4px;}
+
+        /* Variable chips */
+        .var-row{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:20px;}
+        .var-chip{background:var(--gray-100);border:1.5px solid var(--gray-200);color:var(--purple-mid);border-radius:7px;padding:4px 10px;font-family:monospace;font-size:0.75rem;cursor:pointer;transition:all 0.18s;}
+        .var-chip:hover{background:var(--purple-pale);border-color:var(--purple-mid);}
+        .var-hint{font-size:0.75rem;color:var(--gray-500);margin-bottom:10px;}
+
+        .divider-line{height:1px;background:var(--gray-200);margin:20px 0;}
+        .btn-row-actions{display:flex;gap:10px;align-items:center;flex-wrap:wrap;}
+        .btn-preview{background:var(--white);color:var(--purple-mid);border:1.5px solid var(--purple-mid);border-radius:10px;padding:10px 20px;font-size:0.88rem;font-weight:700;font-family:"DM Sans",sans-serif;cursor:pointer;transition:all 0.2s;display:inline-flex;align-items:center;gap:7px;}
+        .btn-preview:hover{background:var(--purple-pale);transform:translateY(-1px);}
+        .btn-action-note{font-size:0.72rem;color:var(--gray-500);width:100%;margin-top:6px;}
+
+        .btn-save{background:var(--purple-deep);color:var(--white);border:none;border-radius:10px;padding:12px 28px;font-size:0.9rem;font-weight:700;font-family:"DM Sans",sans-serif;cursor:pointer;transition:background 0.2s,transform 0.15s;display:inline-flex;align-items:center;gap:8px;}
+        .btn-save:hover{background:var(--purple-mid);transform:translateY(-1px);}
+
+        /* Live preview card (right column) */
+        .preview-card{background:var(--white);border-radius:16px;border:1.5px solid var(--gray-200);overflow:hidden;position:sticky;top:90px;}
+        .preview-card-header{padding:14px 18px;border-bottom:1.5px solid var(--gray-200);display:flex;align-items:center;justify-content:space-between;}
+        .preview-card-header h4{font-family:"Syne",sans-serif;font-weight:700;font-size:0.82rem;color:var(--black);margin:0;display:flex;align-items:center;gap:7px;}
+        .preview-card-header h4 i{color:var(--purple-mid);}
+        .live-badge{background:var(--purple-pale);color:var(--purple-mid);font-size:0.65rem;font-weight:700;border-radius:20px;padding:2px 9px;letter-spacing:0.3px;}
+
+        /* Seller card mockup */
+        .seller-mockup{padding:20px;}
+        .seller-card-mock{background:var(--gray-100);border-radius:12px;border:1.5px solid var(--gray-200);padding:20px 18px;text-align:center;}
+        .mock-img{width:64px;height:64px;background:linear-gradient(135deg,var(--purple-deep),var(--purple-mid));border-radius:10px;margin:0 auto 12px;display:flex;align-items:center;justify-content:center;font-family:"Syne",sans-serif;font-weight:800;font-size:1.4rem;color:var(--white);}
+        .mock-name{font-family:"Syne",sans-serif;font-weight:800;font-size:1rem;color:var(--black);margin-bottom:4px;}
+        .mock-badge{display:inline-block;background:var(--purple-pale);color:var(--purple-mid);font-size:0.72rem;font-weight:600;border-radius:20px;padding:2px 10px;margin-bottom:12px;}
+        .mock-description{font-size:0.82rem;color:var(--gray-500);line-height:1.55;text-align:left;border-top:1px solid var(--gray-200);padding-top:12px;min-height:48px;}
+        .mock-stat{display:flex;justify-content:center;gap:20px;margin-top:14px;padding-top:12px;border-top:1px solid var(--gray-200);}
+        .mock-stat-item .num{font-family:"Syne",sans-serif;font-weight:800;font-size:1rem;color:var(--black);}
+        .mock-stat-item .lbl{font-size:0.68rem;color:var(--gray-500);text-transform:uppercase;letter-spacing:0.3px;}
+
+        .preview-note{padding:14px 18px;font-size:0.78rem;color:var(--gray-500);border-top:1px solid var(--gray-200);line-height:1.55;}
+        .preview-note a{color:var(--purple-mid);font-weight:600;text-decoration:none;}
+
+        .btn-back{display:inline-flex;align-items:center;gap:6px;margin-top:22px;color:var(--gray-500);font-size:0.85rem;text-decoration:none;transition:color 0.2s;}
+        .btn-back:hover{color:var(--purple-mid);}
+
+        /* Rendered output block */
+        .render-result{background:var(--gray-100);border:1.5px solid var(--gray-200);border-radius:10px;padding:16px 18px;font-size:0.88rem;line-height:1.65;color:var(--black);margin-top:20px;}
+        .render-result.error{background:#fef2f2;border-color:#fecaca;color:#dc2626;font-family:monospace;font-size:0.82rem;}
+
+        footer{background:var(--purple-deep);color:rgba(255,255,255,0.6);text-align:center;padding:24px;font-size:0.85rem;margin-top:48px;}
+        footer strong{color:var(--purple-light);}
+
+        @media(max-width:768px){.editor-layout{grid-template-columns:1fr;}}
+    </style>
+</head>
+<body>
+<nav class="topbar">
+    <div class="inner">
+        <a class="navbar-brand" href="/">Pwnshop<span class="dot"></span></a>
+        <ul class="nav-right">
+            <li><a class="nav-link-plain" href="/seller/dashboard">Dashboard</a></li>
+            <% if (user) { %>
+                <li><span class="user-chip"><%= user.username %></span></li>
+                <li><a href="/logout" class="btn-logout">Logout</a></li>
+            <% } %>
+        </ul>
+    </div>
+</nav>
+
+<div class="page-wrap">
+    <div class="page-header">
+        <div class="badge-tag"><i class="bi bi-shop"></i> Seller Tools</div>
+        <h1>Storefront Description</h1>
+        <p>Customise the bio shown on your seller card on the Pwnshop homepage. Use the variables below to personalise the text — it will be rendered live for every visitor who sees your storefront.</p>
+    </div>
+
+    <div class="editor-layout">
+
+        <div>
+            <div class="editor-card">
+                <h3><i class="bi bi-pencil-square"></i> Write Your Description</h3>
+                <p class="sub">This text appears under your seller name on the homepage. Keep it short and compelling — buyers decide in seconds.</p>
+
+                <% if (saved) { %>
+                    <div style="background:#f0fdf4;border:1.5px solid #86efac;color:#15803d;border-radius:9px;padding:10px 14px;font-size:0.84rem;display:flex;align-items:center;gap:8px;margin-bottom:16px;">
+                        <i class="bi bi-check-circle-fill"></i> Description saved and published to your seller card.
+                    </div>
+                <% } %>
+                <% if (saveErr) { %>
+                    <div style="background:#fef2f2;border:1.5px solid #fecaca;color:#dc2626;border-radius:9px;padding:10px 14px;font-size:0.84rem;display:flex;align-items:center;gap:8px;margin-bottom:16px;">
+                        <i class="bi bi-exclamation-circle-fill"></i> Save failed. Check your template for errors.
+                    </div>
+                <% } %>
+                <% if (currentTagline && !saved) { %>
+                    <div style="background:var(--gray-100);border:1.5px solid var(--gray-200);border-radius:9px;padding:10px 14px;font-size:0.82rem;color:var(--gray-500);margin-bottom:16px;display:flex;align-items:flex-start;gap:8px;">
+                        <i class="bi bi-info-circle" style="flex-shrink:0;margin-top:1px;"></i>
+                        <span><strong style="color:var(--black);">Currently live:</strong> <%= currentTagline %></span>
+                    </div>
+                <% } %>
+
+                <p class="var-hint">Insert a variable:</p>
+                <div class="var-row">
+                    <span class="var-chip" onclick="insertVar('<%%= username %%>')">&lt;%= username %&gt;</span>
+                    <span class="var-chip" onclick="insertVar('<%%= shopName %%>')">&lt;%= shopName %&gt;</span>
+                    <span class="var-chip" onclick="insertVar('<%%= tagline %%>')">&lt;%= tagline %&gt;</span>
+                    <span class="var-chip" onclick="insertVar('<%%= memberSince %%>')">&lt;%= memberSince %&gt;</span>
+                </div>
+
+                <form method="POST" action="/seller/preview">
+                    <label class="f-label" for="tpl">Description Template</label>
+                    <textarea
+                        class="f-field"
+                        id="tpl"
+                        name="template"
+                        maxlength="400"
+                        placeholder="e.g. Top seller since <%%= memberSince %%>. Quality guaranteed."
+                        oninput="syncPreview(this.value); updateCount(this)"
+                    ><%= template || '' %></textarea>
+                    <div class="char-count"><span id="charCount"><%= (template||'').length %></span>/400</div>
+
+                    <div class="divider-line"></div>
+
+                    <div class="btn-row-actions">
+
+                        <button type="button" class="btn-preview" onclick="previewTemplate()">
+                            <i class="bi bi-eye"></i> Preview
+                        </button>
+
+                        <button type="submit" class="btn-save" onclick="syncSaveInput()">
+                            <i class="bi bi-floppy2-fill"></i> Save &amp; Publish
+                        </button>
+                    </div>
+
+                </form>
+
+                <% if (rendered !== null) { %>
+                    <div class="render-result"><%- rendered %></div>
+                <% } else if (rawOutput && rendered === null) { %>
+                    <div class="render-result error"><%= rawOutput %></div>
+                <% } %>
+            </div>
+
+            <a href="/seller/dashboard" class="btn-back"><i class="bi bi-arrow-left"></i> Back to Dashboard</a>
+        </div>
+
+
+        <div class="preview-card">
+            <div class="preview-card-header">
+                <h4><i class="bi bi-eye"></i> Buyer View</h4>
+                <span class="live-badge">LIVE PREVIEW</span>
+            </div>
+            <div class="seller-mockup">
+                <div class="seller-card-mock">
+                    <div class="mock-img"><%= user.username.charAt(0).toUpperCase() %></div>
+                    <div class="mock-name"><%= user.username %></div>
+                    <span class="mock-badge">&#11088; Featured Seller</span>
+                    <div class="mock-description" id="liveDesc">
+                        <% if (rendered !== null) { %>
+                            <%- rendered %>
+                        <% } else if (currentTagline) { %>
+                            <%= currentTagline %>
+                        <% } else { %>
+                            <span style="color:#b0afc0;font-style:italic;">Your description will appear here&hellip;</span>
+                        <% } %>
+                    </div>
+                    <div class="mock-stat">
+                        <div class="mock-stat-item">
+                            <div class="num"><%= productCount %></div>
+                            <div class="lbl">Products</div>
+                        </div>
+                        <div class="mock-stat-item">
+                            <div class="num"><%= new Date(user.created_at).getFullYear() %></div>
+                            <div class="lbl">Since</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="preview-note">
+                This is how your card looks to buyers on the <a href="/">homepage</a>. Save to publish.
+            </div>
+        </div>
+    </div>
+</div>
+
+<footer>&copy; <%= new Date().getFullYear() %> <strong>Pwnshop</strong>. All rights reserved.</footer>
+
+<script>
+function insertVar(v) {
+    const ta = document.getElementById('tpl');
+    const s = ta.selectionStart, e = ta.selectionEnd;
+    ta.value = ta.value.substring(0,s) + v + ta.value.substring(e);
+    ta.selectionStart = ta.selectionEnd = s + v.length;
+    ta.focus();
+    updateCount(ta);
+    syncPreview(ta.value);
+}
+function updateCount(ta) {
+    document.getElementById('charCount').textContent = ta.value.length;
+}
+function syncPreview(val) {
+    const d = document.getElementById('liveDesc');
+    if (!d) return;
+    d.textContent = val || '';
+    if (!val) d.innerHTML = '<span style="color:#b0afc0;font-style:italic;">Your description will appear here\u2026</span>';
+}
+
+function previewTemplate() {
+    const tpl = document.getElementById('tpl').value;
+    if (!tpl.trim()) return;
+    window.location.href = '/seller/preview?template=' + encodeURIComponent(tpl);
+}
+
+const initTpl = document.getElementById('tpl');
+if (initTpl && initTpl.value) updateCount(initTpl);
+</script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
