@@ -1526,13 +1526,37 @@ app.post('/admin/toggle-product', requireAdmin, (req, res) => {
 });
 
 app.post('/admin/delete-user', requireAdmin, (req, res) => {
-    if (parseInt(req.body.user_id) === req.session.user.id) return res.redirect('/admin/users?error=Cannot delete your own account');
-    db.query('DELETE FROM users WHERE id = ?', [req.body.user_id], (err) => {
-        if (err) return res.redirect('/admin/users?error=Database error — user may have related records');
-        auditLog(req.session.user.id, 'USER_DELETED',
-            `admin: ${req.session.user.username} | deleted_user_id: ${req.body.user_id}`, req);
-        res.redirect('/admin/users?success=User deleted');
-    });
+    const targetId = parseInt(req.body.user_id);
+    if (targetId === req.session.user.id) return res.redirect('/admin/users?error=Cannot delete your own account');
+
+    const steps = [
+        `DELETE te FROM tracking_events te JOIN orders o ON te.order_id = o.id WHERE o.user_id = ${targetId}`,
+        `DELETE oi FROM order_items oi JOIN orders o ON oi.order_id = o.id WHERE o.user_id = ${targetId}`,
+        `DELETE se FROM seller_earnings se JOIN orders o ON se.order_id = o.id WHERE o.user_id = ${targetId}`,
+        `DELETE FROM orders          WHERE user_id = ${targetId}`,
+        `DELETE FROM cart_items      WHERE user_id = ${targetId}`,
+        `DELETE FROM wishlists       WHERE user_id = ${targetId}`,
+        `DELETE FROM reviews         WHERE user_id = ${targetId}`,
+        `DELETE FROM otp_codes       WHERE user_id = ${targetId}`,
+        `DELETE FROM mail_inbox      WHERE to_user_id = ${targetId}`,
+        `DELETE FROM password_resets WHERE user_id = ${targetId}`,
+        `DELETE FROM coupon_uses     WHERE user_id = ${targetId}`,
+        `DELETE FROM seller_earnings WHERE seller_id = ${targetId}`,
+        `DELETE FROM products        WHERE seller_id = ${targetId}`,
+        `DELETE FROM users           WHERE id = ${targetId}`
+    ];
+
+    let i = 0;
+    function runNext(err) {
+        if (err) return res.redirect('/admin/users?error=' + encodeURIComponent('Delete failed: ' + err.message));
+        if (i >= steps.length) {
+            auditLog(req.session.user.id, 'USER_DELETED',
+                `admin: ${req.session.user.username} | deleted_user_id: ${targetId}`, req);
+            return res.redirect('/admin/users?success=User and all related data deleted');
+        }
+        db.query(steps[i++], runNext);
+    }
+    runNext(null);
 });
 
 app.post('/admin/reset-log', requireAdmin, (req, res) => {
