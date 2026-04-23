@@ -76,7 +76,7 @@ npm install
 
 # 3. Configure environment
 cp .env.example .env
-# Edit .env and add your GROQ_API_KEY
+# Edit .env and add your mysql Databse username and password and GROQ_API_KEY if available
 
 # 4. Create database and import schema
 mysql -u root -p -e "CREATE DATABASE pwnshop;"
