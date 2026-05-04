@@ -19,6 +19,11 @@
 }
 .pw-fab svg { width: 26px; height: 26px; fill: #fff; }
 
+/* Mobile: Position FAB above the bottom nav (60px tall) */
+@media (max-width: 768px) {
+    .pw-fab { bottom: calc(64px + 16px); }
+}
+
 /* UNREAD DOT */
 .pw-unread {
     position: absolute; top: 0; right: 0;

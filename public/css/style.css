@@ -329,7 +329,7 @@ body {
 .cat-btn.active { background: var(--purple-deep); color: var(--white); font-weight: 600; }
 .cat-btn .cat-icon { font-size: 1.05rem; width: 20px; text-align: center; flex-shrink: 0; color: var(--purple-mid); }
 .cat-btn.active .cat-icon { color: var(--white); }
-.sidebar-ad {
+.sidebar-promo {
     margin-top: 20px;
     border-radius: 12px;
     overflow: hidden;
@@ -337,10 +337,13 @@ body {
     padding: 20px;
     color: var(--white);
     text-align: center;
+    position: sticky;
+    top: 100px;
+    z-index: 3;
 }
-.sidebar-ad p { font-size: 0.8rem; margin: 6px 0 12px; opacity: 0.8; }
-.sidebar-ad h6 { font-family: 'Syne', sans-serif; font-weight: 700; font-size: 1rem; margin: 0; }
-.sidebar-ad .ad-btn {
+.sidebar-promo p { font-size: 0.8rem; margin: 6px 0 12px; opacity: 0.8; }
+.sidebar-promo h6 { font-family: 'Syne', sans-serif; font-weight: 700; font-size: 1rem; margin: 0; }
+.sidebar-promo .promo-btn {
     display: inline-block;
     background: var(--white);
     color: var(--purple-deep);
@@ -351,7 +354,7 @@ body {
     text-decoration: none;
     transition: all 0.2s;
 }
-.sidebar-ad .ad-btn:hover { background: var(--purple-pale); }
+.sidebar-promo .promo-btn:hover { background: var(--purple-pale); }
 
 /* ── Section Heading ───────────────────────────────────────── */
 .section-heading {
