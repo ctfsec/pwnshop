@@ -4,8 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>My Profile - Pwnshop</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+    <link href="/css/bootstrap.min.css" rel="stylesheet">
+    <link href="/css/bootstrap-icons.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
     <link rel="icon" type="image/x-icon" href="/favicon.ico">
     <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
@@ -26,8 +26,9 @@
             --accent:       #C026D3;
         }
         * { box-sizing: border-box; }
+        html { background: var(--gray-100); }
         body { font-family: 'DM Sans', sans-serif; background: var(--gray-100); color: var(--black); margin: 0; }
-        .topbar { background: var(--purple-deep); padding: 0; position: sticky; top: 0; z-index: 1000; box-shadow: 0 2px 16px rgba(59,7,100,0.4); }
+        .topbar { background: var(--purple-deep); padding: 0; position: fixed; top: 0; z-index: 1000; box-shadow: 0 2px 16px rgba(59,7,100,0.4); }
         .topbar .container { display: flex; align-items: center; gap: 16px; padding: 12px 24px; }
         .navbar-brand { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 1.6rem; color: var(--white) !important; text-decoration: none; display: flex; align-items: center; gap: 6px; }
         .navbar-brand .dot { width: 8px; height: 8px; background: var(--purple-light); border-radius: 50%; }
@@ -78,6 +79,16 @@
         .btn-action-danger:hover { background: #fef2f2; }
 
         .tab-bar { display: flex; gap: 4px; margin-bottom: 20px; background: var(--white); border-radius: 12px; border: 1.5px solid var(--gray-200); padding: 4px; }
+        .wallet-topup-card { background: var(--white); border-radius: 14px; border: 1.5px solid var(--gray-200); padding: 18px 20px; margin-bottom: 16px; }
+        .wallet-topup-title { font-family: 'Syne', sans-serif; font-weight: 700; font-size: 0.98rem; margin-bottom: 6px; }
+        .wallet-topup-sub { color: var(--gray-500); font-size: 0.82rem; margin-bottom: 14px; }
+        .wallet-msg { border-radius: 9px; padding: 10px 12px; font-size: 0.82rem; margin-bottom: 12px; }
+        .wallet-msg.ok { background: #f0fdf4; color: #166534; border: 1px solid #86efac; }
+        .wallet-msg.err { background: #fef2f2; color: #b91c1c; border: 1px solid #fecaca; }
+        .wallet-form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+        .wallet-form-grid-1 { margin-bottom: 10px; }
+        .btn-topup { background: var(--purple-deep); color: var(--white); border: none; border-radius: 10px; padding: 10px 14px; font-size: 0.84rem; font-weight: 700; margin-top: 10px; cursor: pointer; }
+        .btn-topup:hover { background: var(--purple-mid); }
         .tab-btn { flex: 1; border: none; background: transparent; border-radius: 9px; padding: 9px 12px; font-size: 0.85rem; font-weight: 600; font-family: 'DM Sans', sans-serif; cursor: pointer; color: var(--gray-500); transition: all 0.2s; display: flex; align-items: center; justify-content: center; gap: 7px; }
         .tab-btn.active { background: var(--purple-deep); color: var(--white); }
         .tab-btn .tab-count { font-size: 0.72rem; background: rgba(255,255,255,0.2); border-radius: 20px; padding: 1px 7px; }
@@ -115,6 +126,11 @@
         .empty-state p { color: var(--gray-500); font-size: 0.85rem; }
         .btn-browse { display: inline-flex; align-items: center; gap: 6px; margin-top: 18px; background: var(--purple-deep); color: var(--white); border: none; border-radius: 10px; padding: 10px 22px; font-size: 0.85rem; font-weight: 700; text-decoration: none; transition: background 0.2s; }
         .btn-browse:hover { background: var(--purple-mid); color: var(--white); }
+        .orders-pagination { display: flex; align-items: center; justify-content: center; gap: 12px; margin-top: auto; padding: 24px 0 8px; }
+        .pg-btn { display: inline-flex; align-items: center; gap: 6px; background: var(--white); border: 1.5px solid var(--gray-200); color: var(--black); border-radius: 10px; padding: 8px 18px; font-size: 0.85rem; font-weight: 600; cursor: pointer; font-family: 'DM Sans', sans-serif; transition: all 0.18s; }
+        .pg-btn:hover:not(:disabled) { background: var(--purple-pale); border-color: var(--purple-mid); color: var(--purple-mid); }
+        .pg-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+        .pg-info { font-size: 0.85rem; color: var(--gray-500); font-weight: 500; }
         footer { background: var(--purple-deep); color: rgba(255,255,255,0.6); text-align: center; padding: 24px; font-size: 0.85rem; margin-top: 48px; }
         footer strong { color: var(--purple-light); }
     </style>
@@ -220,6 +236,56 @@
 
 
     <main>
+        <div class="wallet-topup-card">
+            <div class="wallet-topup-title"><i class="bi bi-credit-card"></i> Fund Wallet with Vulnbank</div>
+            <div class="wallet-topup-sub">Top up your local Pwnshop wallet using a Vulnbank virtual card.</div>
+
+            <% if (walletSuccess) { %>
+                <div class="wallet-msg ok"><i class="bi bi-check-circle-fill"></i> <%= walletSuccess %></div>
+            <% } %>
+            <% if (walletError) { %>
+                <div class="wallet-msg err"><i class="bi bi-exclamation-triangle-fill"></i> <%= walletError %></div>
+            <% } %>
+
+            <% if (vulnbankEnabled) { %>
+            <form method="POST" action="/wallet/topup/vulnbank">
+                <div class="wallet-form-grid-1">
+                    <label class="info-label">Amount (NGN)</label>
+                    <input class="avatar-url-input" type="number" name="amount" min="1" step="0.01" placeholder="5000" required>
+                </div>
+                <div class="wallet-form-grid">
+                    <div>
+                        <label class="info-label">Card Number</label>
+                        <input class="avatar-url-input" type="text" name="card_number" placeholder="4111 1111 1111 1111" required>
+                    </div>
+                    <div>
+                        <label class="info-label">Card Name</label>
+                        <input class="avatar-url-input" type="text" name="card_name" value="<%= user.username %>" required>
+                    </div>
+                    <div>
+                        <label class="info-label">Expiry</label>
+                        <input class="avatar-url-input" type="text" name="card_expiry" placeholder="MM/YY" required>
+                    </div>
+                    <div>
+                        <label class="info-label">CVV</label>
+                        <input class="avatar-url-input" type="password" name="card_cvv" placeholder="123" required>
+                    </div>
+                </div>
+
+                <% if (vulnbankLabVuln) { %>
+                    <div class="wallet-form-grid-1" style="margin-top:10px;">
+                        <label class="info-label">[Lab] Credited Amount Override</label>
+                        <input class="avatar-url-input" type="number" step="0.01" name="credited_amount" placeholder="Optional when lab vuln mode is enabled">
+                    </div>
+                <% } %>
+
+                <button class="btn-topup" type="submit"><i class="bi bi-lightning-charge-fill"></i> Fund Wallet</button>
+            </form>
+            <% } else { %>
+                <div class="wallet-msg err">Vulnbank is not configured yet. Add merchant environment variables on the server first.</div>
+            <% } %>
+        </div>
+
         <div class="tab-bar">
             <button class="tab-btn active" id="tab-orders-btn" onclick="switchTab('orders')">
                 <i class="bi bi-bag"></i> My Orders
@@ -232,7 +298,9 @@
         </div>
 
 
-        <div id="panel-orders">
+        <div id="panel-orders" style="display:flex;flex-direction:column;min-height:520px;">
+            <!-- Orders list grows to fill space, pushing pagination to bottom -->
+            <div style="flex:1;">
             <% if (orders.length === 0) { %>
                 <div class="empty-state">
                     <i class="bi bi-bag-x"></i>
@@ -241,8 +309,8 @@
                     <a href="/" class="btn-browse"><i class="bi bi-grid"></i> Browse Products</a>
                 </div>
             <% } else { %>
-                <% orders.forEach(order => { %>
-                    <div class="order-card">
+                <% orders.forEach((order, idx) => { %>
+                    <div class="order-card" data-order-index="<%= idx %>">
                         <div class="order-card-top">
                             <div class="order-num">Order #<%= order.id %></div>
                             <span class="status-badge status-<%= order.status %>">
@@ -271,6 +339,20 @@
                         </div>
                     </div>
                 <% }); %>
+            <% } %>
+            </div>
+
+            <!-- Pagination always anchored to bottom regardless of item count -->
+            <% if (orders.length > 5) { %>
+            <div class="orders-pagination" id="orders-pagination">
+                <button class="pg-btn" id="pg-prev" onclick="ordersPage(-1)" disabled>
+                    <i class="bi bi-chevron-left"></i> Prev
+                </button>
+                <span class="pg-info" id="pg-info"></span>
+                <button class="pg-btn" id="pg-next" onclick="ordersPage(1)">
+                    Next <i class="bi bi-chevron-right"></i>
+                </button>
+            </div>
             <% } %>
         </div>
 
@@ -318,6 +400,39 @@
 </footer>
 
 <script>
+var _pgCurrent = 0;
+var _pgSize    = 5;
+
+function ordersInitPagination() {
+    var cards = document.querySelectorAll('#panel-orders .order-card');
+    if (cards.length <= _pgSize) return;
+    ordersRender(cards);
+}
+
+function ordersPage(dir) {
+    var cards = document.querySelectorAll('#panel-orders .order-card');
+    var total = Math.ceil(cards.length / _pgSize);
+    _pgCurrent = Math.max(0, Math.min(_pgCurrent + dir, total - 1));
+    ordersRender(cards);
+}
+
+function ordersRender(cards) {
+    var total = Math.ceil(cards.length / _pgSize);
+    var start = _pgCurrent * _pgSize;
+    var end   = start + _pgSize;
+
+    cards.forEach(function(c, i) {
+        c.style.display = (i >= start && i < end) ? '' : 'none';
+    });
+
+    var info = document.getElementById('pg-info');
+    var prev = document.getElementById('pg-prev');
+    var next = document.getElementById('pg-next');
+    if (info) info.textContent = 'Page ' + (_pgCurrent + 1) + ' of ' + total;
+    if (prev) prev.disabled = _pgCurrent === 0;
+    if (next) next.disabled = _pgCurrent >= total - 1;
+}
+
 function switchTab(tab) {
     document.getElementById('panel-orders').style.display   = tab === 'orders'   ? '' : 'none';
     document.getElementById('panel-wishlist').style.display = tab === 'wishlist' ? '' : 'none';
@@ -345,6 +460,8 @@ function refreshAvatarDisplay(url) {
             + 'style="width:100%;height:100%;object-fit:cover;border-radius:50%;">';
     }
 }
+
+ordersInitPagination();
 
 document.getElementById('setAvatarBtn').addEventListener('click', function() {
     var url = document.getElementById('avatarUrlInput').value.trim();
@@ -407,8 +524,9 @@ function uploadAvatarFile(input) {
     input.value = '';
 }
 </script>
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script src="/js/bootstrap.bundle.min.js"></script>
     <%- include('chat-widget') %>
 <script src="/js/mobile-nav.js"></script>
+
 </body>
 </html>

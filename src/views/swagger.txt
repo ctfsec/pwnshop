@@ -1,0 +1,232 @@
+Swagger UI
+/static/openapi.json
+Explore
+Vulnerable Bank API
+ 1.0.0 
+OAS3
+/static/openapi.json
+API documentation for the deliberately vulnerable banking application
+
+Vulnerable Bank Support - Website
+Servers
+
+https://vulnbank.org - Controlled Production Server
+Authorize
+authentication
+Authentication related endpoints
+
+
+
+POST
+/register
+Register a new user
+
+POST
+/login
+Log in to the application
+
+POST
+/api/v{version}/forgot-password
+Request password reset (versioned)
+
+POST
+/api/v{version}/reset-password
+Reset password using PIN (versioned)
+transactions
+Transaction management endpoints
+
+
+
+GET
+/transactions/{account_number}
+Get transaction history
+
+POST
+/transfer
+Transfer money
+
+
+GET
+/check_balance/{account_number}
+Check account balance
+
+GET
+/api/transactions
+Get transactions API
+
+
+POST
+/request_loan
+Request a loan
+
+users
+User management endpoints
+
+
+
+POST
+/upload_profile_picture
+Upload profile picture
+
+
+POST
+/upload_profile_picture_url
+Upload profile picture by URL (Intentionally Vulnerable)
+
+admin
+Administrative endpoints
+
+
+
+GET
+/sup3r_s3cr3t_admin
+Admin panel
+
+
+POST
+/admin/create_admin
+Create new admin user
+
+
+POST
+/admin/delete_account/{user_id}
+Delete user account
+
+
+POST
+/admin/approve_loan/{loan_id}
+Approve loan
+
+virtual-cards
+Virtual card management endpoints
+
+
+
+POST
+/api/virtual-cards/create
+Create a new virtual card
+
+
+GET
+/api/virtual-cards
+Get user's virtual cards
+
+
+POST
+/api/virtual-cards/{card_id}/toggle-freeze
+Toggle card freeze status
+
+
+GET
+/api/virtual-cards/{card_id}/transactions
+Get card transactions
+
+
+POST
+/api/virtual-cards/{card_id}/update-limit
+Update card limit
+
+bill-payments
+Bill payment operations
+
+
+
+GET
+/api/bill-categories
+Get bill categories
+
+GET
+/api/billers/by-category/{category_id}
+Get billers by category
+
+POST
+/api/bill-payments/create
+Create bill payment
+
+
+GET
+/api/bill-payments/history
+Get payment history
+
+merchants
+Merchant registration and authentication for public payment integrations
+
+
+
+POST
+/api/v1/merchants/register
+Register a merchant
+
+POST
+/api/v1/merchants/login
+Log in merchant
+
+GET
+/api/v1/merchants/me
+Get current merchant
+
+merchant-payments
+Merchant card payment endpoints
+
+
+
+POST
+/api/v1/payments/charge
+Charge a Vulnbank virtual card
+
+
+GET
+/api/v1/payments/{payment_id}
+Get merchant payment
+
+
+GET
+/api/v1/payments
+List merchant payments
+
+
+GET
+/api/v1/payments/merchant_id/{merchant_id}
+List payments by merchant ID
+
+ai-agent
+AI Customer Support Agent (Intentionally Vulnerable)
+
+
+
+POST
+/api/ai/chat
+AI Customer Support Chat (Authenticated)
+
+
+POST
+/api/ai/chat/anonymous
+AI Customer Support Chat (Anonymous)
+
+GET
+/api/ai/system-info
+AI System Information
+internal
+Internal-only endpoints for SSRF demonstration
+
+
+
+GET
+/internal/secret
+Internal secrets (SSRF demo)
+
+GET
+/internal/config.json
+Internal config (SSRF demo)
+
+GET
+/latest/meta-data/
+Cloud metadata root (mock)
+
+GET
+/latest/meta-data/iam/security-credentials/
+Metadata IAM roles (mock)
+
+GET
+/latest/meta-data/iam/security-credentials/vulnbank-role
+Metadata IAM role credentials (mock)

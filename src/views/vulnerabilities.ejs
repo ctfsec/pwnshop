@@ -4,8 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Vulnerabilities - Pwnshop</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+    <link href="/css/bootstrap.min.css" rel="stylesheet">
+    <link href="/css/bootstrap-icons.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
     <style>
         :root {
@@ -34,11 +34,13 @@
             --info-bd:      #bfdbfe;
         }
         * { box-sizing: border-box; margin: 0; padding: 0; }
-        body { font-family: 'DM Sans', sans-serif; background: var(--gray-100); color: var(--black); min-height: 100vh; }
+        html { background: var(--gray-100); }
+        body { font-family: 'DM Sans', sans-serif; background: var(--gray-100); color: var(--black); min-height: 100vh;
+        }
         code { font-family: 'JetBrains Mono', monospace; font-size: 0.82em; background: rgba(109,40,217,0.07); color: var(--purple-mid); padding: 1px 5px; border-radius: 4px; }
 
         /* ── NAVBAR ── */
-        .topbar { background: var(--purple-deep); padding: 0; position: sticky; top: 0; z-index: 1000; box-shadow: 0 2px 16px rgba(59,7,100,0.4); }
+        .topbar { background: var(--purple-deep); padding: 0; position: fixed; top: 0; z-index: 1000; box-shadow: 0 2px 16px rgba(59,7,100,0.4); }
         .topbar .container { display: flex; align-items: center; gap: 16px; padding: 12px 24px; }
         .navbar-brand { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 1.6rem; color: var(--white) !important; text-decoration: none; display: flex; align-items: center; gap: 6px; }
         .navbar-brand .dot { width: 8px; height: 8px; background: var(--purple-light); border-radius: 50%; }
@@ -363,6 +365,7 @@
                 <span class="meta-item"><strong>Location:</strong> app.js session config</span>
                 <span class="meta-item"><strong>Chains with:</strong> PWN-018 (debug endpoint)</span>
                 <span class="meta-item"><strong>Impact:</strong> Full account takeover</span>
+                <span class="meta-item" style="color:#6D28D9"><strong>💡 Key insight:</strong> Once you have the session secret, SQL injection and brute-force attacks become unnecessary — you can craft a valid signed cookie for any user ID, including the admin, without ever touching the login form. This makes PWN-006 + PWN-018 one of the most powerful chains in the lab.</span>
             </div>
         </div>
     </div>
@@ -401,6 +404,7 @@
                 <span class="meta-item"><strong>Endpoint:</strong> POST /login</span>
                 <span class="meta-item"><strong>Technique:</strong> UNION-based SQLi</span>
                 <span class="meta-item"><strong>Impact:</strong> Authentication bypass, data exfiltration</span>
+                <span class="meta-item" style="color:#6D28D9"><strong>💡 Smarter path:</strong> SQL injection is one way in — but if you already know the session secret, you can forge a valid session cookie and skip the login form entirely without touching the database. See PWN-006 + PWN-018.</span>
             </div>
         </div>
     </div>
@@ -419,6 +423,7 @@
                 <span class="meta-item"><strong>Endpoint:</strong> POST /admin/login</span>
                 <span class="meta-item"><strong>Technique:</strong> UNION-based SQLi</span>
                 <span class="meta-item"><strong>Impact:</strong> Full admin takeover</span>
+                <span class="meta-item" style="color:#6D28D9"><strong>💡 Smarter paths:</strong> SQLi is not the only route to admin access. You can register directly as an admin without touching the login form at all (see PWN-021), or forge an admin session cookie if you have the session secret (see PWN-006 + PWN-018).</span>
             </div>
         </div>
     </div>
@@ -551,6 +556,7 @@
                 <span class="meta-item"><strong>Endpoint:</strong> POST /verify-otp</span>
                 <span class="meta-item"><strong>Technique:</strong> Brute-force</span>
                 <span class="meta-item"><strong>Keyspace:</strong> 900,000 codes</span>
+                <span class="meta-item" style="color:#6D28D9"><strong>💡 Smarter path:</strong> Brute-forcing 900k codes takes time. There is another way to obtain the OTP without guessing a single code — think about where OTPs are delivered and whether that delivery endpoint checks ownership. See PWN-004.</span>
             </div>
         </div>
     </div>
@@ -643,6 +649,7 @@
             <p class="vuln-desc">Failed login attempts, OTP guesses, and password reset token submissions are not rate-limited or counted. There is no lockout mechanism anywhere in the application. Automated credential stuffing and brute-force attacks proceed without friction. Coupon codes can also be brute-forced — per-user limits prevent reuse of the same code but do not prevent probing for valid codes.</p>
             <div class="vuln-meta">
                 <span class="meta-item"><strong>Affects:</strong> /login, /verify-otp, /reset-password, /apply-coupon</span>
+                <span class="meta-item" style="color:#6D28D9"><strong>💡 Smarter path:</strong> For OTP bypass specifically, brute-forcing is the hard way. Check whether the inbox delivering the OTP enforces ownership before reading it. See PWN-004.</span>
             </div>
         </div>
     </div>
@@ -676,6 +683,7 @@
             <div class="vuln-meta">
                 <span class="meta-item"><strong>Affects:</strong> /login → /verify-otp, /forgot-password</span>
                 <span class="meta-item"><strong>Impact:</strong> Extended brute-force window</span>
+                <span class="meta-item" style="color:#6D28D9"><strong>💡 Smarter path:</strong> Multiple active codes widen the brute-force window — but brute force is still the slow route. There is a way to read the OTP directly without guessing. See PWN-004.</span>
             </div>
         </div>
     </div>
@@ -990,5 +998,6 @@ function setActive(btn) {
 </script>
     <%- include('chat-widget') %>
 <script src="/js/mobile-nav.js"></script>
+
 </body>
 </html>

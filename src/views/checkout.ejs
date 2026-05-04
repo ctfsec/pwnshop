@@ -4,8 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Checkout - Pwnshop</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+    <link href="/css/bootstrap.min.css" rel="stylesheet">
+    <link href="/css/bootstrap-icons.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
     <link rel="icon" type="image/x-icon" href="/favicon.ico">
     <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
@@ -26,10 +26,11 @@
             --accent:       #C026D3;
         }
         * { box-sizing: border-box; }
+        html { background: var(--gray-100); }
         body { font-family: 'DM Sans', sans-serif; background: var(--gray-100); color: var(--black); margin: 0; }
 
         /* ── NAVBAR ── */
-        .topbar { background: var(--purple-deep); padding: 0; position: sticky; top: 0; z-index: 1000; box-shadow: 0 2px 16px rgba(59,7,100,0.4); }
+        .topbar { background: var(--purple-deep); padding: 0; position: fixed; top: 0; z-index: 1000; box-shadow: 0 2px 16px rgba(59,7,100,0.4); }
         .topbar .container { display: flex; align-items: center; gap: 16px; padding: 12px 24px; }
         .navbar-brand { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 1.6rem; color: var(--white) !important; text-decoration: none; display: flex; align-items: center; gap: 6px; }
         .navbar-brand .dot { width: 8px; height: 8px; background: var(--purple-light); border-radius: 50%; }
@@ -88,6 +89,14 @@
         .wallet-panel .w-label { font-size: 0.78rem; opacity: 0.7; margin-bottom: 4px; }
         .wallet-panel .w-amount { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 1.6rem; }
         .wallet-panel .w-desc { font-size: 0.8rem; opacity: 0.75; margin-top: 8px; display: flex; align-items: center; gap: 5px; }
+        .payment-choice-wrap { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 16px; }
+        .payment-choice { border: 1.5px solid var(--gray-200); border-radius: 10px; padding: 10px 12px; display: flex; align-items: center; gap: 8px; background: var(--white); }
+        .payment-choice input { accent-color: var(--purple-mid); }
+        .payment-choice strong { font-size: 0.82rem; }
+        .payment-choice span { font-size: 0.74rem; color: var(--gray-500); }
+        .card-panel { border: 1.5px solid var(--gray-200); border-radius: 12px; padding: 16px; margin-bottom: 16px; background: var(--gray-100); display: none; }
+        .card-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+        .alert-payment { background: #fef2f2; border: 1.5px solid #fecaca; color: #dc2626; border-radius: 10px; padding: 12px 14px; font-size: 0.82rem; display: flex; align-items: center; gap: 8px; margin-bottom: 14px; }
         .alert-insufficient { background: #fef2f2; border: 1.5px solid #fecaca; color: #dc2626; border-radius: 10px; padding: 14px 16px; font-size: 0.85rem; display: flex; align-items: center; gap: 8px; margin-bottom: 16px; }
         .btn-place-order { background: var(--purple-deep); color: var(--white); border: none; border-radius: 10px; padding: 13px; font-size: 0.92rem; font-weight: 700; font-family: 'DM Sans', sans-serif; width: 100%; cursor: pointer; transition: background 0.2s, transform 0.15s; display: flex; align-items: center; justify-content: center; gap: 8px; }
         .btn-place-order:hover { background: var(--purple-mid); transform: translateY(-1px); }
@@ -164,24 +173,71 @@
                         <i class="bi bi-wallet2" style="color:var(--purple-mid)"></i> Payment
                     </h3>
 
+                    <% if (checkoutError) { %>
+                    <div class="alert-payment">
+                        <i class="bi bi-x-octagon-fill"></i>
+                        <%= checkoutError %>
+                    </div>
+                    <% } %>
+
+                    <div class="payment-choice-wrap">
+                        <label class="payment-choice">
+                            <input type="radio" name="payment_method" value="wallet" <%= selectedPaymentMethod !== 'vulnbank_card' ? 'checked' : '' %>>
+                            <div>
+                                <strong>Wallet</strong><br>
+                                <span>Use local Pwnshop wallet</span>
+                            </div>
+                        </label>
+                        <label class="payment-choice" style="<%= vulnbankEnabled ? '' : 'opacity:0.5;' %>">
+                            <input type="radio" name="payment_method" value="vulnbank_card" <%= selectedPaymentMethod === 'vulnbank_card' ? 'checked' : '' %> <%= vulnbankEnabled ? '' : 'disabled' %>>
+                            <div>
+                                <strong>Vulnbank Card</strong><br>
+                                <span><%= vulnbankEnabled ? 'Pay directly with virtual card' : 'Not configured by admin' %></span>
+                            </div>
+                        </label>
+                    </div>
+
                     <div class="wallet-panel">
                         <div class="w-label">Wallet Balance</div>
                         <div class="w-amount">₦<%= parseFloat(user.wallet_amount || 0).toFixed(2) %></div>
-                        <div class="w-desc"><i class="bi bi-info-circle"></i> Payment will be deducted from your wallet</div>
+                        <div class="w-desc"><i class="bi bi-info-circle"></i> Wallet remains available even when using Vulnbank card.</div>
+                    </div>
+
+                    <div class="card-panel" id="vulnbankCardPanel">
+                        <div class="mb-2">
+                            <label class="f-label">Card Number</label>
+                            <input class="f-field" type="text" name="vb_card_number" id="vbCardNumber" placeholder="4111 1111 1111 1111">
+                        </div>
+                        <div class="card-grid">
+                            <div>
+                                <label class="f-label">Expiry</label>
+                                <input class="f-field" type="text" name="vb_card_expiry" id="vbCardExpiry" placeholder="MM/YY">
+                            </div>
+                            <div>
+                                <label class="f-label">CVV</label>
+                                <input class="f-field" type="password" name="vb_card_cvv" id="vbCardCvv" placeholder="123">
+                            </div>
+                        </div>
+                        <div class="mt-2">
+                            <label class="f-label">Card Holder Name</label>
+                            <input class="f-field" type="text" name="vb_card_name" id="vbCardName" value="<%= user.username %>">
+                        </div>
                     </div>
 
 
-                    <div class="alert-insufficient" id="insufficientAlert" style="display:<%= parseFloat(user.wallet_amount || 0) < parseFloat(total) ? 'flex' : 'none' %>;">
+                    <div class="alert-insufficient" id="insufficientAlert" style="display:<%= (selectedPaymentMethod !== 'vulnbank_card' && parseFloat(user.wallet_amount || 0) < parseFloat(total)) ? 'flex' : 'none' %>;">
                         <i class="bi bi-exclamation-triangle-fill"></i>
                         Insufficient wallet balance. Please add funds before proceeding.
                     </div>
 
 
                     <button type="submit" class="btn-place-order" id="placeOrderBtn"
-                        <%= parseFloat(user.wallet_amount || 0) < parseFloat(total) ? 'disabled' : '' %>>
+                        <%= (selectedPaymentMethod !== 'vulnbank_card' && parseFloat(user.wallet_amount || 0) < parseFloat(total)) ? 'disabled' : '' %>>
                         <i class="bi bi-lock-fill"></i>
                         <span id="placeOrderLabel">
-                            <%= parseFloat(user.wallet_amount || 0) < parseFloat(total) ? 'Insufficient Balance' : 'Place Order — ₦' + total %>
+                            <%= selectedPaymentMethod === 'vulnbank_card'
+                                ? 'Pay with Vulnbank — ₦' + total
+                                : (parseFloat(user.wallet_amount || 0) < parseFloat(total) ? 'Insufficient Balance' : 'Place Order — ₦' + total) %>
                         </span>
                     </button>
                 </form>
@@ -229,8 +285,26 @@ const discountLbl    = document.getElementById('discountLabel');
 const placeBtn       = document.getElementById('placeOrderBtn');
 const placeLabel     = document.getElementById('placeOrderLabel');
 const alertBox       = document.getElementById('insufficientAlert');
+const paymentInputs  = document.querySelectorAll('input[name="payment_method"]');
+const cardPanel      = document.getElementById('vulnbankCardPanel');
+const cardNumber     = document.getElementById('vbCardNumber');
+const cardExpiry     = document.getElementById('vbCardExpiry');
+const cardCvv        = document.getElementById('vbCardCvv');
+let effectiveTotal   = baseTotal;
+
+function currentPaymentMethod() {
+    const selected = document.querySelector('input[name="payment_method"]:checked');
+    return selected ? selected.value : 'wallet';
+}
 
 function updateButtonState(effectiveTotal) {
+    if (currentPaymentMethod() === 'vulnbank_card') {
+        placeBtn.disabled = false;
+        placeLabel.textContent = 'Pay with Vulnbank — ₦' + effectiveTotal.toFixed(2);
+        alertBox.style.display = 'none';
+        return;
+    }
+
     if (walletBalance < effectiveTotal) {
         placeBtn.disabled = true;
         placeLabel.textContent = 'Insufficient Balance';
@@ -241,6 +315,21 @@ function updateButtonState(effectiveTotal) {
         alertBox.style.display = 'none';
     }
 }
+
+function syncPaymentMethodUi() {
+    const isCard = currentPaymentMethod() === 'vulnbank_card';
+    cardPanel.style.display = isCard ? 'block' : 'none';
+    cardNumber.required = isCard;
+    cardExpiry.required = isCard;
+    cardCvv.required = isCard;
+    updateButtonState(effectiveTotal);
+}
+
+paymentInputs.forEach((input) => {
+    input.addEventListener('change', syncPaymentMethodUi);
+});
+
+syncPaymentMethodUi();
 
 applyBtn.addEventListener('click', async () => {
     const code = couponInput.value.trim();
@@ -270,7 +359,8 @@ applyBtn.addEventListener('click', async () => {
             couponInput.disabled = true;
 
 
-            updateButtonState(parseFloat(data.new_total));
+            effectiveTotal = parseFloat(data.new_total);
+            updateButtonState(effectiveTotal);
         } else {
             couponMsg.className = 'coupon-msg err';
             couponMsg.textContent = data.message;
@@ -287,8 +377,9 @@ applyBtn.addEventListener('click', async () => {
     }
 });
 </script>
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script src="/js/bootstrap.bundle.min.js"></script>
     <%- include('chat-widget') %>
 <script src="/js/mobile-nav.js"></script>
+
 </body>
 </html>

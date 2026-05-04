@@ -38,6 +38,37 @@ vulnerable-ecommerce-app
 - Vulnerable routes that can be exploited for learning purposes.
 - Dockerized setup for easy deployment and testing.
 
+## Vulnbank Merchant Integration
+
+Pwnshop now supports Vulnbank as an additional payment rail while keeping the local wallet flow.
+
+### What was added
+
+- Checkout supports two payment methods:
+   - Local wallet (existing behavior)
+   - Vulnbank virtual card
+- Profile page supports funding the local wallet using a Vulnbank virtual card.
+
+### Environment variables
+
+Set the following in `.env`:
+
+- `VULNBANK_BASE_URL`
+- `VULNBANK_AUTH_MODE` (`api_key_header` or `jwt`)
+- `VULNBANK_MERCHANT_API_KEY`
+- `VULNBANK_MERCHANT_JWT` (used when `VULNBANK_AUTH_MODE=jwt`)
+- `VULNBANK_CHARGE_PATH` (default: `/merchant/charges`)
+- `VULNBANK_VERIFY_PATH` (default: `/merchant/charges/{reference}`)
+- `VULNBANK_TIMEOUT_MS` (default: `12000`)
+
+### Lab vulnerability mode
+
+For intentional fintech logic flaws in training labs, set:
+
+- `VULNBANK_LAB_VULN=1`
+
+When enabled, Vulnbank settlement/amount verification is intentionally weakened and wallet-credit override input is exposed for learners.
+
 ## Setup Instructions
 
 1. **Clone the repository:**

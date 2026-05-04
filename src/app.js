@@ -6,7 +6,7 @@ const bcrypt = require('bcryptjs');
 const express = require('express');
 const bodyParser = require('body-parser');
 const session = require('express-session');
-const mysql = require('mysql');
+const mysql = require('mysql2');
 const multer = require('multer');
 const crypto = require('crypto');
 const { execFile } = require('child_process');
@@ -119,6 +119,16 @@ db.query(`CREATE TABLE IF NOT EXISTS coupon_uses (
     used_at    TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 )`, () => {});
 
+// Tracks Vulnbank payment references - used to prevent replay attacks in strict mode
+db.query(`CREATE TABLE IF NOT EXISTS vulnbank_tx_log (
+    id         INT AUTO_INCREMENT PRIMARY KEY,
+    user_id    INT NOT NULL,
+    reference  VARCHAR(255) NOT NULL,
+    amount     DECIMAL(12,2) NOT NULL,
+    flow       VARCHAR(50) NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+)`, () => {});
+
 function auditLog(userId, action, detail, req) {
 
     const ip = (req.headers['x-forwarded-for'] || req.ip || '').toString().split(',')[0].trim();
@@ -131,6 +141,198 @@ function auditLog(userId, action, detail, req) {
 
 const PLATFORM_FEE_PCT = 0.05;
 const SHIPPING_DEDUCTION = 500;
+
+const VULNBANK_BASE_URL = process.env.VULNBANK_BASE_URL || '';
+const VULNBANK_MERCHANT_API_KEY = process.env.VULNBANK_MERCHANT_API_KEY || '';
+const VULNBANK_MERCHANT_JWT = process.env.VULNBANK_MERCHANT_JWT || '';
+const VULNBANK_AUTH_MODE = (process.env.VULNBANK_AUTH_MODE || 'api_key_header').toLowerCase();
+const VULNBANK_CHARGE_PATH = process.env.VULNBANK_CHARGE_PATH || '/api/v1/payments/charge';
+const VULNBANK_VERIFY_PATH = process.env.VULNBANK_VERIFY_PATH || '/api/v1/payments/{payment_id}';
+const VULNBANK_TIMEOUT_MS = parseInt(process.env.VULNBANK_TIMEOUT_MS || '12000', 10);
+const VULNBANK_LAB_VULN = process.env.VULNBANK_LAB_VULN === '1';
+
+function isVulnbankConfigured() {
+    const hasAuth = VULNBANK_AUTH_MODE === 'jwt'
+        ? !!VULNBANK_MERCHANT_JWT
+        : !!VULNBANK_MERCHANT_API_KEY;
+    return !!(VULNBANK_BASE_URL && hasAuth);
+}
+
+function vulnbankUnwrap(payload) {
+    if (!payload || typeof payload !== 'object') return {};
+    if (payload.data && typeof payload.data === 'object') return payload.data;
+    return payload;
+}
+
+function getVulnbankStatus(payload) {
+    const flat = vulnbankUnwrap(payload);
+    const inner = payload.payment || {};
+    return String(
+        flat.status || flat.payment_status ||
+        inner.status || inner.payment_status ||
+        payload.status || ''
+    ).toLowerCase();
+}
+
+function getVulnbankReference(payload) {
+    const flat = vulnbankUnwrap(payload);
+    const inner = payload.payment || {};
+    return flat.reference || flat.tx_ref || flat.transaction_reference || flat.id ||
+           inner.id || inner.reference || inner.tx_ref || '';
+}
+
+function getVulnbankAmount(payload) {
+    const flat = vulnbankUnwrap(payload);
+    const inner = payload.payment || {};
+    const candidates = [
+        flat.amount, flat.amount_charged, flat.paid_amount, flat.value,
+        payload.amount, payload.amount_charged,
+        inner.amount, inner.amount_charged
+    ];
+    for (const c of candidates) {
+        const n = parseFloat(c);
+        if (!isNaN(n)) return n;
+    }
+    return null;
+}
+
+function extractVulnbankErrorMessage(err, fallback = 'Vulnbank request failed', maxLen = 220) {
+    const payload = err && err.payload && typeof err.payload === 'object' ? err.payload : null;
+    if (payload) {
+        const candidates = [
+            payload.message,
+            payload.error,
+            payload.detail,
+            payload.reason,
+            payload.error_message,
+            payload.user_message,
+            payload.debug_info && payload.debug_info.message,
+            payload.debug_info && payload.debug_info.error
+        ];
+
+        const direct = candidates.find((v) => typeof v === 'string' && v.trim());
+        if (direct) return direct.trim().slice(0, maxLen);
+
+        if (Array.isArray(payload.errors) && payload.errors.length) {
+            const first = payload.errors[0];
+            if (typeof first === 'string' && first.trim()) return first.trim().slice(0, maxLen);
+            if (first && typeof first === 'object') {
+                const nested = [first.message, first.error, first.detail].find((v) => typeof v === 'string' && v.trim());
+                if (nested) return nested.trim().slice(0, maxLen);
+            }
+        }
+    }
+
+    if (err && typeof err.message === 'string' && err.message.trim()) {
+        return err.message.trim().slice(0, maxLen);
+    }
+    return fallback;
+}
+
+function isVulnbankSuccess(payload) {
+    const status = getVulnbankStatus(payload);
+    return ['success', 'succeeded', 'approved', 'completed', 'paid'].includes(status);
+}
+
+function normalizeVulnbankPath(relativePath) {
+    if (!relativePath) return '/';
+    if (relativePath.startsWith('/')) return relativePath;
+    return '/' + relativePath;
+}
+
+function buildVulnbankVerifyPath(referenceOrId) {
+    if (!VULNBANK_VERIFY_PATH) return null;
+    if (!referenceOrId) return null;
+    if (!(VULNBANK_VERIFY_PATH.includes('{reference}') || VULNBANK_VERIFY_PATH.includes('{payment_id}'))) {
+        return null;
+    }
+
+    return VULNBANK_VERIFY_PATH
+        .replace('{reference}', encodeURIComponent(referenceOrId))
+        .replace('{payment_id}', encodeURIComponent(referenceOrId));
+}
+
+function vulnbankRequest(relativePath, method = 'POST', payload = null) {
+    return new Promise((resolve, reject) => {
+        if (!isVulnbankConfigured()) {
+            return reject(new Error('Vulnbank is not configured'));
+        }
+
+        let target;
+        try {
+            target = new URL(normalizeVulnbankPath(relativePath), VULNBANK_BASE_URL);
+        } catch (_) {
+            return reject(new Error('Invalid Vulnbank URL configuration'));
+        }
+
+        const body = payload ? JSON.stringify(payload) : null;
+        const transport = target.protocol === 'http:' ? http : https;
+        const options = {
+            hostname: target.hostname,
+            port: target.port || (target.protocol === 'http:' ? 80 : 443),
+            path: target.pathname + target.search,
+            method,
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        };
+
+        if (VULNBANK_AUTH_MODE === 'jwt') {
+            options.headers['Authorization'] = 'Bearer ' + VULNBANK_MERCHANT_JWT;
+        } else {
+            options.headers['X-Merchant-Api-Key'] = VULNBANK_MERCHANT_API_KEY;
+        }
+
+        if (body) options.headers['Content-Length'] = Buffer.byteLength(body);
+
+        // DEBUG: Log the request details
+        console.log('[Vulnbank Request]', {
+            url: target.toString(),
+            method,
+            authMode: VULNBANK_AUTH_MODE,
+            hasApiKey: !!VULNBANK_MERCHANT_API_KEY,
+            hasJwt: !!VULNBANK_MERCHANT_JWT
+        });
+
+        const req = transport.request(options, (resp) => {
+            let raw = '';
+            resp.on('data', (chunk) => { raw += chunk; });
+            resp.on('end', () => {
+                let parsed = {};
+                if (raw && raw.trim()) {
+                    try {
+                        parsed = JSON.parse(raw);
+                    } catch (_) {
+                        parsed = { raw };
+                    }
+                }
+                
+                // DEBUG: Log full response
+                console.log('[Vulnbank Response]', {
+                    statusCode: resp.statusCode,
+                    contentType: resp.headers['content-type'],
+                    body: parsed
+                });
+                
+                if (resp.statusCode >= 200 && resp.statusCode < 300) {
+                    return resolve(parsed);
+                }
+                const err = new Error('Vulnbank API error');
+                err.statusCode = resp.statusCode;
+                err.payload = parsed;
+                reject(err);
+            });
+        });
+
+        req.on('error', reject);
+        req.setTimeout(VULNBANK_TIMEOUT_MS, () => {
+            req.destroy(new Error('Vulnbank request timed out'));
+        });
+
+        if (body) req.write(body);
+        req.end();
+    });
+}
 
 const SEED_USER_IDS    = [1, 2, 3, 4, 5];
 const SEED_PRODUCT_IDS = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11];
@@ -153,6 +355,142 @@ app.use((req, res, next) => {
     }
 });
 
+// Meta DB connection - persists across lab resets
+const metaDb = mysql.createPool({
+    host: process.env.DB_HOST || 'localhost',
+    user: process.env.DB_USER || 'root',
+    password: process.env.DB_PASSWORD,
+    database: 'pwnshop_meta',
+    waitForConnections: true,
+    connectionLimit: 5,
+    queueLimit: 0
+});
+
+metaDb.query(`CREATE TABLE IF NOT EXISTS visitor_stats (
+    ip VARCHAR(120) PRIMARY KEY,
+    first_seen TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    last_seen TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    visit_count INT DEFAULT 1
+)`, () => {});
+
+// Rate limiter factory - hybrid IP + user ID
+const rateLimitMaps = new Map();
+
+function createRateLimiter(maxRequests, windowMs = 60 * 1000) {
+    const store = new Map();
+
+    // Clean up expired entries every 5 mins
+    setInterval(() => {
+        const now = Date.now();
+        for (const [key, entry] of store.entries()) {
+            if (now - entry.windowStart > windowMs) store.delete(key);
+        }
+    }, 5 * 60 * 1000);
+
+    return function rateLimiter(req, res, next) {
+        // Hybrid key: use user ID if logged in, otherwise IP
+        const ip = (req.headers['x-forwarded-for'] || req.ip || '').toString().split(',')[0].trim();
+        const key = req.session && req.session.user ? `user:${req.session.user.id}` : `ip:${ip}`;
+        const now = Date.now();
+
+        if (!store.has(key)) {
+            store.set(key, { count: 1, windowStart: now });
+            return next();
+        }
+
+        const entry = store.get(key);
+
+        if (now - entry.windowStart > windowMs) {
+            entry.count = 1;
+            entry.windowStart = now;
+            return next();
+        }
+
+        entry.count++;
+        if (entry.count > maxRequests) {
+            const retryAfter = Math.ceil((windowMs - (now - entry.windowStart)) / 1000);
+            if (req.xhr || req.headers.accept?.includes('application/json')) {
+                return res.status(429).json({ error: 'Too many requests', retryAfter });
+            }
+            return res.status(429).send(`<h2>Too many requests. Please wait ${retryAfter} seconds.</h2>`);
+        }
+
+        next();
+    };
+}
+
+// Rate limiter instances
+const globalGetLimiter      = createRateLimiter(60);
+const adminLoginLimiter     = createRateLimiter(10);
+const loginLimiter          = createRateLimiter(30);
+const registerLimiter       = createRateLimiter(10);
+const checkoutLimiter       = createRateLimiter(20);
+const searchLimiter         = createRateLimiter(30);
+const addProductLimiter     = createRateLimiter(10);
+const reviewLimiter         = createRateLimiter(10);
+const avatarLimiter         = createRateLimiter(10);
+const forgotPasswordLimiter = createRateLimiter(10);
+const resetPasswordLimiter  = createRateLimiter(10);
+const wishlistLimiter       = createRateLimiter(30);
+const cartLimiter           = createRateLimiter(50);
+const couponLimiter         = createRateLimiter(20);
+const trackLimiter          = createRateLimiter(20);
+const sellerPreviewLimiter  = createRateLimiter(15);
+const registerSellerLimiter = createRateLimiter(5);
+const accountDeleteLimiter  = createRateLimiter(5);
+const mailReadLimiter       = createRateLimiter(30);
+
+// Global GET rate limit - protects against directory fuzzing
+app.use((req, res, next) => {
+    if (req.method === 'GET') return globalGetLimiter(req, res, next);
+    next();
+});
+
+// Smart healer + visitor tracking
+let labIsDirty = false;
+let lastActivityMs = 0;
+
+const trackedRoutes = [
+    '/', '/search', '/login', '/register', '/verify-otp',
+    '/forgot-password', '/reset-password', '/cart', '/checkout',
+    '/chat', '/chat/init', '/mail', '/track', '/vulnerabilities',
+    '/debug/info', '/seller/preview'
+];
+
+function isTrackedRoute(path) {
+    if (trackedRoutes.includes(path)) return true;
+    if (path.startsWith('/product/')) return true;
+    if (path.startsWith('/category/')) return true;
+    if (path.startsWith('/mail/')) return true;
+    if (path.startsWith('/wishlist/')) return true;
+    if (path.startsWith('/track/')) return true;
+    return false;
+}
+
+app.use((req, res, next) => {
+    lastActivityMs = Date.now();
+
+    // Mark dirty on POST/PUT/DELETE/PATCH
+    if (['POST', 'PUT', 'DELETE', 'PATCH'].includes(req.method)) {
+        labIsDirty = true;
+    }
+
+    // Only track meaningful routes
+    if (isTrackedRoute(req.path)) {
+        const rawIp = (req.headers['x-forwarded-for'] || req.ip || '').toString().split(',')[0].trim();
+        if (rawIp) {
+            metaDb.query(
+                `INSERT INTO visitor_stats (ip, visit_count) VALUES (?, 1)
+                 ON DUPLICATE KEY UPDATE last_seen = NOW(), visit_count = visit_count + 1`,
+                [rawIp],
+                () => {}
+            );
+        }
+    }
+
+    next();
+});
+
 app.get('/', (req, res) => {
     db.query('SELECT * FROM products WHERE available = TRUE', (err, products) => {
         if (err) return res.status(500).send('Database error: ' + err.message);
@@ -163,7 +501,7 @@ app.get('/', (req, res) => {
     });
 });
 
-app.get('/search', (req, res) => {
+app.get('/search', searchLimiter, (req, res) => {
     const query = req.query.q;
     const sqlQuery = `SELECT * FROM products WHERE name LIKE '%${query}%' OR description LIKE '%${query}%'`;
     db.query(sqlQuery, (err, products) => {
@@ -254,7 +592,7 @@ app.get('/product/:id', (req, res) => {
     );
 });
 
-app.post('/review', (req, res) => {
+app.post('/review', reviewLimiter, (req, res) => {
     if (!req.session.user) return res.redirect('/login');
     const { product_id, rating, comment } = req.body;
     db.query(
@@ -267,7 +605,7 @@ app.post('/review', (req, res) => {
     );
 });
 
-app.post('/wishlist/add', (req, res) => {
+app.post('/wishlist/add', wishlistLimiter, (req, res) => {
     if (!req.session.user) return res.redirect('/login');
     const { product_id } = req.body;
 
@@ -280,7 +618,7 @@ app.post('/wishlist/add', (req, res) => {
     );
 });
 
-app.post('/wishlist/remove', (req, res) => {
+app.post('/wishlist/remove', wishlistLimiter, (req, res) => {
     if (!req.session.user) return res.redirect('/login');
     const { product_id, redirect_to } = req.body;
     db.query(
@@ -323,7 +661,7 @@ app.get('/login', (req, res) => {
     res.render('login', { error: null, username: '', next });
 });
 
-app.post('/login', (req, res) => {
+app.post('/login', loginLimiter, (req, res) => {
     const { username, password, next } = req.body;
 
 
@@ -428,7 +766,7 @@ app.post('/verify-otp', (req, res) => {
 
 app.get('/admin/login', (req, res) => res.render('admin-login', { error: null }));
 
-app.post('/admin/login', (req, res) => {
+app.post('/admin/login', adminLoginLimiter, (req, res) => {
     const { username, password } = req.body;
 
     const query = `SELECT * FROM users WHERE username='${username}' AND role='admin'`;
@@ -481,7 +819,7 @@ app.get('/register', (req, res) => {
     res.render('register', { error: null, next });
 });
 
-app.post('/register', (req, res) => {
+app.post('/register', registerLimiter, (req, res) => {
     const { username, email, phone, password, role, next } = req.body;
 
     bcrypt.hash(password, 12, (hashErr, hashedPassword) => {
@@ -522,14 +860,22 @@ app.get('/profile', (req, res) => {
                 [userId],
                 (err, wishlist) => {
                     if (err) wishlist = [];
-                    res.render('profile', { user: req.session.user, orders, wishlist });
+                    res.render('profile', {
+                        user: req.session.user,
+                        orders,
+                        wishlist,
+                        walletError: req.query.wallet_error || null,
+                        walletSuccess: req.query.wallet_success || null,
+                        vulnbankEnabled: isVulnbankConfigured(),
+                        vulnbankLabVuln: VULNBANK_LAB_VULN
+                    });
                 }
             );
         });
     });
 });
 
-app.post('/profile/update-avatar', (req, res) => {
+app.post('/profile/update-avatar', avatarLimiter, (req, res) => {
     if (!req.session.user) return res.status(401).json({ ok: false, error: 'Not logged in' });
     const { avatar_url } = req.body;
     if (!avatar_url) return res.status(400).json({ ok: false, error: 'No URL provided' });
@@ -573,7 +919,7 @@ app.post('/profile/update-avatar', (req, res) => {
     });
 });
 
-app.post('/profile/upload-avatar', (req, res) => {
+app.post('/profile/upload-avatar', avatarLimiter, (req, res) => {
     if (!req.session.user) return res.status(401).json({ ok: false, error: 'Not logged in' });
 
     avatarUpload.single('avatar')(req, res, (uploadErr) => {
@@ -618,7 +964,153 @@ app.post('/profile/upload-avatar', (req, res) => {
     });
 });
 
-app.post('/account/delete', (req, res) => {
+app.post('/wallet/topup/vulnbank', checkoutLimiter, async (req, res) => {
+    if (!req.session.user) return res.redirect('/login');
+
+    if (!isVulnbankConfigured()) {
+        return res.redirect('/profile?wallet_error=' + encodeURIComponent('Vulnbank is not configured on this lab instance'));
+    }
+
+    const userId = req.session.user.id;
+    const amount = parseFloat(req.body.amount || '0');
+    const cardNumber = String(req.body.card_number || '').trim();
+    const cardExpiry = String(req.body.card_expiry || '').trim();
+    const cardCvv = String(req.body.card_cvv || '').trim();
+    const cardName = String(req.body.card_name || req.session.user.username || '').trim();
+
+    if (isNaN(amount)) {
+        return res.redirect('/profile?wallet_error=' + encodeURIComponent('Invalid top-up amount'));
+    }
+
+    // VULNERABILITY (negative amount): In lab vuln mode the positive-amount
+    // guard is skipped. A learner can send amount=0.001 — Vulnbank charges
+    // essentially nothing — then pair it with credited_amount to credit any
+    // value they want. In strict mode the > 0 guard blocks this entirely.
+    if (!VULNBANK_LAB_VULN && amount <= 0) {
+        return res.redirect('/profile?wallet_error=' + encodeURIComponent('Amount must be greater than zero'));
+    }
+
+    if (!cardNumber || !cardExpiry || !cardCvv) {
+        return res.redirect('/profile?wallet_error=' + encodeURIComponent('Vulnbank card details are required'));
+    }
+
+    const txRef = 'pwnshop_topup_' + userId + '_' + Date.now();
+    const normalizedCardNumber = cardNumber.replace(/\s+/g, '');
+    const payload = {
+        // VULNERABILITY (negative amount): In lab vuln mode, amount is sent
+        // as-is with no rounding or clamping — so 0.001 goes to Vulnbank
+        // exactly as 0.001 rather than being normalised to a safe minimum.
+        amount: VULNBANK_LAB_VULN ? amount : parseFloat(amount.toFixed(2)),
+        currency: 'NGN',
+        merchant_order_id: txRef,
+        description: 'Pwnshop wallet top-up',
+        card_number: normalizedCardNumber,
+        cvv: cardCvv,
+        expiry_date: cardExpiry,
+        metadata: {
+            user_id: userId,
+            flow: 'wallet_topup',
+            card_name: cardName
+        }
+    };
+
+    try {
+        const chargeResp = await vulnbankRequest(VULNBANK_CHARGE_PATH, 'POST', payload);
+        const ref = VULNBANK_LAB_VULN
+            ? (getVulnbankReference(chargeResp) || txRef)
+            : txRef;
+
+        let verifyResp = chargeResp;
+        const verifyPath = buildVulnbankVerifyPath(ref);
+        if (verifyPath) {
+            try {
+                verifyResp = await vulnbankRequest(verifyPath, 'GET');
+            } catch (_) {
+                // fall through — use charge response as-is
+            }
+        }
+
+        const settled = isVulnbankSuccess(verifyResp);
+        const remoteAmount = getVulnbankAmount(verifyResp);
+        // VULNERABILITY (#3): remoteAmount === null bypasses amount check entirely
+        const amountMatches = remoteAmount === null || Math.abs(remoteAmount - amount) < 0.01;
+
+        if (!VULNBANK_LAB_VULN && (!settled || !amountMatches)) {
+            return res.redirect('/profile?wallet_error=' + encodeURIComponent('Vulnbank charge was not settled'));
+        }
+
+        // VULNERABILITY (#1): credited_amount is read from the request body when lab vuln is on
+        const creditedAmount = VULNBANK_LAB_VULN
+            ? parseFloat(req.body.credited_amount || amount)
+            : amount;
+
+        if (isNaN(creditedAmount)) {
+            return res.redirect('/profile?wallet_error=' + encodeURIComponent('Invalid credited amount'));
+        }
+
+        // VULNERABILITY (negative amount): In lab vuln mode the sign check on
+        // creditedAmount is removed. Sending credited_amount=-5000 would
+        // decrement the wallet. Combined with a tiny charge (amount=0.001)
+        // and a large positive credited_amount, a learner can essentially
+        // fund their wallet for free. In strict mode the <= 0 guard applies.
+        if (!VULNBANK_LAB_VULN && creditedAmount <= 0) {
+            return res.redirect('/profile?wallet_error=' + encodeURIComponent('Invalid credited amount'));
+        }
+
+        // VULNERABILITY (replay): In strict mode we check for duplicate references.
+        // In lab vuln mode the check is skipped — replaying a valid reference credits
+        // the wallet again without a new charge.
+        const doCredit = () => {
+            // VULNERABILITY (race condition): non-atomic SELECT then UPDATE creates a
+            // TOCTOU window. Two concurrent top-up requests can both read the same
+            // balance, both compute the same new value, and the second write wins —
+            // effectively crediting the wallet only once instead of twice, or the
+            // opposite: both succeed and the wallet is double-credited depending on timing.
+            db.query('SELECT wallet_amount FROM users WHERE id = ?', [userId], (selErr, selRows) => {
+                if (selErr || !selRows.length) {
+                    return res.redirect('/profile?wallet_error=' + encodeURIComponent('Database error while funding wallet'));
+                }
+                const currentBalance = parseFloat(selRows[0].wallet_amount || 0);
+                const newBalance = currentBalance + creditedAmount;
+
+                db.query('UPDATE users SET wallet_amount = ? WHERE id = ?', [newBalance, userId], (updErr) => {
+                    if (updErr) {
+                        return res.redirect('/profile?wallet_error=' + encodeURIComponent('Database error while funding wallet'));
+                    }
+
+                    db.query('INSERT INTO vulnbank_tx_log (user_id, reference, amount, flow) VALUES (?, ?, ?, ?)',
+                        [userId, ref, creditedAmount, 'wallet_topup'], () => {});
+
+                    db.query('SELECT * FROM users WHERE id = ?', [userId], (uErr, rows) => {
+                        if (!uErr && rows.length) req.session.user = rows[0];
+                        auditLog(userId, 'WALLET_TOPUP_VULNBANK',
+                            `ref: ${ref} | requested: ${amount.toFixed(2)} | credited: ${creditedAmount.toFixed(2)}`,
+                            req);
+                        res.redirect('/profile?wallet_success=' + encodeURIComponent('Wallet funded with Vulnbank: ₦' + creditedAmount.toFixed(2)));
+                    });
+                });
+            });
+        };
+
+        if (!VULNBANK_LAB_VULN) {
+            db.query('SELECT id FROM vulnbank_tx_log WHERE reference = ?', [ref], (chkErr, existing) => {
+                if (!chkErr && existing.length > 0) {
+                    return res.redirect('/profile?wallet_error=' + encodeURIComponent('Payment reference already used'));
+                }
+                doCredit();
+            });
+        } else {
+            // Lab vuln mode: no duplicate reference check
+            doCredit();
+        }
+
+    } catch (err) {
+        const msg = extractVulnbankErrorMessage(err, 'Vulnbank request failed');
+        res.redirect('/profile?wallet_error=' + encodeURIComponent(msg));
+    }
+});
+
+app.post('/account/delete', accountDeleteLimiter, (req, res) => {
     if (!req.session.user) return res.redirect('/login');
     const userId = req.session.user.id;
 
@@ -679,7 +1171,7 @@ app.get('/mail/:token', (req, res) => {
     });
 });
 
-app.post('/mail/:id/read', (req, res) => {
+app.post('/mail/:id/read', mailReadLimiter, (req, res) => {
     if (!req.session.user && !req.session.pendingUserId) return res.status(401).json({ ok: false });
     db.query('UPDATE mail_inbox SET is_read = TRUE WHERE id = ?', [req.params.id]);
     res.json({ ok: true });
@@ -699,7 +1191,7 @@ app.get('/cart', (req, res) => {
     );
 });
 
-app.post('/cart/add', (req, res) => {
+app.post('/cart/add', cartLimiter, (req, res) => {
     if (!req.session.user) return res.redirect('/login');
     const { product_id, quantity } = req.body;
     db.query(
@@ -712,12 +1204,12 @@ app.post('/cart/add', (req, res) => {
     );
 });
 
-app.post('/cart/remove/:id', (req, res) => {
+app.post('/cart/remove/:id', cartLimiter, (req, res) => {
     if (!req.session.user) return res.redirect('/login');
     db.query('DELETE FROM cart_items WHERE id = ?', [req.params.id], () => res.redirect('/cart'));
 });
 
-app.post('/cart/update', (req, res) => {
+app.post('/cart/update', cartLimiter, (req, res) => {
     if (!req.session.user) return res.redirect('/login');
     const { item_id, quantity } = req.body;
     const qty = parseInt(quantity);
@@ -731,7 +1223,7 @@ app.post('/cart/update', (req, res) => {
     }
 });
 
-app.post('/apply-coupon', (req, res) => {
+app.post('/apply-coupon', couponLimiter, (req, res) => {
     const { code, cart_total } = req.body;
     if (!code) return res.json({ valid: false, message: 'Enter a coupon code' });
     if (!req.session.user) return res.json({ valid: false, message: 'Please log in to use a coupon' });
@@ -833,17 +1325,28 @@ app.get('/checkout', (req, res) => {
                     items,
                     total: total.toFixed(2),
                     platformFee,
-                    shipping
+                    shipping,
+                    checkoutError: null,
+                    selectedPaymentMethod: 'wallet',
+                    vulnbankEnabled: isVulnbankConfigured()
                 });
             }
         );
     });
 });
 
-app.post('/checkout', (req, res) => {
+app.post('/checkout', checkoutLimiter, (req, res) => {
     if (!req.session.user) return res.redirect('/login');
     const { shipping_address } = req.body;
     const userId = req.session.user.id;
+    const paymentMethod = String(req.body.payment_method || 'wallet').toLowerCase() === 'vulnbank_card'
+        ? 'vulnbank_card'
+        : 'wallet';
+
+    const vbCardNumber = String(req.body.vb_card_number || '').trim();
+    const vbCardExpiry = String(req.body.vb_card_expiry || '').trim();
+    const vbCardCvv = String(req.body.vb_card_cvv || '').trim();
+    const vbCardName = String(req.body.vb_card_name || req.session.user.username || '').trim();
 
 
 
@@ -865,111 +1368,198 @@ app.post('/checkout', (req, res) => {
     db.query(
         'SELECT c.*, p.price, p.seller_id FROM cart_items c JOIN products p ON c.product_id = p.id WHERE c.user_id = ?',
         [userId],
-        (err, items) => {
+        async (err, items) => {
             if (err) return res.send('Database error');
             const baseTotal = items.reduce((s, i) => s + (i.quantity * parseFloat(i.price)), 0);
 
-            const proceedWithTotal = (total, usedCoupon = null, discountAmt = 0) => {
+            const renderCheckoutError = (total, walletBalance, message) => {
+                db.query(
+                    'SELECT c.*, p.name, p.price, (c.quantity * p.price) AS subtotal FROM cart_items c JOIN products p ON c.product_id = p.id WHERE c.user_id = ?',
+                    [userId],
+                    (err2, fullItems) => {
+                        const list = fullItems || [];
+                        const platformFee = (total * PLATFORM_FEE_PCT).toFixed(2);
+                        const shipping = list.length > 0 ? SHIPPING_DEDUCTION : 0;
+                        res.render('checkout', {
+                            user: { ...req.session.user, wallet_amount: walletBalance },
+                            items: list,
+                            total: total.toFixed(2),
+                            platformFee,
+                            shipping,
+                            checkoutError: message,
+                            selectedPaymentMethod: paymentMethod,
+                            vulnbankEnabled: isVulnbankConfigured()
+                        });
+                    }
+                );
+            };
+
+            const finalizeOrder = (total, usedCoupon, discountAmt, paymentSummary, deductWallet) => {
+                db.query(
+                    'INSERT INTO orders (user_id, total_amount, shipping_address, coupon_code, discount_amount) VALUES (?, ?, ?, ?, ?)',
+                    [userId, total, shipping_address, usedCoupon, discountAmt],
+                    (insertErr, result) => {
+                        if (insertErr) return res.send('Error creating order');
+                        const orderId = result.insertId;
+
+                        db.query(
+                            'INSERT INTO tracking_events (order_id, status, note) VALUES (?, ?, ?)',
+                            [orderId, 'pending', 'Order placed successfully (' + paymentSummary + ')']
+                        );
+
+                        let itemsInserted = 0;
+                        const totalItems = items.length;
+
+                        const finish = () => {
+                            const afterPayment = () => {
+                                db.query('DELETE FROM cart_items WHERE user_id = ?', [userId]);
+                                db.query('SELECT * FROM users WHERE id = ?', [userId], (err2, updated) => {
+                                    if (!err2 && updated.length) req.session.user = updated[0];
+                                    auditLog(userId, 'ORDER_PLACED',
+                                        `order_id: ${orderId} | amount: ${total.toFixed(2)} | coupon: ${usedCoupon || 'none'} | payment: ${paymentSummary}`,
+                                        req);
+
+                                    if (usedCoupon) {
+                                        db.query(
+                                            'SELECT id FROM coupons WHERE code = ?',
+                                            [usedCoupon],
+                                            (ce, cr) => {
+                                                if (!ce && cr.length) {
+                                                    db.query(
+                                                        'INSERT INTO coupon_uses (coupon_id, user_id, order_id) VALUES (?, ?, ?)',
+                                                        [cr[0].id, userId, orderId]
+                                                    );
+                                                    db.query(
+                                                        'UPDATE coupons SET total_used = total_used + 1 WHERE id = ?',
+                                                        [cr[0].id]
+                                                    );
+                                                }
+                                            }
+                                        );
+                                    }
+                                    res.redirect('/order/' + orderId);
+                                });
+                            };
+
+                            if (!deductWallet) return afterPayment();
+
+                            db.query('UPDATE users SET wallet_amount = wallet_amount - ? WHERE id = ?', [total, userId], (walletErr) => {
+                                if (walletErr) return res.send('Error updating wallet');
+                                afterPayment();
+                            });
+                        };
+
+                        if (totalItems === 0) return finish();
+
+                        items.forEach((item) => {
+                            db.query(
+                                'INSERT INTO order_items (order_id, product_id, quantity, price) VALUES (?, ?, ?, ?)',
+                                [orderId, item.product_id, item.quantity, item.price],
+                                () => {
+                                    db.query(
+                                        'UPDATE products SET stock = stock - ? WHERE id = ?',
+                                        [item.quantity, item.product_id]
+                                    );
+
+                                    itemsInserted++;
+                                    if (itemsInserted === totalItems) finish();
+                                }
+                            );
+                        });
+                    }
+                );
+            };
+
+            const proceedWithTotal = async (total, usedCoupon = null, discountAmt = 0) => {
                 db.query('SELECT wallet_amount FROM users WHERE id = ?', [userId], (err, rows) => {
                     if (err) return res.send('Database error');
 
                     const wallet = parseFloat(rows[0].wallet_amount || 0);
-                    if (wallet < total) {
-                        db.query(
-                            'SELECT c.*, p.name, p.price, (c.quantity * p.price) AS subtotal FROM cart_items c JOIN products p ON c.product_id = p.id WHERE c.user_id = ?',
-                            [userId],
-                            (err2, fullItems) => {
-                                const platformFee = (total * PLATFORM_FEE_PCT).toFixed(2);
-                                const shipping    = fullItems && fullItems.length > 0 ? SHIPPING_DEDUCTION : 0;
-                                res.render('checkout', {
-                                    user: { ...req.session.user, wallet_amount: wallet },
-                                    items: fullItems || [],
-                                    total: total.toFixed(2),
-                                    platformFee,
-                                    shipping
-                                });
-                            }
-                        );
-                        return;
+                    if (paymentMethod === 'wallet') {
+                        if (wallet < total) {
+                            return renderCheckoutError(total, wallet, 'Insufficient wallet balance.');
+                        }
+                        return finalizeOrder(total, usedCoupon, discountAmt, 'wallet', true);
                     }
 
-                    db.query(
-                        'INSERT INTO orders (user_id, total_amount, shipping_address, coupon_code, discount_amount) VALUES (?, ?, ?, ?, ?)',
-                        [userId, total, shipping_address, usedCoupon, discountAmt],
-                        (err, result) => {
-                            if (err) return res.send('Error creating order');
-                            const orderId = result.insertId;
+                    if (!isVulnbankConfigured()) {
+                        return renderCheckoutError(total, wallet, 'Vulnbank is not configured yet.');
+                    }
 
+                    if (!vbCardNumber || !vbCardExpiry || !vbCardCvv) {
+                        return renderCheckoutError(total, wallet, 'Card number, expiry and CVV are required for Vulnbank payment.');
+                    }
 
-                            db.query(
-                                'INSERT INTO tracking_events (order_id, status, note) VALUES (?, ?, ?)',
-                                [orderId, 'pending', 'Order placed successfully']
-                            );
+                    const reference = 'pwnshop_order_' + userId + '_' + Date.now();
+                    const normalizedCardNumber = vbCardNumber.replace(/\s+/g, '');
+                    const payload = {
+                        amount: parseFloat(total.toFixed(2)),
+                        currency: 'NGN',
+                        merchant_order_id: reference,
+                        description: 'Pwnshop checkout',
+                        card_number: normalizedCardNumber,
+                        cvv: vbCardCvv,
+                        expiry_date: vbCardExpiry,
+                        metadata: {
+                            user_id: userId,
+                            flow: 'checkout',
+                            card_name: vbCardName
+                        }
+                    };
 
+                    vulnbankRequest(VULNBANK_CHARGE_PATH, 'POST', payload)
+                        .then(async (chargeResp) => {
+                            const ref = VULNBANK_LAB_VULN
+                                ? (getVulnbankReference(chargeResp) || reference)
+                                : reference;
+                            let verifyResp = chargeResp;
 
-                            let itemsInserted = 0;
-                            const totalItems = items.length;
-
-                            if (totalItems === 0) {
-                                db.query('DELETE FROM cart_items WHERE user_id = ?', [userId]);
-                                return res.redirect('/order/' + orderId);
+                            const verifyPath = buildVulnbankVerifyPath(ref);
+                            if (verifyPath) {
+                                try {
+                                    verifyResp = await vulnbankRequest(verifyPath, 'GET');
+                                } catch (_) {
+                                    // fall through — use charge response as-is
+                                }
                             }
 
-                            items.forEach(item => {
+                            const settled = isVulnbankSuccess(verifyResp);
+                            const remoteAmount = getVulnbankAmount(verifyResp);
+                            // VULNERABILITY (#3): remoteAmount === null bypasses amount check
+                            const amountMatches = remoteAmount === null || Math.abs(remoteAmount - total) < 0.01;
+
+                            if (!VULNBANK_LAB_VULN && (!settled || !amountMatches)) {
+                                return renderCheckoutError(total, wallet, 'Vulnbank payment could not be verified as settled.');
+                            }
+
+                            // VULNERABILITY (replay): In strict mode we reject a reference
+                            // that already finalised an order. In lab vuln mode that check
+                            // is skipped — the same successful reference can be submitted
+                            // for multiple orders.
+                            const doFinalize = () => {
                                 db.query(
-                                    'INSERT INTO order_items (order_id, product_id, quantity, price) VALUES (?, ?, ?, ?)',
-                                    [orderId, item.product_id, item.quantity, item.price],
-                                    () => {
-
-
-
-
-
-
-                                        db.query(
-                                            'UPDATE products SET stock = stock - ? WHERE id = ?',
-                                            [item.quantity, item.product_id]
-                                        );
-
-                                        itemsInserted++;
-                                        if (itemsInserted === totalItems) {
-
-                                            db.query('UPDATE users SET wallet_amount = wallet_amount - ? WHERE id = ?', [total, userId], (err) => {
-                                                if (err) return res.send('Error updating wallet');
-                                                db.query('DELETE FROM cart_items WHERE user_id = ?', [userId]);
-                                                db.query('SELECT * FROM users WHERE id = ?', [userId], (err, updated) => {
-                                                    if (!err && updated.length) req.session.user = updated[0];
-                                                    auditLog(userId, 'ORDER_PLACED', `order_id: ${orderId} | amount: ${total.toFixed(2)} | coupon: ${usedCoupon || 'none'}`, req);
-
-                                                if (usedCoupon) {
-                                                    db.query(
-                                                        'SELECT id FROM coupons WHERE code = ?',
-                                                        [usedCoupon],
-                                                        (ce, cr) => {
-                                                            if (!ce && cr.length) {
-                                                                db.query(
-                                                                    'INSERT INTO coupon_uses (coupon_id, user_id, order_id) VALUES (?, ?, ?)',
-                                                                    [cr[0].id, userId, orderId]
-                                                                );
-                                                                db.query(
-                                                                    'UPDATE coupons SET total_used = total_used + 1 WHERE id = ?',
-                                                                    [cr[0].id]
-                                                                );
-                                                            }
-                                                        }
-                                                    );
-                                                }
-                                                    res.redirect('/order/' + orderId);
-                                                });
-                                            });
-                                        }
-                                    }
+                                    'INSERT INTO vulnbank_tx_log (user_id, reference, amount, flow) VALUES (?, ?, ?, ?)',
+                                    [userId, ref, total, 'checkout'], () => {}
                                 );
-                            });
+                                finalizeOrder(total, usedCoupon, discountAmt, 'vulnbank:' + ref, false);
+                            };
 
-
-                        }
-                    );
+                            if (!VULNBANK_LAB_VULN) {
+                                db.query('SELECT id FROM vulnbank_tx_log WHERE reference = ?', [ref], (chkErr, existing) => {
+                                    if (!chkErr && existing.length > 0) {
+                                        return renderCheckoutError(total, wallet, 'Payment reference has already been used for another order.');
+                                    }
+                                    doFinalize();
+                                });
+                            } else {
+                                // Lab vuln mode: no duplicate reference check
+                                doFinalize();
+                            }
+                        })
+                        .catch((e) => {
+                            const msg = extractVulnbankErrorMessage(e, 'Vulnbank payment failed');
+                            renderCheckoutError(total, wallet, msg);
+                        });
                 });
             };
 
@@ -996,7 +1586,7 @@ app.post('/checkout', (req, res) => {
 
 app.get('/forgot-password', (req, res) => res.render('forgot-password', { error: null, success: null, userId: null, inboxToken: '' }));
 
-app.post('/forgot-password', (req, res) => {
+app.post('/forgot-password', forgotPasswordLimiter, (req, res) => {
     const { email } = req.body;
     db.query('SELECT id, username, email FROM users WHERE email = ?', [email], (err, users) => {
         if (err) return res.render('forgot-password', { error: 'Database error', success: null });
@@ -1037,7 +1627,7 @@ app.post('/forgot-password', (req, res) => {
 
 app.get('/reset-password',  (req, res) => res.render('reset-password', { error: null, success: null, userId: req.session.resetMailUserId || null, inboxToken: req.session.resetMailInboxToken || '' }));
 
-app.post('/reset-password', (req, res) => {
+app.post('/reset-password', resetPasswordLimiter, (req, res) => {
     const { token, new_password } = req.body;
     db.query(
         'SELECT * FROM password_resets WHERE token = ? AND used = FALSE AND expires_at > NOW()',
@@ -1064,7 +1654,7 @@ app.get('/register-seller', (req, res) => {
     res.render('register-seller', { user: req.session.user });
 });
 
-app.post('/register-seller', (req, res) => {
+app.post('/register-seller', registerSellerLimiter, (req, res) => {
     if (!req.session.user) return res.redirect('/login');
     db.query('UPDATE users SET isSeller = TRUE WHERE id = ?', [req.session.user.id], (err) => {
         if (err) return res.status(500).send('Error');
@@ -1079,7 +1669,7 @@ app.get('/add-product', (req, res) => {
     res.render('add-product', { error: null, user: req.session.user });
 });
 
-app.post('/add-product', upload.single('imageFile'), (req, res) => {
+app.post('/add-product', addProductLimiter, upload.single('imageFile'), (req, res) => {
     if (!req.session.user || !req.session.user.isSeller) return res.redirect('/');
     const { name, description, price, category, image, available } = req.body;
     const sellerId = req.session.user.id;
@@ -1601,7 +2191,6 @@ app.get('/debug/info', (req, res) => {
         sessionSecret: 'weak-secret-123',
         dbConfig: { host: 'localhost', user: 'root', database: 'pwnshop' },
 
-        groqApiKey: process.env.GROQ_API_KEY || 'not-set'
     });
 });
 
@@ -1612,7 +2201,7 @@ app.get('/track', (req, res) => {
     });
 });
 
-app.post('/track', (req, res) => {
+app.post('/track', trackLimiter, (req, res) => {
     const { order_id, email } = req.body;
     if (!order_id) return res.render('track', { user: req.session.user, error: 'Please enter an order number.' });
 
@@ -2084,7 +2673,7 @@ app.get('/invoice', (req, res) => {
     );
 });
 
-app.post('/seller/preview', (req, res) => {
+app.post('/seller/preview', sellerPreviewLimiter, (req, res) => {
     if (!req.session.user || !req.session.user.isSeller) return res.redirect('/');
 
     const template = req.body.template || '';
@@ -2527,6 +3116,52 @@ app.post('/lab/reset', (req, res) => {
         });
     });
 });
+
+// Admin lab-stats endpoint
+app.get('/admin/lab-stats', requireAdmin, (req, res) => {
+    metaDb.query(
+        'SELECT COUNT(*) AS uniqueVisitors, SUM(visit_count) AS totalVisits FROM visitor_stats',
+        (err, rows) => {
+            const stats = (!err && rows[0]) ? rows[0] : { uniqueVisitors: 0, totalVisits: 0 };
+            res.json({
+                uniqueVisitors: stats.uniqueVisitors || 0,
+                totalVisits: stats.totalVisits || 0,
+                labIsDirty,
+                lastActivityMinsAgo: lastActivityMs
+                    ? Math.floor((Date.now() - lastActivityMs) / 60000)
+                    : null
+            });
+        }
+    );
+});
+
+// Smart auto-healer
+const HEAL_EVERY_MINUTES = parseInt(process.env.HEAL_EVERY_MINUTES || '20', 10);
+setInterval(() => {
+    if (!labIsDirty) {
+        console.log('[healer] App is clean, skipping reset');
+        return;
+    }
+    const inactiveMins = lastActivityMs
+        ? (Date.now() - lastActivityMs) / 60000
+        : HEAL_EVERY_MINUTES + 1;
+    if (inactiveMins < HEAL_EVERY_MINUTES) {
+        console.log(`[healer] Activity ${Math.floor(inactiveMins)}m ago, skipping reset`);
+        return;
+    }
+    console.log('[healer] Dirty + inactive, triggering auto-reset...');
+    labIsDirty = false;
+    runLabReset(null, (err) => {
+        if (err) {
+            labIsDirty = true;
+            console.error('[healer] Auto-reset failed:', err.message);
+        } else {
+            console.log('[healer] Auto-reset complete at', new Date().toISOString());
+        }
+    });
+}, HEAL_EVERY_MINUTES * 60 * 1000);
+
+console.log(`[healer] Auto-reset active - fires after ${HEAL_EVERY_MINUTES}m inactivity`);
 
 app.use((req, res) => res.status(404).render('404', { user: req.session.user }));
 app.use((err, req, res, next) => res.status(500).send(`<h1>Error occurred</h1><pre>${err.stack}</pre>`));

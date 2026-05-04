@@ -4,8 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Order #<%= order.id %> - Pwnshop</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+    <link href="/css/bootstrap.min.css" rel="stylesheet">
+    <link href="/css/bootstrap-icons.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
     <link rel="icon" type="image/x-icon" href="/favicon.ico">
     <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
@@ -26,10 +26,11 @@
             --accent:       #C026D3;
         }
         * { box-sizing: border-box; }
+        html { background: var(--gray-100); }
         body { font-family: 'DM Sans', sans-serif; background: var(--gray-100); color: var(--black); margin: 0; }
 
         /* ── NAVBAR ── */
-        .topbar { background: var(--purple-deep); padding: 0; position: sticky; top: 0; z-index: 1000; box-shadow: 0 2px 16px rgba(59,7,100,0.4); }
+        .topbar { background: var(--purple-deep); padding: 0; position: fixed; top: 0; z-index: 1000; box-shadow: 0 2px 16px rgba(59,7,100,0.4); }
         .topbar .container { display: flex; align-items: center; gap: 16px; padding: 12px 24px; }
         .navbar-brand { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 1.6rem; color: var(--white) !important; text-decoration: none; display: flex; align-items: center; gap: 6px; }
         .navbar-brand .dot { width: 8px; height: 8px; background: var(--purple-light); border-radius: 50%; }
@@ -180,8 +181,9 @@
     &copy; <%= new Date().getFullYear() %> <strong>Pwnshop</strong>. All rights reserved.
 </footer>
 
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script src="/js/bootstrap.bundle.min.js"></script>
     <%- include('chat-widget') %>
 <script src="/js/mobile-nav.js"></script>
+
 </body>
 </html>

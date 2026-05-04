@@ -1,0 +1,7 @@
+[build]
+dockerfilePath = "docker/Dockerfile"
+
+[deploy]
+startCommand = "node src/app.js"
+restartPolicyType = "on-failure"
+restartPolicyMaxRetries = 3
