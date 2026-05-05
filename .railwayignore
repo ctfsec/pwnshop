@@ -1,8 +1,0 @@
-node_modules
-.git
-docker
-logs
-*.log
-.env
-.env.lab
-public/uploads
