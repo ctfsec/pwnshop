@@ -13,10 +13,10 @@ if ! chown -R "$APP_USER:$APP_USER" "$UPLOADS_DIR" 2>/dev/null; then
   chmod -R u+rwX,go+rwX "$UPLOADS_DIR" 2>/dev/null || true
 fi
 
-# On first boot the Railway volume is empty — seed uploads into it so
-# product images appear immediately without waiting for the first lab reset.
+# Seed uploads on first boot — ignore .gitkeep when checking if empty
 SEED_DIR="/usr/src/app/public/uploads-seed"
-if [[ -d "$SEED_DIR" ]] && [[ -z "$(ls -A "$UPLOADS_DIR" 2>/dev/null)" ]]; then
+_real_files=$(find "$UPLOADS_DIR" -maxdepth 1 -mindepth 1 ! -name '.*' 2>/dev/null | wc -l)
+if [[ -d "$SEED_DIR" ]] && [[ "$_real_files" -eq 0 ]]; then
   echo "Seeding uploads from uploads-seed..."
   cp -r "$SEED_DIR"/. "$UPLOADS_DIR"/
   echo "Seed complete: $(ls "$UPLOADS_DIR" | wc -l) files copied."
