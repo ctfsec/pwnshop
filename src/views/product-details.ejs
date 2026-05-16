@@ -6,67 +6,21 @@
     <title><%= product.name %> - Pwnshop</title>
     <link href="/css/bootstrap.min.css" rel="stylesheet">
     <link href="/css/bootstrap-icons.min.css" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
     <link rel="icon" type="image/x-icon" href="/favicon.ico">
     <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
     <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
     <link rel="apple-touch-icon" href="/apple-touch-icon.png">
     <link rel="manifest" href="/site.webmanifest">
+    <link rel="stylesheet" href="/css/style.css">
     <style>
-        :root {
-            --purple-deep:  #3B0764;
-            --purple-mid:   #6D28D9;
-            --purple-light: #A855F7;
-            --purple-pale:  #F3E8FF;
-            --black:        #0D0D0D;
-            --white:        #FFFFFF;
-            --gray-100:     #F8F5FF;
-            --gray-200:     #EDE9F6;
-            --gray-500:     #6B7280;
-            --accent:       #C026D3;
-        }
-        * { box-sizing: border-box; }
-        html { background: var(--gray-100); }
-        body { font-family: 'DM Sans', sans-serif; background: var(--gray-100); color: var(--black); margin: 0; }
-
-        /* ── NAVBAR ── */
-        .topbar { background: var(--purple-deep); padding: 0; position: fixed; top: 0; z-index: 1000; box-shadow: 0 2px 16px rgba(59,7,100,0.4); }
-        .topbar .container { display: flex; align-items: center; gap: 16px; padding: 12px 24px; }
-        .navbar-brand { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 1.6rem; color: var(--white) !important; text-decoration: none; display: flex; align-items: center; gap: 6px; white-space: nowrap; }
-        .navbar-brand .dot { width: 8px; height: 8px; background: var(--purple-light); border-radius: 50%; }
-        .nav-links { display: flex; gap: 4px; list-style: none; margin: 0; padding: 0; }
-        .nav-links .nav-link { color: rgba(255,255,255,0.75) !important; font-size: 0.88rem; font-weight: 500; padding: 6px 12px; border-radius: 6px; transition: all 0.2s; }
-        .nav-links .nav-link:hover { color: var(--white) !important; background: rgba(255,255,255,0.1); }
-        .search-wrap { flex: 1; max-width: 560px; display: flex; }
-        .search-wrap input { border: none; border-radius: 8px 0 0 8px; padding: 10px 16px; font-size: 0.9rem; outline: none; width: 100%; background: rgba(255,255,255,0.12); color: var(--white); }
-        .search-wrap input::placeholder { color: rgba(255,255,255,0.5); }
-        .search-wrap input:focus { background: rgba(255,255,255,0.2); }
-        .search-wrap button { background: var(--purple-light); border: none; border-radius: 0 8px 8px 0; padding: 10px 16px; color: var(--white); cursor: pointer; transition: background 0.2s; }
-        .search-wrap button:hover { background: var(--accent); }
-        .nav-right { display: flex; align-items: center; gap: 8px; list-style: none; margin: 0; padding: 0; }
-        .nav-right .nav-link { color: rgba(255,255,255,0.75) !important; font-size: 0.88rem; padding: 6px 10px; }
-        .user-chip { text-decoration: none; background: rgba(168,85,247,0.2); border: 1px solid rgba(168,85,247,0.4); color: var(--white) !important; border-radius: 20px; padding: 5px 14px; font-size: 0.85rem; font-weight: 600; }
-        .btn-logout { background: transparent; border: 1px solid rgba(255,255,255,0.3); color: rgba(255,255,255,0.8) !important; border-radius: 8px; padding: 5px 12px; font-size: 0.83rem; text-decoration: none; transition: all 0.2s; }
-        .btn-logout:hover { border-color: #f87171; color: #f87171 !important; }
-        .btn-login { background: var(--white); color: var(--purple-deep) !important; border: none; border-radius: 8px; padding: 7px 16px; font-size: 0.88rem; font-weight: 700; text-decoration: none; transition: all 0.2s; }
-        .btn-cart { background: rgba(255,255,255,0.12); border: 1px solid rgba(255,255,255,0.2); color: var(--white) !important; border-radius: 8px; padding: 7px 14px; font-size: 0.88rem; font-weight: 600; text-decoration: none; display: flex; align-items: center; gap: 6px; transition: all 0.2s; }
-        .btn-cart:hover { background: rgba(255,255,255,0.22); }
-        .btn-cart .badge { background: var(--purple-light) !important; color: var(--white) !important; border-radius: 50px; font-size: 0.75rem; }
-        .btn-seller { background: var(--accent); color: var(--white) !important; border: none; border-radius: 8px; padding: 7px 14px; font-size: 0.85rem; font-weight: 600; text-decoration: none; transition: all 0.2s; }
-        .btn-seller:hover { background: #a21caf; }
-        .btn-add-product { background: #16a34a; color: var(--white) !important; border: none; border-radius: 8px; padding: 7px 14px; font-size: 0.85rem; font-weight: 600; text-decoration: none; transition: all 0.2s; }
-        .btn-add-product:hover { background: #15803d; }
 
         /* ── LAYOUT ── */
         .page-wrap { display: grid; grid-template-columns: 220px 1fr; gap: 24px; max-width: 1400px; margin: 28px auto; padding: 0 20px; }
 
         /* ── SIDEBAR ── */
-        .sidebar { background: var(--white); border-radius: 14px; box-shadow: 0 2px 12px rgba(109,40,217,0.07); padding: 20px 16px; height: fit-content; position: sticky; top: 80px; }
-        .sidebar h5 { font-family: 'Syne', sans-serif; font-weight: 700; font-size: 0.82rem; text-transform: uppercase; letter-spacing: 1.2px; color: var(--purple-mid); margin-bottom: 14px; padding-bottom: 10px; border-bottom: 2px solid var(--purple-pale); }
-        .cat-btn { display: flex; align-items: center; gap: 10px; width: 100%; padding: 9px 12px; margin-bottom: 4px; background: transparent; border: none; border-radius: 8px; color: var(--black); font-size: 0.9rem; font-weight: 500; text-decoration: none; cursor: pointer; transition: all 0.18s; }
-        .cat-btn:hover { background: var(--purple-pale); color: var(--purple-deep); padding-left: 16px; text-decoration: none; }
-        .cat-btn .cat-icon { font-size: 1.05rem; width: 20px; text-align: center; flex-shrink: 0; color: var(--purple-mid); }
-        .cat-btn:hover .cat-icon { color: var(--purple-deep); }
 
         /* ── BREADCRUMB ── */
         .breadcrumb-bar { display: flex; align-items: center; gap: 6px; font-size: 0.82rem; color: var(--gray-500); margin-bottom: 24px; }
@@ -86,7 +40,6 @@
         .info-panel { background: var(--white); border-radius: 16px; border: 1.5px solid var(--gray-200); padding: 28px; }
         .product-category-tag { display: inline-block; background: var(--purple-pale); color: var(--purple-mid); font-size: 0.75rem; font-weight: 600; border-radius: 20px; padding: 3px 12px; margin-bottom: 12px; text-transform: uppercase; letter-spacing: 0.5px; }
         .product-title { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 1.7rem; color: var(--black); margin-bottom: 12px; line-height: 1.2; }
-        .product-price { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 2rem; color: var(--purple-mid); margin-bottom: 14px; }
         .stock-badge { display: inline-flex; align-items: center; gap: 5px; font-size: 0.82rem; font-weight: 600; border-radius: 20px; padding: 4px 12px; margin-bottom: 16px; }
         .stock-badge.in-stock { background: #dcfce7; color: #16a34a; }
         .stock-badge.out-stock { background: #fee2e2; color: #dc2626; }
@@ -98,8 +51,6 @@
         .qty-wrap { display: flex; align-items: center; border: 1.5px solid var(--gray-200); border-radius: 10px; overflow: hidden; }
         .qty-wrap label { padding: 0 12px; font-size: 0.8rem; font-weight: 600; color: var(--gray-500); text-transform: uppercase; letter-spacing: 0.3px; white-space: nowrap; background: var(--gray-100); height: 44px; display: flex; align-items: center; border-right: 1.5px solid var(--gray-200); }
         .qty-wrap input { border: none; outline: none; padding: 0 12px; width: 60px; font-size: 0.95rem; font-family: 'DM Sans', sans-serif; height: 44px; text-align: center; color: var(--black); }
-        .btn-addcart { flex: 1; background: var(--purple-deep); color: var(--white); border: none; border-radius: 10px; padding: 12px 20px; font-size: 0.9rem; font-weight: 700; font-family: 'DM Sans', sans-serif; cursor: pointer; transition: background 0.2s, transform 0.15s; display: flex; align-items: center; justify-content: center; gap: 8px; }
-        .btn-addcart:hover { background: var(--purple-mid); transform: translateY(-1px); }
         .btn-addcart:disabled { background: var(--gray-200); color: var(--gray-500); cursor: not-allowed; transform: none; }
         .seller-row { display: flex; align-items: center; gap: 8px; background: var(--gray-100); border-radius: 10px; padding: 12px 16px; margin-top: 4px; }
         .seller-row i { color: var(--purple-mid); }
@@ -147,8 +98,6 @@
         .no-reviews i { font-size: 2rem; color: var(--gray-200); display: block; margin-bottom: 10px; }
 
         /* ── FOOTER ── */
-        footer { background: var(--purple-deep); color: rgba(255,255,255,0.6); text-align: center; padding: 24px; font-size: 0.85rem; margin-top: 48px; }
-        footer strong { color: var(--purple-light); }
     </style>
     <link rel="stylesheet" href="/css/mobile-responsive.css">
 </head>
@@ -162,31 +111,32 @@
             <button type="submit"><i class="bi bi-search"></i></button>
         </form>
         <ul class="nav-right">
-            <li><a class="nav-link" href="#">Help</a></li>
+            <li><a class="nav-link" href="/vulnerabilities"><i class="bi bi-question-circle"></i> Help</a></li>
+            <% if (user && user.role === 'user' && !user.isSeller) { %>
+                <li><a href="/register-seller" class="btn-seller">Become a Seller</a></li>
+            <% } %>
+            <% if (user && user.isSeller) { %>
+                <li><a href="/add-product" class="btn-add-product">+ Add Product</a></li>
+                <li><a href="/seller/dashboard" class="btn-dashboard"><i class="bi bi-graph-up"></i> Dashboard</a></li>
+            <% } %>
             <li>
                 <% if (user) { %>
                     <a href="/profile" class="user-chip"><%= user.username %></a>
-                    <a href="/logout" class="btn-logout ms-2">Logout</a>
+                    <a href="/logout" class="btn-logout ms-2"><i class="bi bi-box-arrow-right"></i> Logout</a>
                 <% } else { %>
-                    <a href="/login" class="btn-login">Login / Signup</a>
+                    <a href="/login" class="btn-login"><i class="bi bi-person"></i> Login / Signup</a>
                 <% } %>
             </li>
             <li>
                 <a class="btn-cart" href="/cart">
-                    <i class="bi bi-bag"></i> My Cart <span class="badge ms-1"><%= cartCount %></span>
+                    <i class="bi bi-cart3"></i> My Cart <span class="badge ms-1"><%= cartCount %></span>
                 </a>
             </li>
-            <% if (user && user.role === 'user') { %>
-                <li><a href="/register-seller" class="btn-seller">Become a Seller</a></li>
-            <% } %>
-            <% if (user && user.role === 'seller') { %>
-                <li><a href="/add-product" class="btn-add-product">+ Add Product</a></li>
-            <% } %>
         </ul>
     </div>
 </nav>
 
-<div class="page-wrap">
+<div class="page-wrap two-col">
 
 
     <aside>
@@ -200,6 +150,18 @@
             <a href="/category/home"        class="cat-btn"><span class="cat-icon"><i class="bi bi-house"></i></span> Home & Kitchen</a>
             <a href="/category/kids"        class="cat-btn"><span class="cat-icon"><i class="bi bi-star"></i></span> Kids & Toys</a>
             <a href="/category/beauty"      class="cat-btn"><span class="cat-icon"><i class="bi bi-heart"></i></span> Beauty & Health</a>
+        </div>
+        <%
+            const _fsExpiry = new Date('2036-01-01');
+            const _fsDays   = Math.max(0, Math.ceil((_fsExpiry - new Date()) / (1000*60*60*24)));
+        %>
+        <div class="sidebar-promo" style="min-height:185px;position:static;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;">
+            <div style="display:flex;align-items:center;justify-content:center;gap:6px;margin-bottom:6px;">
+                <h6 style="margin:0;white-space:nowrap;">Flash Sale 🔥</h6>
+                <span style="font-size:0.68rem;font-weight:700;background:rgba(255,255,255,0.2);padding:2px 8px;border-radius:20px;white-space:nowrap;"><%= _fsDays %>d left</span>
+            </div>
+            <p style="margin-bottom:14px;">Up to 60% off selected items</p>
+            <a href="/category/all" class="promo-btn">Shop Now</a>
         </div>
     </aside>
 

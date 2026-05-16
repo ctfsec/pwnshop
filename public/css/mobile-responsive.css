@@ -29,13 +29,21 @@ img, video, iframe, canvas, svg { max-width: 100%; }
     /* Layout collapses to single column */
     .page-wrap,
     .product-wrap,
-    .two-col {
+    .two-col,
+    .checkout-layout,
+    .cart-layout {
         grid-template-columns: 1fr !important;
         gap: 16px !important;
     }
 
     .page-wrap > main { order: 1; }
     .page-wrap > aside { order: 2; }
+
+    /* Summary sidebars become static (no sticky) */
+    .summary-card { position: static !important; }
+
+    /* Seller dashboard stats: 4-col → 2-col at tablet */
+    .stats-grid { grid-template-columns: repeat(2, 1fr) !important; }
 
     .sidebar { position: static; top: auto; }
 
@@ -61,6 +69,38 @@ img, video, iframe, canvas, svg { max-width: 100%; }
     .section-heading, .reviews-heading { font-size: 1.15rem !important; }
     table { font-size: 0.9rem; }
     .table-responsive { overflow-x: auto; }
+    .search-wrap button::after { display: none; }
+
+    /* Add/edit product: price + units side-by-side → stack */
+    .row-half { grid-template-columns: 1fr !important; }
+
+    /* Track page info strip: 3-col → 1-col */
+    .info-strip { grid-template-columns: 1fr !important; }
+
+    /* Cart item: reflow from 5-col grid to flex rows */
+    .cart-item {
+        display: flex !important;
+        flex-wrap: wrap;
+        gap: 10px;
+        padding: 14px 16px;
+        align-items: center;
+    }
+    .cart-item > img { width: 70px !important; height: 70px !important; flex-shrink: 0; }
+    .cart-item > div:nth-child(2) { flex: 1; min-width: 130px; }
+    .cart-item > form, .cart-item > .item-subtotal { flex-shrink: 0; }
+
+    /* Checkout nested grids */
+    .payment-choice-wrap,
+    .card-grid { grid-template-columns: 1fr !important; }
+
+    /* Profile wallet form */
+    .wallet-form-grid { grid-template-columns: 1fr !important; }
+
+    /* Order details info grid */
+    .info-grid { grid-template-columns: 1fr !important; }
+
+    /* Invoice metadata */
+    .invoice-meta { grid-template-columns: 1fr !important; }
 }
 
 /* ══════════════════════════════════════════════════════════════

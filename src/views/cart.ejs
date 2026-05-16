@@ -6,37 +6,16 @@
     <title>Shopping Cart - Pwnshop</title>
     <link href="/css/bootstrap.min.css" rel="stylesheet">
     <link href="/css/bootstrap-icons.min.css" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
     <link rel="icon" type="image/x-icon" href="/favicon.ico">
     <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
     <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
     <link rel="apple-touch-icon" href="/apple-touch-icon.png">
     <link rel="manifest" href="/site.webmanifest">
+    <link rel="stylesheet" href="/css/style.css">
     <style>
-        :root {
-            --purple-deep:  #3B0764;
-            --purple-mid:   #6D28D9;
-            --purple-light: #A855F7;
-            --purple-pale:  #F3E8FF;
-            --black:        #0D0D0D;
-            --white:        #FFFFFF;
-            --gray-100:     #F8F5FF;
-            --gray-200:     #EDE9F6;
-            --gray-500:     #6B7280;
-            --accent:       #C026D3;
-        }
-        * { box-sizing: border-box; }
-        html { background: var(--gray-100); }
-        body { font-family: 'DM Sans', sans-serif; background: var(--gray-100); color: var(--black); margin: 0; }
-
-        /* ── NAVBAR ── */
-        .topbar { background: var(--purple-deep); padding: 0; position: fixed; top: 0; z-index: 1000; box-shadow: 0 2px 16px rgba(59,7,100,0.4); }
-        .topbar .container { display: flex; align-items: center; gap: 16px; padding: 12px 24px; }
-        .navbar-brand { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 1.6rem; color: var(--white) !important; text-decoration: none; display: flex; align-items: center; gap: 6px; }
-        .navbar-brand .dot { width: 8px; height: 8px; background: var(--purple-light); border-radius: 50%; }
-        .nav-right { display: flex; align-items: center; gap: 8px; list-style: none; margin: 0 0 0 auto; padding: 0; }
-        .user-chip { text-decoration: none; background: rgba(168,85,247,0.2); border: 1px solid rgba(168,85,247,0.4); color: var(--white) !important; border-radius: 20px; padding: 5px 14px; font-size: 0.85rem; font-weight: 600; }
-        .btn-logout { background: transparent; border: 1px solid rgba(255,255,255,0.3); color: rgba(255,255,255,0.8) !important; border-radius: 8px; padding: 5px 12px; font-size: 0.83rem; text-decoration: none; }
         .nav-link-plain { color: rgba(255,255,255,0.75) !important; font-size: 0.88rem; padding: 6px 12px; border-radius: 6px; text-decoration: none; }
         .nav-link-plain:hover { background: rgba(255,255,255,0.1); color: var(--white) !important; }
 
@@ -90,8 +69,6 @@
         .btn-shop:hover { background: var(--purple-mid); color: var(--white); }
 
         /* ── FOOTER ── */
-        footer { background: var(--purple-deep); color: rgba(255,255,255,0.6); text-align: center; padding: 24px; font-size: 0.85rem; margin-top: 48px; }
-        footer strong { color: var(--purple-light); }
     </style>
     <link rel="stylesheet" href="/css/mobile-responsive.css">
 </head>
@@ -100,12 +77,32 @@
 <nav class="topbar">
     <div class="container">
         <a class="navbar-brand" href="/">Pwnshop<span class="dot"></span></a>
+        <form class="search-wrap" action="/search" method="GET">
+            <input type="search" name="q" placeholder="Search products, brands, categories...">
+            <button type="submit"><i class="bi bi-search"></i></button>
+        </form>
         <ul class="nav-right">
-            <li><a class="nav-link-plain" href="/">Home</a></li>
-            <li><a class="nav-link-plain" href="/profile">My Orders</a></li>
-            <li><a class="nav-link-plain" href="/profile">Profile</a></li>
-            <li><a href="/profile" class="user-chip"><%= user.username %></a></li>
-            <li><a href="/logout" class="btn-logout">Logout</a></li>
+            <li><a class="nav-link" href="/vulnerabilities"><i class="bi bi-question-circle"></i> Help</a></li>
+            <% if (user && user.role === 'user' && !user.isSeller) { %>
+                <li><a href="/register-seller" class="btn-seller">Become a Seller</a></li>
+            <% } %>
+            <% if (user && user.isSeller) { %>
+                <li><a href="/add-product" class="btn-add-product">+ Add Product</a></li>
+                <li><a href="/seller/dashboard" class="btn-dashboard"><i class="bi bi-graph-up"></i> Dashboard</a></li>
+            <% } %>
+            <li>
+                <% if (user) { %>
+                    <a href="/profile" class="user-chip"><%= user.username %></a>
+                    <a href="/logout" class="btn-logout ms-2"><i class="bi bi-box-arrow-right"></i> Logout</a>
+                <% } else { %>
+                    <a href="/login" class="btn-login"><i class="bi bi-person"></i> Login / Signup</a>
+                <% } %>
+            </li>
+            <li>
+                <a class="btn-cart" href="/cart">
+                    <i class="bi bi-cart3"></i> My Cart <span class="badge ms-1"><%= cartCount %></span>
+                </a>
+            </li>
         </ul>
     </div>
 </nav>
@@ -130,8 +127,15 @@
                     <div class="cart-item">
                         <img src="<%= item.image || '/images/placeholder.jpg' %>" alt="<%= item.name %>">
                         <div>
-                            <div class="item-name"><%= item.name %></div>
-                            <div class="item-unit-price">₦<%= parseFloat(item.price).toFixed(2) %> each</div>
+                            <div class="item-name">
+                                <% if (item.deal_label) { %><span style="font-size:0.62rem;font-weight:800;background:linear-gradient(90deg,#f59e0b,#ef4444);color:#fff;padding:1px 7px;border-radius:3px;margin-right:5px;text-transform:uppercase;letter-spacing:0.4px;"><%= item.deal_label %></span><% } %>
+                                <%= item.name %>
+                            </div>
+                            <% if (item.deal_price != null) { %>
+                            <div class="item-unit-price">₦<%= parseFloat(item.effective_price).toLocaleString() %> each <span style="text-decoration:line-through;color:#9ca3af;font-size:0.8rem;">₦<%= parseFloat(item.price).toLocaleString() %></span></div>
+                            <% } else { %>
+                            <div class="item-unit-price">₦<%= parseFloat(item.price).toLocaleString() %> each</div>
+                            <% } %>
                         </div>
 
                         <form action="/cart/update" method="POST" id="qty-form-<%= item.id %>">
@@ -184,7 +188,7 @@
 <script>
 
 const unitPrices = {
-    <% items.forEach((item, idx) => { %><%= item.id %>: <%= parseFloat(item.price) %><%= idx < items.length - 1 ? ',' : '' %>
+    <% items.forEach((item, idx) => { %><%= item.id %>: <%= parseFloat(item.effective_price || item.price) %><%= idx < items.length - 1 ? ',' : '' %>
     <% }); %>
 };
 

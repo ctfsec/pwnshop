@@ -40,14 +40,19 @@
         }
     }
 
-    /* ── Cart icon in topbar (mobile only) ── */
+    /* ── Cart icon in topbar (mobile only — icon + count, no label text) ── */
     function injectCartIcon(container) {
         var navRight = container.querySelector('.nav-right');
         if (!navRight) return;
         var cart = navRight.querySelector('.btn-cart');
         if (!cart) return;
-        var c = cart.cloneNode(true);
+        var badge = cart.querySelector('.badge');
+        var count = badge ? parseInt(badge.textContent.trim(), 10) : 0;
+
+        var c = document.createElement('a');
         c.id = 'pw-topbar-cart';
+        c.href = '/cart';
+        c.innerHTML = '🛒' + (count > 0 ? '<span class="pw-cart-count">' + count + '</span>' : '');
         container.appendChild(c);
     }
 
@@ -220,7 +225,7 @@
 /* ════════════════════════════════════════
    TABLET (769px – 992px)
    Normal nav, no hamburger, no bottom nav.
-   Compress to fit single row.
+   Compress to fit single row. Keep sidebar layout.
 ════════════════════════════════════════ */
 @media (min-width: 769px) and (max-width: 992px) {
 
@@ -241,6 +246,8 @@
     /* Search shrinks */
     .search-wrap { flex: 1 1 0; min-width: 0; max-width: 240px; }
     .search-wrap input { font-size: 0.8rem; padding: 7px 10px; }
+    .search-wrap button::after { display: none; }
+    .search-wrap button { padding: 7px 12px; }
 
     /* Nav links smaller */
     .nav-links .nav-link,
@@ -257,11 +264,16 @@
     }
     .btn-cart .badge { font-size: 0.65rem; }
 
-    /* Layout */
-    .page-wrap, .product-wrap, .two-col { grid-template-columns: 1fr !important; gap: 16px !important; }
-    .page-wrap > main { order: 1; }
-    .page-wrap > aside { order: 2; }
+    /* Keep two-col sidebar layout on tablet, just narrower */
+    .two-col { grid-template-columns: 180px 1fr !important; gap: 16px !important; }
+    /* Product image+info layout collapses to single column on tablet */
+    .product-wrap { grid-template-columns: 1fr !important; gap: 16px !important; }
+    /* Sidebar unsticks on tablet */
+    .sidebar-col { position: static !important; top: auto !important; }
     .sidebar { position: static; top: auto; }
+    /* Hide promo box on tablet to save space */
+    .sidebar-promo { display: none; }
+
     .carousel-item img { height: 240px; }
     .carousel-caption { left: 20px; right: 20px; bottom: 20px; }
     .carousel-caption h2 { font-size: 1.4rem; }
@@ -295,20 +307,32 @@
     }
     .navbar-brand { flex: 1 !important; font-size: 1.2rem !important; white-space: nowrap; }
 
-    /* Cart in topbar */
+    /* Cart in topbar — icon only */
     #pw-topbar-cart {
         display: flex !important;
-        align-items: center; gap: 5px;
+        align-items: center; justify-content: center;
+        position: relative;
         background: rgba(255,255,255,0.12);
         border: 1px solid rgba(255,255,255,0.2);
         color: #fff !important;
-        border-radius: 8px; padding: 6px 10px;
-        font-size: 0.82rem; font-weight: 600;
-        text-decoration: none; white-space: nowrap; flex-shrink: 0;
+        border-radius: 8px; padding: 7px 11px;
+        font-size: 1.1rem;
+        text-decoration: none; flex-shrink: 0;
+        line-height: 1;
     }
-    #pw-topbar-cart .badge {
-        background: #A855F7 !important; color: #fff !important;
-        border-radius: 50px; font-size: 0.7rem; padding: 2px 5px;
+    .pw-cart-count {
+        position: absolute;
+        top: -5px; right: -5px;
+        background: #A855F7;
+        color: #fff;
+        font-size: 0.6rem;
+        font-weight: 700;
+        border-radius: 50px;
+        padding: 2px 5px;
+        min-width: 16px;
+        text-align: center;
+        line-height: 14px;
+        height: 16px;
     }
 
     /* Hamburger */

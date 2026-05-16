@@ -6,49 +6,14 @@
     <title>Vulnerabilities - Pwnshop</title>
     <link href="/css/bootstrap.min.css" rel="stylesheet">
     <link href="/css/bootstrap-icons.min.css" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/css/style.css">
     <style>
-        :root {
-            --purple-deep:  #3B0764;
-            --purple-mid:   #6D28D9;
-            --purple-light: #A855F7;
-            --purple-pale:  #F3E8FF;
-            --black:        #0D0D0D;
-            --white:        #FFFFFF;
-            --gray-100:     #F8F5FF;
-            --gray-200:     #EDE9F6;
-            --gray-500:     #6B7280;
-            --gray-700:     #374151;
-            --accent:       #C026D3;
-            --critical:     #7f1d1d;
-            --critical-bg:  #fef2f2;
-            --critical-bd:  #fecaca;
-            --high:         #7c2d12;
-            --high-bg:      #fff7ed;
-            --high-bd:      #fed7aa;
-            --medium:       #713f12;
-            --medium-bg:    #fefce8;
-            --medium-bd:    #fde68a;
-            --info:         #1e3a5f;
-            --info-bg:      #eff6ff;
-            --info-bd:      #bfdbfe;
-        }
-        * { box-sizing: border-box; margin: 0; padding: 0; }
-        html { background: var(--gray-100); }
-        body { font-family: 'DM Sans', sans-serif; background: var(--gray-100); color: var(--black); min-height: 100vh;
-        }
         code { font-family: 'JetBrains Mono', monospace; font-size: 0.82em; background: rgba(109,40,217,0.07); color: var(--purple-mid); padding: 1px 5px; border-radius: 4px; }
-
-        /* ── NAVBAR ── */
-        .topbar { background: var(--purple-deep); padding: 0; position: fixed; top: 0; z-index: 1000; box-shadow: 0 2px 16px rgba(59,7,100,0.4); }
-        .topbar .container { display: flex; align-items: center; gap: 16px; padding: 12px 24px; }
-        .navbar-brand { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 1.6rem; color: var(--white) !important; text-decoration: none; display: flex; align-items: center; gap: 6px; }
-        .navbar-brand .dot { width: 8px; height: 8px; background: var(--purple-light); border-radius: 50%; }
-        .nav-right { display: flex; align-items: center; gap: 8px; list-style: none; margin: 0 0 0 auto; padding: 0; }
         .nav-link-plain { color: rgba(255,255,255,0.75) !important; font-size: 0.88rem; padding: 6px 12px; border-radius: 6px; text-decoration: none; }
         .nav-link-plain:hover { background: rgba(255,255,255,0.1); color: var(--white) !important; }
-        .user-chip { text-decoration: none; background: rgba(168,85,247,0.2); border: 1px solid rgba(168,85,247,0.4); color: var(--white) !important; border-radius: 20px; padding: 5px 14px; font-size: 0.85rem; font-weight: 600; }
-        .btn-logout { background: transparent; border: 1px solid rgba(255,255,255,0.3); color: rgba(255,255,255,0.8) !important; border-radius: 8px; padding: 5px 12px; font-size: 0.83rem; text-decoration: none; }
 
         /* ── HERO ── */
         .hero { background: linear-gradient(135deg, var(--purple-deep) 0%, #1e1b4b 100%); padding: 52px 0 44px; border-bottom: 1px solid rgba(255,255,255,0.06); }
@@ -101,9 +66,6 @@
         .vuln-meta { display: flex; gap: 20px; flex-wrap: wrap; margin-top: 10px; padding-top: 10px; border-top: 1px solid var(--gray-200); }
         .meta-item { font-size: 0.75rem; color: var(--gray-500); display: flex; align-items: center; gap: 5px; }
         .meta-item strong { color: var(--black); }
-
-        footer { background: var(--purple-deep); color: rgba(255,255,255,0.45); text-align: center; padding: 22px; font-size: 0.82rem; margin-top: 60px; }
-        footer strong { color: var(--purple-light); }
     </style>
     <link rel="stylesheet" href="/css/mobile-responsive.css">
 </head>
@@ -113,17 +75,32 @@
 <nav class="topbar">
     <div class="container">
         <a class="navbar-brand" href="/">Pwnshop<span class="dot"></span></a>
+        <form class="search-wrap" action="/search" method="GET">
+            <input type="search" name="q" placeholder="Search products, brands, categories...">
+            <button type="submit"><i class="bi bi-search"></i></button>
+        </form>
         <ul class="nav-right">
-            <li><a class="nav-link-plain" href="/">Home</a></li>
-            <% if (user) { %>
-                <% if (user.role === 'admin') { %>
-                    <li><a class="nav-link-plain" href="/admin/security">Audit Log</a></li>
-                <% } %>
-                <li><a href="/profile" class="user-chip"><%= user.username %></a></li>
-                <li><a href="/logout" class="btn-logout">Logout</a></li>
-            <% } else { %>
-                <li><a class="nav-link-plain" href="/login">Login</a></li>
+            <li><a class="nav-link" href="/vulnerabilities"><i class="bi bi-question-circle"></i> Help</a></li>
+            <% if (user && user.role === 'user' && !user.isSeller) { %>
+                <li><a href="/register-seller" class="btn-seller">Become a Seller</a></li>
             <% } %>
+            <% if (user && user.isSeller) { %>
+                <li><a href="/add-product" class="btn-add-product">+ Add Product</a></li>
+                <li><a href="/seller/dashboard" class="btn-dashboard"><i class="bi bi-graph-up"></i> Dashboard</a></li>
+            <% } %>
+            <li>
+                <% if (user) { %>
+                    <a href="/profile" class="user-chip"><%= user.username %></a>
+                    <a href="/logout" class="btn-logout ms-2"><i class="bi bi-box-arrow-right"></i> Logout</a>
+                <% } else { %>
+                    <a href="/login" class="btn-login"><i class="bi bi-person"></i> Login / Signup</a>
+                <% } %>
+            </li>
+            <li>
+                <a class="btn-cart" href="/cart">
+                    <i class="bi bi-cart3"></i> My Cart <span class="badge ms-1"><%= cartCount %></span>
+                </a>
+            </li>
         </ul>
     </div>
 </nav>
@@ -139,9 +116,9 @@
             you will encounter in production systems.
         </p>
         <div class="hero-stats">
-            <div class="hero-stat"><div class="num">45</div><div class="lbl">Total findings</div></div>
+            <div class="hero-stat"><div class="num">47</div><div class="lbl">Total findings</div></div>
             <div class="hero-stat"><div class="num">38</div><div class="lbl">Web app vulns</div></div>
-            <div class="hero-stat"><div class="num">6</div><div class="lbl">AI / LLM vulns</div></div>
+            <div class="hero-stat"><div class="num">8</div><div class="lbl">AI / LLM vulns</div></div>
         </div>
     </div>
 </div>
@@ -150,9 +127,9 @@
 
     <!-- FILTER -->
     <div class="filter-bar">
-        <button class="filter-btn active" onclick="filterAll(this)">All (45)</button>
+        <button class="filter-btn active" onclick="filterAll(this)">All (47)</button>
         <button class="filter-btn" onclick="filterType('web', this)">Web App (38)</button>
-        <button class="filter-btn" onclick="filterType('ai', this)">AI / LLM (6)</button>
+        <button class="filter-btn" onclick="filterType('ai', this)">AI / LLM (8)</button>
         <button class="filter-btn" onclick="filterSev('critical', this)">Critical</button>
         <button class="filter-btn" onclick="filterSev('high', this)">High</button>
         <button class="filter-btn" onclick="filterSev('medium', this)">Medium</button>
@@ -165,7 +142,7 @@
     <div class="vuln-card" data-type="web" data-sev="high">
         <div class="vuln-card-head" onclick="toggle(this)">
             <span class="vuln-id">PWN-001</span>
-            <span class="vuln-title">IDOR — Order Details</span>
+            <span class="vuln-title">IDOR - Order Details</span>
             <span class="owasp-tag">A01:2025</span>
             <span class="sev-badge sev-high">High</span>
             <i class="bi bi-chevron-down chevron"></i>
@@ -183,13 +160,13 @@
     <div class="vuln-card" data-type="web" data-sev="high">
         <div class="vuln-card-head" onclick="toggle(this)">
             <span class="vuln-id">PWN-002</span>
-            <span class="vuln-title">IDOR — Order Tracking (No Auth)</span>
+            <span class="vuln-title">IDOR - Order Tracking (No Auth)</span>
             <span class="owasp-tag">A01:2025</span>
             <span class="sev-badge sev-high">High</span>
             <i class="bi bi-chevron-down chevron"></i>
         </div>
         <div class="vuln-card-body">
-            <p class="vuln-desc"><code>POST /track</code> accepts an email address but never validates it against the order. Any order ID returns full results regardless of whose email is entered. <code>GET /track/:order_id</code> has no ownership check at all — no authentication required.</p>
+            <p class="vuln-desc"><code>POST /track</code> accepts an email address but never validates it against the order. Any order ID returns full results regardless of whose email is entered. <code>GET /track/:order_id</code> has no ownership check at all - no authentication required.</p>
             <div class="vuln-meta">
                 <span class="meta-item"><strong>Endpoint:</strong> /track, /track/:id</span>
                 <span class="meta-item"><strong>Auth required:</strong> No</span>
@@ -201,7 +178,7 @@
     <div class="vuln-card" data-type="web" data-sev="medium">
         <div class="vuln-card-head" onclick="toggle(this)">
             <span class="vuln-id">PWN-003</span>
-            <span class="vuln-title">IDOR — Wishlist</span>
+            <span class="vuln-title">IDOR - Wishlist</span>
             <span class="owasp-tag">A01:2025</span>
             <span class="sev-badge sev-medium">Medium</span>
             <i class="bi bi-chevron-down chevron"></i>
@@ -219,13 +196,13 @@
     <div class="vuln-card" data-type="web" data-sev="high">
         <div class="vuln-card-head" onclick="toggle(this)">
             <span class="vuln-id">PWN-004</span>
-            <span class="vuln-title">IDOR — PwnMail Inbox</span>
+            <span class="vuln-title">IDOR - PwnMail Inbox</span>
             <span class="owasp-tag">A01:2025</span>
             <span class="sev-badge sev-high">High</span>
             <i class="bi bi-chevron-down chevron"></i>
         </div>
         <div class="vuln-card-body">
-            <p class="vuln-desc"><code>GET /mail/:user_id</code> has no ownership check. Any authenticated user can read another user's inbox — including OTP codes and password reset tokens — by changing the user ID in the URL.</p>
+            <p class="vuln-desc"><code>GET /mail/:user_id</code> has no ownership check. Any authenticated user can read another user's inbox - including OTP codes and password reset tokens - by changing the user ID in the URL.</p>
             <div class="vuln-meta">
                 <span class="meta-item"><strong>Endpoint:</strong> /mail/:user_id</span>
                 <span class="meta-item"><strong>Auth required:</strong> Partial</span>
@@ -237,7 +214,7 @@
     <div class="vuln-card" data-type="web" data-sev="info">
         <div class="vuln-card-head" onclick="toggle(this)">
             <span class="vuln-id">PWN-005</span>
-            <span class="vuln-title">Public Audit Log — No Authentication</span>
+            <span class="vuln-title">Public Audit Log - No Authentication</span>
             <span class="owasp-tag">A01:2025</span>
             <span class="sev-badge sev-info">Info</span>
             <i class="bi bi-chevron-down chevron"></i>
@@ -258,7 +235,7 @@
     <div class="vuln-card" data-type="web" data-sev="critical">
         <div class="vuln-card-head" onclick="toggle(this)">
             <span class="vuln-id">PWN-018</span>
-            <span class="vuln-title">Debug Endpoint — Credentials Exposed Publicly</span>
+            <span class="vuln-title">Debug Endpoint - Credentials Exposed Publicly</span>
             <span class="owasp-tag">A02:2025</span>
             <span class="sev-badge sev-critical">Critical</span>
             <i class="bi bi-chevron-down chevron"></i>
@@ -310,18 +287,18 @@
     <div class="vuln-card" data-type="web" data-sev="high">
         <div class="vuln-card-head" onclick="toggle(this)">
             <span class="vuln-id">PWN-038</span>
-            <span class="vuln-title">Path Traversal — Invoice Download</span>
+            <span class="vuln-title">Path Traversal - Invoice Download</span>
             <span class="owasp-tag">A02:2025</span>
             <span class="sev-badge sev-high">High</span>
             <i class="bi bi-chevron-down chevron"></i>
         </div>
         <div class="vuln-card-body">
-            <p class="vuln-desc">The PDF invoice download endpoint at <code>GET /download?file=invoices/23.pdf</code> joins the <code>file</code> parameter directly onto a base directory using <code>path.join()</code> with no resolved-path validation. The <code>invoices/</code> prefix in the URL acts as a natural discovery hint — students who see the pattern can replace the filename with traversal sequences to escape the base directory entirely.</p>
+            <p class="vuln-desc">The PDF invoice download endpoint at <code>GET /download?file=invoices/23.pdf</code> joins the <code>file</code> parameter directly onto a base directory using <code>path.join()</code> with no resolved-path validation. The <code>invoices/</code> prefix in the URL acts as a natural discovery hint - students who see the pattern can replace the filename with traversal sequences to escape the base directory entirely.</p>
             <div class="vuln-meta">
                 <span class="meta-item"><strong>Endpoint:</strong> GET /download?file=</span>
                 <span class="meta-item"><strong>Auth required:</strong> Yes (any user)</span>
                 <span class="meta-item"><strong>Payload:</strong> /download?file=invoices/../../../../../../../../etc/passwd</span>
-                <span class="meta-item"><strong>Impact:</strong> Arbitrary file read — /etc/passwd, .env, app.js</span>
+                <span class="meta-item"><strong>Impact:</strong> Arbitrary file read - /etc/passwd, .env, app.js</span>
             </div>
         </div>
     </div>
@@ -332,18 +309,18 @@
     <div class="vuln-card" data-type="web" data-sev="high">
         <div class="vuln-card-head" onclick="toggle(this)">
             <span class="vuln-id">PWN-041</span>
-            <span class="vuln-title">Prototype Pollution — Vulnerable lodash Dependency</span>
+            <span class="vuln-title">Prototype Pollution - Vulnerable lodash Dependency</span>
             <span class="owasp-tag">A03:2025</span>
             <span class="sev-badge sev-high">High</span>
             <i class="bi bi-chevron-down chevron"></i>
         </div>
         <div class="vuln-card-body">
-            <p class="vuln-desc">Pwnshop uses <code>lodash@4.17.4</code> which is vulnerable to prototype pollution (CVE-2019-10744). The search filter preferences endpoint passes user-supplied JSON directly to <code>_.merge()</code> with no sanitisation. Sending <code>__proto__</code> as a key poisons <code>Object.prototype</code> — every plain object created anywhere in the process inherits the injected property for the lifetime of the server.</p>
+            <p class="vuln-desc">Pwnshop uses <code>lodash@4.17.4</code> which is vulnerable to prototype pollution (CVE-2019-10744). The search filter preferences endpoint passes user-supplied JSON directly to <code>_.merge()</code> with no sanitisation. Sending <code>__proto__</code> as a key poisons <code>Object.prototype</code> - every plain object created anywhere in the process inherits the injected property for the lifetime of the server.</p>
             <div class="vuln-meta">
                 <span class="meta-item"><strong>CVE:</strong> CVE-2019-10744</span>
                 <span class="meta-item"><strong>Endpoint:</strong> POST /search/filters</span>
                 <span class="meta-item"><strong>Payload:</strong> {"__proto__": {"isAdmin": true}}</span>
-                <span class="meta-item"><strong>Verify:</strong> GET /search/filters — injected property appears on the returned object</span>
+                <span class="meta-item"><strong>Verify:</strong> GET /search/filters - injected property appears on the returned object</span>
             </div>
         </div>
     </div>
@@ -354,7 +331,7 @@
     <div class="vuln-card" data-type="web" data-sev="critical">
         <div class="vuln-card-head" onclick="toggle(this)">
             <span class="vuln-id">PWN-006</span>
-            <span class="vuln-title">Weak Session Secret — Hardcoded & Publicly Exposed</span>
+            <span class="vuln-title">Weak Session Secret - Hardcoded & Publicly Exposed</span>
             <span class="owasp-tag">A04:2025</span>
             <span class="sev-badge sev-critical">Critical</span>
             <i class="bi bi-chevron-down chevron"></i>
@@ -365,7 +342,7 @@
                 <span class="meta-item"><strong>Location:</strong> app.js session config</span>
                 <span class="meta-item"><strong>Chains with:</strong> PWN-018 (debug endpoint)</span>
                 <span class="meta-item"><strong>Impact:</strong> Full account takeover</span>
-                <span class="meta-item" style="color:#6D28D9"><strong>💡 Key insight:</strong> Once you have the session secret, SQL injection and brute-force attacks become unnecessary — you can craft a valid signed cookie for any user ID, including the admin, without ever touching the login form. This makes PWN-006 + PWN-018 one of the most powerful chains in the lab.</span>
+                <span class="meta-item" style="color:#6D28D9"><strong>💡 Key insight:</strong> Once you have the session secret, SQL injection and brute-force attacks become unnecessary - you can craft a valid signed cookie for any user ID, including the admin, without ever touching the login form. This makes PWN-006 + PWN-018 one of the most powerful chains in the lab.</span>
             </div>
         </div>
     </div>
@@ -379,7 +356,7 @@
             <i class="bi bi-chevron-down chevron"></i>
         </div>
         <div class="vuln-card-body">
-            <p class="vuln-desc">The session cookie is set with <code>secure: false</code> and no <code>httpOnly</code> flag. This makes the cookie readable by JavaScript — any XSS payload can exfiltrate it. It is also transmitted over plain HTTP.</p>
+            <p class="vuln-desc">The session cookie is set with <code>secure: false</code> and no <code>httpOnly</code> flag. This makes the cookie readable by JavaScript - any XSS payload can exfiltrate it. It is also transmitted over plain HTTP.</p>
             <div class="vuln-meta">
                 <span class="meta-item"><strong>Chains with:</strong> PWN-011, PWN-012 (XSS)</span>
                 <span class="meta-item"><strong>Impact:</strong> Session hijacking</span>
@@ -393,18 +370,18 @@
     <div class="vuln-card" data-type="web" data-sev="critical">
         <div class="vuln-card-head" onclick="toggle(this)">
             <span class="vuln-id">PWN-008</span>
-            <span class="vuln-title">SQL Injection — Login (Authentication Bypass)</span>
+            <span class="vuln-title">SQL Injection - Login (Authentication Bypass)</span>
             <span class="owasp-tag">A05:2025</span>
             <span class="sev-badge sev-critical">Critical</span>
             <i class="bi bi-chevron-down chevron"></i>
         </div>
         <div class="vuln-card-body">
-            <p class="vuln-desc">The login query concatenates user input directly into SQL. The username field is vulnerable — passwords are now bcrypt-hashed, so the old <code>' OR '1'='1' --</code> trick requires escalation to UNION injection. Inject a fake user row containing a known bcrypt hash to bypass authentication entirely.</p>
+            <p class="vuln-desc">The login query concatenates user input directly into SQL. The username field is vulnerable - passwords are now bcrypt-hashed, so the old <code>' OR '1'='1' --</code> trick requires escalation to UNION injection. Inject a fake user row containing a known bcrypt hash to bypass authentication entirely.</p>
             <div class="vuln-meta">
                 <span class="meta-item"><strong>Endpoint:</strong> POST /login</span>
                 <span class="meta-item"><strong>Technique:</strong> UNION-based SQLi</span>
                 <span class="meta-item"><strong>Impact:</strong> Authentication bypass, data exfiltration</span>
-                <span class="meta-item" style="color:#6D28D9"><strong>💡 Smarter path:</strong> SQL injection is one way in — but if you already know the session secret, you can forge a valid session cookie and skip the login form entirely without touching the database. See PWN-006 + PWN-018.</span>
+                <span class="meta-item" style="color:#6D28D9"><strong>💡 Smarter path:</strong> SQL injection is one way in - but if you already know the session secret, you can forge a valid session cookie and skip the login form entirely without touching the database. See PWN-006 + PWN-018.</span>
             </div>
         </div>
     </div>
@@ -412,7 +389,7 @@
     <div class="vuln-card" data-type="web" data-sev="critical">
         <div class="vuln-card-head" onclick="toggle(this)">
             <span class="vuln-id">PWN-009</span>
-            <span class="vuln-title">SQL Injection — Admin Login</span>
+            <span class="vuln-title">SQL Injection - Admin Login</span>
             <span class="owasp-tag">A05:2025</span>
             <span class="sev-badge sev-critical">Critical</span>
             <i class="bi bi-chevron-down chevron"></i>
@@ -431,7 +408,7 @@
     <div class="vuln-card" data-type="web" data-sev="high">
         <div class="vuln-card-head" onclick="toggle(this)">
             <span class="vuln-id">PWN-010</span>
-            <span class="vuln-title">SQL Injection — Product Search</span>
+            <span class="vuln-title">SQL Injection - Product Search</span>
             <span class="owasp-tag">A05:2025</span>
             <span class="sev-badge sev-high">High</span>
             <i class="bi bi-chevron-down chevron"></i>
@@ -449,7 +426,7 @@
     <div class="vuln-card" data-type="web" data-sev="high">
         <div class="vuln-card-head" onclick="toggle(this)">
             <span class="vuln-id">PWN-011</span>
-            <span class="vuln-title">Stored XSS — Product Reviews</span>
+            <span class="vuln-title">Stored XSS - Product Reviews</span>
             <span class="owasp-tag">A05:2025</span>
             <span class="sev-badge sev-high">High</span>
             <i class="bi bi-chevron-down chevron"></i>
@@ -485,7 +462,7 @@
     <div class="vuln-card" data-type="web" data-sev="medium">
         <div class="vuln-card-head" onclick="toggle(this)">
             <span class="vuln-id">PWN-013</span>
-            <span class="vuln-title">CSV Injection — Order Export</span>
+            <span class="vuln-title">CSV Injection - Order Export</span>
             <span class="owasp-tag">A05:2025</span>
             <span class="sev-badge sev-medium">Medium</span>
             <i class="bi bi-chevron-down chevron"></i>
@@ -503,7 +480,7 @@
     <div class="vuln-card" data-type="web" data-sev="medium">
         <div class="vuln-card-head" onclick="toggle(this)">
             <span class="vuln-id">PWN-014</span>
-            <span class="vuln-title">Second-Order SQL Injection — Audit Log Search</span>
+            <span class="vuln-title">Second-Order SQL Injection - Audit Log Search</span>
             <span class="owasp-tag">A05:2025</span>
             <span class="sev-badge sev-medium">Medium</span>
             <i class="bi bi-chevron-down chevron"></i>
@@ -522,7 +499,7 @@
     <div class="vuln-card" data-type="web" data-sev="critical">
         <div class="vuln-card-head" onclick="toggle(this)">
             <span class="vuln-id">PWN-040</span>
-            <span class="vuln-title">SSTI → RCE — Seller Storefront Preview</span>
+            <span class="vuln-title">SSTI → RCE - Seller Storefront Preview</span>
             <span class="owasp-tag">A05:2025</span>
             <span class="sev-badge sev-critical">Critical</span>
             <i class="bi bi-chevron-down chevron"></i>
@@ -545,7 +522,7 @@
     <div class="vuln-card" data-type="web" data-sev="high">
         <div class="vuln-card-head" onclick="toggle(this)">
             <span class="vuln-id">PWN-015</span>
-            <span class="vuln-title">Predictable OTP — Brute-Forceable 2FA</span>
+            <span class="vuln-title">Predictable OTP - Brute-Forceable 2FA</span>
             <span class="owasp-tag">A06:2025</span>
             <span class="sev-badge sev-high">High</span>
             <i class="bi bi-chevron-down chevron"></i>
@@ -556,7 +533,7 @@
                 <span class="meta-item"><strong>Endpoint:</strong> POST /verify-otp</span>
                 <span class="meta-item"><strong>Technique:</strong> Brute-force</span>
                 <span class="meta-item"><strong>Keyspace:</strong> 900,000 codes</span>
-                <span class="meta-item" style="color:#6D28D9"><strong>💡 Smarter path:</strong> Brute-forcing 900k codes takes time. There is another way to obtain the OTP without guessing a single code — think about where OTPs are delivered and whether that delivery endpoint checks ownership. See PWN-004.</span>
+                <span class="meta-item" style="color:#6D28D9"><strong>💡 Smarter path:</strong> Brute-forcing 900k codes takes time. There is another way to obtain the OTP without guessing a single code - think about where OTPs are delivered and whether that delivery endpoint checks ownership. See PWN-004.</span>
             </div>
         </div>
     </div>
@@ -564,16 +541,16 @@
     <div class="vuln-card" data-type="web" data-sev="medium">
         <div class="vuln-card-head" onclick="toggle(this)">
             <span class="vuln-id">PWN-016</span>
-            <span class="vuln-title">Coupon — Category Restriction Bypass</span>
+            <span class="vuln-title">Coupon - Category Restriction Bypass</span>
             <span class="owasp-tag">A06:2025</span>
             <span class="sev-badge sev-medium">Medium</span>
             <i class="bi bi-chevron-down chevron"></i>
         </div>
         <div class="vuln-card-body">
-            <p class="vuln-desc">Coupons enforce per-user limits and category restrictions — but only at apply time, not at checkout. The bypass: apply a category-restricted coupon while the required item is in your cart, then remove that item before completing the order. The discount persists through to payment because the server never re-validates the category restriction at checkout.</p>
+            <p class="vuln-desc">Coupons enforce per-user limits and category restrictions - but only at apply time, not at checkout. The bypass: apply a category-restricted coupon while the required item is in your cart, then remove that item before completing the order. The discount persists through to payment because the server never re-validates the category restriction at checkout.</p>
             <div class="vuln-meta">
                 <span class="meta-item"><strong>Endpoint:</strong> POST /apply-coupon → POST /checkout</span>
-                <span class="meta-item"><strong>Technique:</strong> Business logic bypass — apply-time vs checkout-time validation gap</span>
+                <span class="meta-item"><strong>Technique:</strong> Business logic bypass - apply-time vs checkout-time validation gap</span>
                 <span class="meta-item"><strong>Steps:</strong> Add phones item + other items → apply PHONES coupon → remove phones item → checkout at discounted price</span>
             </div>
         </div>
@@ -582,13 +559,13 @@
     <div class="vuln-card" data-type="web" data-sev="medium">
         <div class="vuln-card-head" onclick="toggle(this)">
             <span class="vuln-id">PWN-017</span>
-            <span class="vuln-title">Open Redirect — Login & Register</span>
+            <span class="vuln-title">Open Redirect - Login & Register</span>
             <span class="owasp-tag">A06:2025</span>
             <span class="sev-badge sev-medium">Medium</span>
             <i class="bi bi-chevron-down chevron"></i>
         </div>
         <div class="vuln-card-body">
-            <p class="vuln-desc">The <code>?next=</code> parameter on <code>/login</code> and <code>/register</code> redirects to any value after authentication with no validation. Used to redirect victims to attacker-controlled pages after they log in — effective for credential phishing.</p>
+            <p class="vuln-desc">The <code>?next=</code> parameter on <code>/login</code> and <code>/register</code> redirects to any value after authentication with no validation. Used to redirect victims to attacker-controlled pages after they log in - effective for credential phishing.</p>
             <div class="vuln-meta">
                 <span class="meta-item"><strong>Endpoint:</strong> /login?next=, /register?next=</span>
                 <span class="meta-item"><strong>Technique:</strong> Open redirect</span>
@@ -601,13 +578,13 @@
     <div class="vuln-card" data-type="web" data-sev="medium">
         <div class="vuln-card-head" onclick="toggle(this)">
             <span class="vuln-id">PWN-039</span>
-            <span class="vuln-title">HTTP Parameter Pollution — Coupon Code Bypass</span>
+            <span class="vuln-title">HTTP Parameter Pollution - Coupon Code Bypass</span>
             <span class="owasp-tag">A06:2025</span>
             <span class="sev-badge sev-medium">Medium</span>
             <i class="bi bi-chevron-down chevron"></i>
         </div>
         <div class="vuln-card-body">
-            <p class="vuln-desc">Submitting <code>coupon_code=VALID&amp;coupon_code=INVALID</code> in the checkout POST body causes <code>express-bodyParser</code> to coerce the field into an array. The server detects the array and silently discards the coupon entirely — the order proceeds at full price with no error message. The reverse also works: depending on proxy behaviour, an attacker can make a request appear coupon-free to logging while the value reaching the app is a valid discount code.</p>
+            <p class="vuln-desc">Submitting <code>coupon_code=VALID&amp;coupon_code=INVALID</code> in the checkout POST body causes <code>express-bodyParser</code> to coerce the field into an array. The server detects the array and silently discards the coupon entirely - the order proceeds at full price with no error message. The reverse also works: depending on proxy behaviour, an attacker can make a request appear coupon-free to logging while the value reaching the app is a valid discount code.</p>
             <div class="vuln-meta">
                 <span class="meta-item"><strong>Endpoint:</strong> POST /checkout</span>
                 <span class="meta-item"><strong>Payload:</strong> coupon_code=HALFOFF&amp;coupon_code=INVALID</span>
@@ -622,7 +599,7 @@
     <div class="vuln-card" data-type="web" data-sev="high">
         <div class="vuln-card-head" onclick="toggle(this)">
             <span class="vuln-id">PWN-021</span>
-            <span class="vuln-title">Mass Assignment — Self-Assigned Admin Role</span>
+            <span class="vuln-title">Mass Assignment - Self-Assigned Admin Role</span>
             <span class="owasp-tag">A07:2025</span>
             <span class="sev-badge sev-high">High</span>
             <i class="bi bi-chevron-down chevron"></i>
@@ -646,7 +623,7 @@
             <i class="bi bi-chevron-down chevron"></i>
         </div>
         <div class="vuln-card-body">
-            <p class="vuln-desc">Failed login attempts, OTP guesses, and password reset token submissions are not rate-limited or counted. There is no lockout mechanism anywhere in the application. Automated credential stuffing and brute-force attacks proceed without friction. Coupon codes can also be brute-forced — per-user limits prevent reuse of the same code but do not prevent probing for valid codes.</p>
+            <p class="vuln-desc">Failed login attempts, OTP guesses, and password reset token submissions are not rate-limited or counted. There is no lockout mechanism anywhere in the application. Automated credential stuffing and brute-force attacks proceed without friction. Coupon codes can also be brute-forced - per-user limits prevent reuse of the same code but do not prevent probing for valid codes.</p>
             <div class="vuln-meta">
                 <span class="meta-item"><strong>Affects:</strong> /login, /verify-otp, /reset-password, /apply-coupon</span>
                 <span class="meta-item" style="color:#6D28D9"><strong>💡 Smarter path:</strong> For OTP bypass specifically, brute-forcing is the hard way. Check whether the inbox delivering the OTP enforces ownership before reading it. See PWN-004.</span>
@@ -683,7 +660,7 @@
             <div class="vuln-meta">
                 <span class="meta-item"><strong>Affects:</strong> /login → /verify-otp, /forgot-password</span>
                 <span class="meta-item"><strong>Impact:</strong> Extended brute-force window</span>
-                <span class="meta-item" style="color:#6D28D9"><strong>💡 Smarter path:</strong> Multiple active codes widen the brute-force window — but brute force is still the slow route. There is a way to read the OTP directly without guessing. See PWN-004.</span>
+                <span class="meta-item" style="color:#6D28D9"><strong>💡 Smarter path:</strong> Multiple active codes widen the brute-force window - but brute force is still the slow route. There is a way to read the OTP directly without guessing. See PWN-004.</span>
             </div>
         </div>
     </div>
@@ -692,13 +669,13 @@
     <div class="vuln-card" data-type="web" data-sev="medium">
         <div class="vuln-card-head" onclick="toggle(this)">
             <span class="vuln-id">PWN-037</span>
-            <span class="vuln-title">Username Enumeration — Forgot Password &amp; Chat Init</span>
+            <span class="vuln-title">Username Enumeration - Forgot Password &amp; Chat Init</span>
             <span class="owasp-tag">A07:2025</span>
             <span class="sev-badge sev-medium">Medium</span>
             <i class="bi bi-chevron-down chevron"></i>
         </div>
         <div class="vuln-card-body">
-            <p class="vuln-desc"><code>POST /forgot-password</code> returns a distinct error message <em>"Email not found"</em> for unregistered addresses versus a success message for valid ones. <code>POST /chat/init</code> is more explicit — it returns <code>{"found": true}</code> or <code>{"found": false}</code> directly in the JSON response, enabling bulk email enumeration at scale with no rate limiting.</p>
+            <p class="vuln-desc"><code>POST /forgot-password</code> returns a distinct error message <em>"Email not found"</em> for unregistered addresses versus a success message for valid ones. <code>POST /chat/init</code> is more explicit - it returns <code>{"found": true}</code> or <code>{"found": false}</code> directly in the JSON response, enabling bulk email enumeration at scale with no rate limiting.</p>
             <div class="vuln-meta">
                 <span class="meta-item"><strong>Endpoints:</strong> POST /forgot-password, POST /chat/init</span>
                 <span class="meta-item"><strong>Auth required:</strong> No</span>
@@ -713,13 +690,13 @@
     <div class="vuln-card" data-type="web" data-sev="high">
         <div class="vuln-card-head" onclick="toggle(this)">
             <span class="vuln-id">PWN-025</span>
-            <span class="vuln-title">File Upload — MIME Type Spoofing</span>
+            <span class="vuln-title">File Upload - MIME Type Spoofing</span>
             <span class="owasp-tag">A08:2025</span>
             <span class="sev-badge sev-high">High</span>
             <i class="bi bi-chevron-down chevron"></i>
         </div>
         <div class="vuln-card-body">
-            <p class="vuln-desc">The avatar upload validates both MIME type and file extension — but MIME type is read from the <code>Content-Type</code> header which is fully attacker-controlled. Any file passes the check by setting <code>Content-Type: image/svg+xml</code> in the request.</p>
+            <p class="vuln-desc">The avatar upload validates both MIME type and file extension - but MIME type is read from the <code>Content-Type</code> header which is fully attacker-controlled. Any file passes the check by setting <code>Content-Type: image/svg+xml</code> in the request.</p>
             <div class="vuln-meta">
                 <span class="meta-item"><strong>Endpoint:</strong> POST /profile/upload-avatar</span>
                 <span class="meta-item"><strong>Technique:</strong> MIME type spoofing</span>
@@ -731,7 +708,7 @@
     <div class="vuln-card" data-type="web" data-sev="medium">
         <div class="vuln-card-head" onclick="toggle(this)">
             <span class="vuln-id">PWN-026</span>
-            <span class="vuln-title">CSRF — Account Self-Deletion</span>
+            <span class="vuln-title">CSRF - Account Self-Deletion</span>
             <span class="owasp-tag">A08:2025</span>
             <span class="sev-badge sev-medium">Medium</span>
             <i class="bi bi-chevron-down chevron"></i>
@@ -758,7 +735,7 @@
             <i class="bi bi-chevron-down chevron"></i>
         </div>
         <div class="vuln-card-body">
-            <p class="vuln-desc">Every failed login attempt records the submitted password in plaintext in the audit log. When users accidentally type their password into the username field — which is extremely common — it is permanently stored in the log and exposed at <code>/logs</code>.</p>
+            <p class="vuln-desc">Every failed login attempt records the submitted password in plaintext in the audit log. When users accidentally type their password into the username field - which is extremely common - it is permanently stored in the log and exposed at <code>/logs</code>.</p>
             <div class="vuln-meta">
                 <span class="meta-item"><strong>Location:</strong> audit_log table, action: LOGIN_FAILED</span>
                 <span class="meta-item"><strong>Chains with:</strong> PWN-005 (public /logs)</span>
@@ -775,7 +752,7 @@
             <i class="bi bi-chevron-down chevron"></i>
         </div>
         <div class="vuln-card-body">
-            <p class="vuln-desc">The audit log records IP addresses from the <code>X-Forwarded-For</code> header, which is entirely user-controlled. Any attacker can set a fake IP to appear as though attacks originate from a legitimate address — or frame another IP address.</p>
+            <p class="vuln-desc">The audit log records IP addresses from the <code>X-Forwarded-For</code> header, which is entirely user-controlled. Any attacker can set a fake IP to appear as though attacks originate from a legitimate address - or frame another IP address.</p>
             <div class="vuln-meta">
                 <span class="meta-item"><strong>Test:</strong> curl -H "X-Forwarded-For: 8.8.8.8" /debug/info</span>
             </div>
@@ -788,7 +765,7 @@
     <div class="vuln-card" data-type="web" data-sev="high">
         <div class="vuln-card-head" onclick="toggle(this)">
             <span class="vuln-id">PWN-029</span>
-            <span class="vuln-title">SSRF — Avatar URL Fetched Server-Side</span>
+            <span class="vuln-title">SSRF - Avatar URL Fetched Server-Side</span>
             <span class="owasp-tag">A10:2025</span>
             <span class="sev-badge sev-high">High</span>
             <i class="bi bi-chevron-down chevron"></i>
@@ -809,13 +786,13 @@
     <div class="vuln-card" data-type="web" data-sev="medium">
         <div class="vuln-card-head" onclick="toggle(this)">
             <span class="vuln-id">PWN-030</span>
-            <span class="vuln-title">Seller Earnings Calculated from Original Price — Coupon Not Prorated</span>
+            <span class="vuln-title">Seller Earnings Calculated from Original Price - Coupon Not Prorated</span>
             <span class="owasp-tag">Logic</span>
             <span class="sev-badge sev-medium">Medium</span>
             <i class="bi bi-chevron-down chevron"></i>
         </div>
         <div class="vuln-card-body">
-            <p class="vuln-desc">Seller payouts were historically calculated from original item prices regardless of applied discounts, meaning the platform could pay out more than it collected from the buyer. This has since been fixed — seller gross is now proportionally reduced by the coupon ratio — but the coupon category bypass vulnerability (PWN-016) remains.</p>
+            <p class="vuln-desc">Seller payouts were historically calculated from original item prices regardless of applied discounts, meaning the platform could pay out more than it collected from the buyer. This has since been fixed - seller gross is now proportionally reduced by the coupon ratio - but the coupon category bypass vulnerability (PWN-016) remains.</p>
             <div class="vuln-meta">
                 <span class="meta-item"><strong>Status:</strong> Fixed</span>
                 <span class="meta-item"><strong>Related:</strong> PWN-016 (coupon abuse)</span>
@@ -826,7 +803,7 @@
     <div class="vuln-card" data-type="web" data-sev="high">
         <div class="vuln-card-head" onclick="toggle(this)">
             <span class="vuln-id">PWN-042</span>
-            <span class="vuln-title">Vulnbank Wallet Funding — Credited Amount Override</span>
+            <span class="vuln-title">Vulnbank Wallet Funding - Credited Amount Override</span>
             <span class="owasp-tag">Payments</span>
             <span class="sev-badge sev-high">High</span>
             <i class="bi bi-chevron-down chevron"></i>
@@ -844,7 +821,7 @@
     <div class="vuln-card" data-type="web" data-sev="high">
         <div class="vuln-card-head" onclick="toggle(this)">
             <span class="vuln-id">PWN-043</span>
-            <span class="vuln-title">Vulnbank Wallet Funding — Tiny / Negative Amount Abuse</span>
+            <span class="vuln-title">Vulnbank Wallet Funding - Tiny / Negative Amount Abuse</span>
             <span class="owasp-tag">Payments</span>
             <span class="sev-badge sev-high">High</span>
             <i class="bi bi-chevron-down chevron"></i>
@@ -862,7 +839,7 @@
     <div class="vuln-card" data-type="web" data-sev="high">
         <div class="vuln-card-head" onclick="toggle(this)">
             <span class="vuln-id">PWN-044</span>
-            <span class="vuln-title">Vulnbank Payment — Unverified Settlement Bypass</span>
+            <span class="vuln-title">Vulnbank Payment - Unverified Settlement Bypass</span>
             <span class="owasp-tag">Payments</span>
             <span class="sev-badge sev-high">High</span>
             <i class="bi bi-chevron-down chevron"></i>
@@ -880,7 +857,7 @@
     <div class="vuln-card" data-type="web" data-sev="medium">
         <div class="vuln-card-head" onclick="toggle(this)">
             <span class="vuln-id">PWN-045</span>
-            <span class="vuln-title">Vulnbank Verification — Null Amount Fallback</span>
+            <span class="vuln-title">Vulnbank Verification - Null Amount Fallback</span>
             <span class="owasp-tag">Payments</span>
             <span class="sev-badge sev-medium">Medium</span>
             <i class="bi bi-chevron-down chevron"></i>
@@ -901,7 +878,7 @@
     <div class="vuln-card" data-type="ai" data-sev="critical">
         <div class="vuln-card-head" onclick="toggle(this)">
             <span class="vuln-id">PWN-031</span>
-            <span class="vuln-title">Direct Prompt Injection — System Prompt Extraction</span>
+            <span class="vuln-title">Direct Prompt Injection - System Prompt Extraction</span>
             <span class="owasp-tag">LLM01</span>
             <span class="sev-badge sev-critical">Critical</span>
             <i class="bi bi-chevron-down chevron"></i>
@@ -925,7 +902,7 @@
             <i class="bi bi-chevron-down chevron"></i>
         </div>
         <div class="vuln-card-body">
-            <p class="vuln-desc">Product descriptions are fetched raw from the database and injected into the AI's context without sanitisation. A seller can embed instructions inside a product description that hijack the model's response when any user asks about that product — redirecting to malicious URLs, leaking data, or triggering downstream XSS.</p>
+            <p class="vuln-desc">Product descriptions are fetched raw from the database and injected into the AI's context without sanitisation. A seller can embed instructions inside a product description that hijack the model's response when any user asks about that product - redirecting to malicious URLs, leaking data, or triggering downstream XSS.</p>
             <div class="vuln-meta">
                 <span class="meta-item"><strong>Endpoint:</strong> POST /chat (via product DB)</span>
                 <span class="meta-item"><strong>Technique:</strong> Indirect prompt injection</span>
@@ -967,7 +944,7 @@
         <div class="vuln-card-body">
             <p class="vuln-desc">The chat widget writes AI responses directly to <code>innerHTML</code> without escaping. Combined with indirect prompt injection, a seller embeds an XSS payload in a product description which the model includes in its reply, executing JavaScript in the victim's browser. Three-step chain: seller poisoning → indirect injection → DOM XSS.</p>
             <div class="vuln-meta">
-                <span class="meta-item"><strong>Location:</strong> chat-widget.ejs — botMsg()</span>
+                <span class="meta-item"><strong>Location:</strong> chat-widget.ejs - botMsg()</span>
                 <span class="meta-item"><strong>Type:</strong> DOM-based XSS</span>
                 <span class="meta-item"><strong>Chains with:</strong> PWN-032</span>
             </div>
@@ -994,12 +971,52 @@
         </div>
     </div>
 
+    <div class="vuln-card" data-type="ai" data-sev="critical">
+        <div class="vuln-card-head" onclick="toggle(this)">
+            <span class="vuln-id">PWN-046</span>
+            <span class="vuln-title">Multi-Vuln Chain → Agent Command Injection (Wallet Credit)</span>
+            <span class="owasp-tag">LLM01</span>
+            <span class="sev-badge sev-critical">Critical</span>
+            <i class="bi bi-chevron-down chevron"></i>
+        </div>
+        <div class="vuln-card-body">
+            <p class="vuln-desc">A four-step exploit chain combining three separate vulnerabilities. <strong>Step 1:</strong> Access <code>GET /debug/info</code> (unauthenticated) to retrieve the <code>CHAT_OVERRIDE_TOKEN</code> value. <strong>Step 2:</strong> Obtain your numeric user ID — visible in the <code>POST /chat/init</code> JSON response or via account enumeration. <strong>Step 3:</strong> Use prompt injection on <code>POST /chat</code> to extract the classified section of the system prompt, revealing the <code>[WALLET_CREDIT:&lt;amount&gt;]</code> command tag and the server-side authorization mechanism. <strong>Step 4:</strong> Compute <code>base64(token + ":" + user_id)</code> and include <code>OVERRIDE::&lt;result&gt;</code> in your message alongside a wallet credit request. The server validates the token, injects an authorization marker into the AI's context, and the model embeds the command tag. The server executes the wallet credit (up to ₦50,000 per request) silently before delivering the reply.</p>
+            <div class="vuln-meta">
+                <span class="meta-item"><strong>Endpoints:</strong> GET /debug/info → POST /chat/init → POST /chat</span>
+                <span class="meta-item"><strong>Auth required:</strong> Yes (email lookup)</span>
+                <span class="meta-item"><strong>Technique:</strong> Info disclosure + prompt injection + agent command injection</span>
+                <span class="meta-item"><strong>Chains with:</strong> PWN-020 (debug endpoint), PWN-031 (prompt injection), PWN-009 (email enumeration)</span>
+                <span class="meta-item"><strong>Impact:</strong> Arbitrary wallet credit — financial fraud</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="vuln-card" data-type="ai" data-sev="critical">
+        <div class="vuln-card-head" onclick="toggle(this)">
+            <span class="vuln-id">PWN-047</span>
+            <span class="vuln-title">Multi-Vuln Chain → Agent Command Injection (Free Order)</span>
+            <span class="owasp-tag">LLM01</span>
+            <span class="sev-badge sev-critical">Critical</span>
+            <i class="bi bi-chevron-down chevron"></i>
+        </div>
+        <div class="vuln-card-body">
+            <p class="vuln-desc">Same four-step chain as PWN-037 but targets the <code>[FREE_ORDER:&lt;product_id&gt;]</code> agent command. After completing the override chain, include a free order request in your message alongside the <code>OVERRIDE::</code> token. The server creates a real order record with <code>total_amount = 0</code> and <code>price = 0</code> per item, bypassing all payment and wallet deduction logic entirely. Valid product IDs are discoverable via the store catalogue or the chatbot's own product search tool. Chains naturally after PWN-037 — once you have override access, switching to free orders requires only changing the request.</p>
+            <div class="vuln-meta">
+                <span class="meta-item"><strong>Endpoints:</strong> GET /debug/info → POST /chat/init → POST /chat</span>
+                <span class="meta-item"><strong>Auth required:</strong> Yes (email lookup)</span>
+                <span class="meta-item"><strong>Technique:</strong> Info disclosure + prompt injection + agent command injection + business logic bypass</span>
+                <span class="meta-item"><strong>Chains with:</strong> PWN-046, PWN-020, PWN-031</span>
+                <span class="meta-item"><strong>Impact:</strong> Free product acquisition — e-commerce fraud</span>
+            </div>
+        </div>
+    </div>
+
     <div class="cat-header" data-type="ai"><h2>LLM10 · Unbounded Consumption</h2></div>
 
     <div class="vuln-card" data-type="ai" data-sev="medium">
         <div class="vuln-card-head" onclick="toggle(this)">
             <span class="vuln-id">PWN-036</span>
-            <span class="vuln-title">No Rate Limiting on AI Endpoint — API Quota Exhaustion</span>
+            <span class="vuln-title">No Rate Limiting on AI Endpoint - API Quota Exhaustion</span>
             <span class="owasp-tag">LLM10</span>
             <span class="sev-badge sev-medium">Medium</span>
             <i class="bi bi-chevron-down chevron"></i>
@@ -1017,7 +1034,7 @@
 </div>
 
 <footer>
-    &copy; <%= new Date().getFullYear() %> <strong>Pwnshop</strong> — Intentionally Vulnerable Application. For authorised training use only.
+    &copy; <%= new Date().getFullYear() %> <strong>Pwnshop</strong> - Intentionally Vulnerable Application. For authorised training use only.
 </footer>
 
 <script>

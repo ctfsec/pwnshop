@@ -6,37 +6,16 @@
     <title>Checkout - Pwnshop</title>
     <link href="/css/bootstrap.min.css" rel="stylesheet">
     <link href="/css/bootstrap-icons.min.css" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
     <link rel="icon" type="image/x-icon" href="/favicon.ico">
     <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
     <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
     <link rel="apple-touch-icon" href="/apple-touch-icon.png">
     <link rel="manifest" href="/site.webmanifest">
+    <link rel="stylesheet" href="/css/style.css">
     <style>
-        :root {
-            --purple-deep:  #3B0764;
-            --purple-mid:   #6D28D9;
-            --purple-light: #A855F7;
-            --purple-pale:  #F3E8FF;
-            --black:        #0D0D0D;
-            --white:        #FFFFFF;
-            --gray-100:     #F8F5FF;
-            --gray-200:     #EDE9F6;
-            --gray-500:     #6B7280;
-            --accent:       #C026D3;
-        }
-        * { box-sizing: border-box; }
-        html { background: var(--gray-100); }
-        body { font-family: 'DM Sans', sans-serif; background: var(--gray-100); color: var(--black); margin: 0; }
-
-        /* ── NAVBAR ── */
-        .topbar { background: var(--purple-deep); padding: 0; position: fixed; top: 0; z-index: 1000; box-shadow: 0 2px 16px rgba(59,7,100,0.4); }
-        .topbar .container { display: flex; align-items: center; gap: 16px; padding: 12px 24px; }
-        .navbar-brand { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 1.6rem; color: var(--white) !important; text-decoration: none; display: flex; align-items: center; gap: 6px; }
-        .navbar-brand .dot { width: 8px; height: 8px; background: var(--purple-light); border-radius: 50%; }
-        .nav-right { display: flex; align-items: center; gap: 8px; list-style: none; margin: 0 0 0 auto; padding: 0; }
-        .user-chip { text-decoration: none; background: rgba(168,85,247,0.2); border: 1px solid rgba(168,85,247,0.4); color: var(--white) !important; border-radius: 20px; padding: 5px 14px; font-size: 0.85rem; font-weight: 600; }
-        .btn-logout { background: transparent; border: 1px solid rgba(255,255,255,0.3); color: rgba(255,255,255,0.8) !important; border-radius: 8px; padding: 5px 12px; font-size: 0.83rem; text-decoration: none; }
         .nav-link-plain { color: rgba(255,255,255,0.75) !important; font-size: 0.88rem; padding: 6px 12px; border-radius: 6px; text-decoration: none; }
         .nav-link-plain:hover { background: rgba(255,255,255,0.1); color: var(--white) !important; }
 
@@ -119,8 +98,6 @@
         .summary-total span:last-child { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 1.3rem; color: var(--purple-mid); }
 
         /* ── FOOTER ── */
-        footer { background: var(--purple-deep); color: rgba(255,255,255,0.6); text-align: center; padding: 24px; font-size: 0.85rem; margin-top: 48px; }
-        footer strong { color: var(--purple-light); }
     </style>
     <link rel="stylesheet" href="/css/mobile-responsive.css">
 </head>
@@ -129,11 +106,32 @@
 <nav class="topbar">
     <div class="container">
         <a class="navbar-brand" href="/">Pwnshop<span class="dot"></span></a>
+        <form class="search-wrap" action="/search" method="GET">
+            <input type="search" name="q" placeholder="Search products, brands, categories...">
+            <button type="submit"><i class="bi bi-search"></i></button>
+        </form>
         <ul class="nav-right">
-            <li><a class="nav-link-plain" href="/">Home</a></li>
-            <li><a class="nav-link-plain" href="/cart">Cart</a></li>
-            <li><a href="/profile" class="user-chip"><%= user.username %></a></li>
-            <li><a href="/logout" class="btn-logout">Logout</a></li>
+            <li><a class="nav-link" href="/vulnerabilities"><i class="bi bi-question-circle"></i> Help</a></li>
+            <% if (user && user.role === 'user' && !user.isSeller) { %>
+                <li><a href="/register-seller" class="btn-seller">Become a Seller</a></li>
+            <% } %>
+            <% if (user && user.isSeller) { %>
+                <li><a href="/add-product" class="btn-add-product">+ Add Product</a></li>
+                <li><a href="/seller/dashboard" class="btn-dashboard"><i class="bi bi-graph-up"></i> Dashboard</a></li>
+            <% } %>
+            <li>
+                <% if (user) { %>
+                    <a href="/profile" class="user-chip"><%= user.username %></a>
+                    <a href="/logout" class="btn-logout ms-2"><i class="bi bi-box-arrow-right"></i> Logout</a>
+                <% } else { %>
+                    <a href="/login" class="btn-login"><i class="bi bi-person"></i> Login / Signup</a>
+                <% } %>
+            </li>
+            <li>
+                <a class="btn-cart" href="/cart">
+                    <i class="bi bi-cart3"></i> My Cart <span class="badge ms-1"><%= cartCount %></span>
+                </a>
+            </li>
         </ul>
     </div>
 </nav>
@@ -147,14 +145,67 @@
 
         <div>
             <div class="form-card">
-                <h3><i class="bi bi-geo-alt-fill" style="color:var(--purple-mid)"></i> Shipping Address</h3>
+                <h3><i class="bi bi-geo-alt-fill" style="color:var(--purple-mid)"></i> Delivery</h3>
                 <form action="/checkout" method="POST">
-                    <div class="mb-4">
-                        <label class="f-label">Full Shipping Address</label>
-                        <textarea class="f-field" id="shipping_address" name="shipping_address" required placeholder="Enter your full address including street, city, state and postal code"></textarea>
+                    <!-- hidden fields updated by JS -->
+                    <input type="hidden" name="shipping_address" id="shipping_address">
+                    <input type="hidden" name="delivery_zone"    id="delivery_zone_hidden" value="<%= savedZone %>">
+
+                    <!-- Delivery type toggle -->
+                    <div class="delivery-type-wrap" style="display:flex;gap:10px;margin-bottom:20px;">
+                        <label class="delivery-type-btn" id="btn-home" style="flex:1;display:flex;align-items:center;gap:10px;border:2px solid var(--purple-mid);border-radius:12px;padding:14px 16px;cursor:pointer;background:var(--purple-pale);">
+                            <input type="radio" name="_delivery_type" value="home" checked style="display:none;">
+                            <i class="bi bi-house-door-fill" style="color:var(--purple-mid);font-size:1.3rem;"></i>
+                            <div><strong style="font-size:0.9rem;">Home Delivery</strong><br><span style="font-size:0.75rem;color:var(--gray-500);">Deliver to my address</span></div>
+                        </label>
+                        <label class="delivery-type-btn" id="btn-pickup" style="flex:1;display:flex;align-items:center;gap:10px;border:2px solid var(--gray-200);border-radius:12px;padding:14px 16px;cursor:pointer;background:var(--white);">
+                            <input type="radio" name="_delivery_type" value="pickup" style="display:none;">
+                            <i class="bi bi-shop" style="color:var(--gray-500);font-size:1.3rem;" id="pickup-icon"></i>
+                            <div><strong style="font-size:0.9rem;">Pickup Store</strong><br><span style="font-size:0.75rem;color:var(--gray-500);">Collect from our store</span></div>
+                        </label>
                     </div>
 
-                    <div class="divider-line"></div>
+                    <!-- Home Delivery panel -->
+                    <div id="panel-home">
+                        <% if (!savedAddress) { %>
+                        <div style="background:#fffbeb;border:1px solid #fcd34d;border-radius:10px;padding:12px 14px;margin-bottom:14px;font-size:0.84rem;color:#92400e;display:flex;align-items:center;gap:8px;">
+                            <i class="bi bi-exclamation-triangle-fill"></i>
+                            You have no default address set.
+                            <a href="/profile" style="color:var(--purple-mid);font-weight:700;margin-left:4px;">Set it on your profile</a>
+                        </div>
+                        <% } %>
+                        <label class="f-label">Delivery Address</label>
+                        <textarea class="f-field" id="homeAddress" rows="3"
+                            placeholder="Enter your full address including street, city, state and postal code"
+                            oninput="syncHomeAddress(this.value)"><%= savedAddress %></textarea>
+                        <div style="margin-top:10px;">
+                            <label class="f-label">Delivery Zone</label>
+                            <select class="f-field" id="homeZone" onchange="updateZone(this.value)">
+                                <option value="lagos"  <%= savedZone === 'lagos'  ? 'selected' : '' %>>Lagos (₦800)</option>
+                                <option value="others" <%= savedZone === 'others' ? 'selected' : '' %>>Other States (₦1,500)</option>
+                                <option value="remote" <%= savedZone === 'remote' ? 'selected' : '' %>>Remote Area (₦2,500)</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Pickup Store panel -->
+                    <div id="panel-pickup" style="display:none;">
+                        <label class="f-label">Select Pickup Store</label>
+                        <select class="f-field" id="storeSelect" onchange="selectStore(this.value)">
+                            <option value="">-- Choose a store --</option>
+                            <% pickupStores.forEach(function(s) { %>
+                                <option value="<%= s.id %>" data-address="<%= s.address %>" data-zone="<%= s.zone %>">
+                                    <%= s.name %> - <%= s.address %>
+                                </option>
+                            <% }); %>
+                        </select>
+                        <div id="storeInfo" style="display:none;margin-top:10px;background:var(--gray-100);border-radius:9px;padding:10px 13px;font-size:0.82rem;color:var(--gray-500);">
+                            <i class="bi bi-geo-alt-fill" style="color:var(--purple-mid);"></i>
+                            <span id="storeInfoText"></span>
+                        </div>
+                    </div>
+
+                    <div class="divider-line" style="margin-top:18px;"></div>
 
 
                     <div class="coupon-wrap">
@@ -225,19 +276,19 @@
                     </div>
 
 
-                    <div class="alert-insufficient" id="insufficientAlert" style="display:<%= (selectedPaymentMethod !== 'vulnbank_card' && parseFloat(user.wallet_amount || 0) < parseFloat(total)) ? 'flex' : 'none' %>;">
+                    <div class="alert-insufficient" id="insufficientAlert" style="display:<%= (selectedPaymentMethod !== 'vulnbank_card' && parseFloat(user.wallet_amount || 0) < parseFloat(grandTotal)) ? 'flex' : 'none' %>;">
                         <i class="bi bi-exclamation-triangle-fill"></i>
                         Insufficient wallet balance. Please add funds before proceeding.
                     </div>
 
 
                     <button type="submit" class="btn-place-order" id="placeOrderBtn"
-                        <%= (selectedPaymentMethod !== 'vulnbank_card' && parseFloat(user.wallet_amount || 0) < parseFloat(total)) ? 'disabled' : '' %>>
+                        <%= (selectedPaymentMethod !== 'vulnbank_card' && parseFloat(user.wallet_amount || 0) < parseFloat(grandTotal)) ? 'disabled' : '' %>>
                         <i class="bi bi-lock-fill"></i>
                         <span id="placeOrderLabel">
                             <%= selectedPaymentMethod === 'vulnbank_card'
-                                ? 'Pay with Vulnbank — ₦' + total
-                                : (parseFloat(user.wallet_amount || 0) < parseFloat(total) ? 'Insufficient Balance' : 'Place Order — ₦' + total) %>
+                                ? 'Pay with Vulnbank - ₦' + grandTotal
+                                : (parseFloat(user.wallet_amount || 0) < parseFloat(grandTotal) ? 'Insufficient Balance' : 'Place Order - ₦' + grandTotal) %>
                         </span>
                     </button>
                 </form>
@@ -261,8 +312,8 @@
             </div>
             <div class="summary-row"><span>Subtotal</span><span>₦<%= total %></span></div>
             <div class="summary-row" id="discountRow" style="display:none;color:#16a34a;font-weight:600;"><span id="discountLabel">Discount</span><span id="discountAmt"></span></div>
-            <div class="summary-row free"><span>Shipping</span><span><i class="bi bi-check-circle-fill"></i> FREE</span></div>
-            <div class="summary-total"><span>Total</span><span id="totalDisplay">₦<%= total %></span></div>
+            <div class="summary-row"><span>Logistics Fee</span><span id="logisticsDisplay">₦<%= logisticsFee %></span></div>
+            <div class="summary-total"><span>Grand Total</span><span id="totalDisplay">₦<%= grandTotal %></span></div>
         </div>
     </div>
 </div>
@@ -279,6 +330,7 @@ const couponInput    = document.getElementById('couponInput');
 const couponCode     = document.getElementById('couponCode');
 const couponMsg      = document.getElementById('couponMsg');
 const totalDisplay   = document.getElementById('totalDisplay');
+const logisticsDisplay = document.getElementById('logisticsDisplay');
 const discountRow    = document.getElementById('discountRow');
 const discountAmt    = document.getElementById('discountAmt');
 const discountLbl    = document.getElementById('discountLabel');
@@ -290,7 +342,105 @@ const cardPanel      = document.getElementById('vulnbankCardPanel');
 const cardNumber     = document.getElementById('vbCardNumber');
 const cardExpiry     = document.getElementById('vbCardExpiry');
 const cardCvv        = document.getElementById('vbCardCvv');
-let effectiveTotal   = baseTotal;
+const ZONE_FEES      = { lagos: 800, others: 1500, remote: 2500 };
+const STORES         = <%- JSON.stringify(pickupStores) %>;
+let currentZoneFee   = parseFloat('<%= logisticsFee %>');
+let discountAmount   = 0;
+let effectiveTotal   = baseTotal + currentZoneFee;
+
+/* ── VulnBank card input formatting ── */
+cardNumber.addEventListener('input', function() {
+    let v = this.value.replace(/\D/g, '').slice(0, 16);
+    this.value = v.match(/.{1,4}/g)?.join(' ') || v;
+});
+cardNumber.addEventListener('keydown', function(e) {
+    if (!/[\d\b]/.test(e.key) && !['ArrowLeft','ArrowRight','Delete','Tab','Backspace'].includes(e.key)) e.preventDefault();
+});
+cardExpiry.addEventListener('input', function() {
+    let v = this.value.replace(/\D/g, '').slice(0, 4);
+    this.value = v.length > 2 ? v.slice(0,2) + '/' + v.slice(2) : v;
+});
+cardExpiry.addEventListener('keydown', function(e) {
+    if (!/[\d\b]/.test(e.key) && !['ArrowLeft','ArrowRight','Delete','Tab','Backspace'].includes(e.key)) e.preventDefault();
+});
+cardCvv.addEventListener('input', function() {
+    this.value = this.value.replace(/\D/g, '').slice(0, 4);
+});
+cardCvv.addEventListener('keydown', function(e) {
+    if (!/[\d\b]/.test(e.key) && !['ArrowLeft','ArrowRight','Delete','Tab','Backspace'].includes(e.key)) e.preventDefault();
+});
+
+/* Sync home address textarea → hidden field */
+function syncHomeAddress(val) {
+    document.getElementById('shipping_address').value = val;
+}
+
+/* Called when home zone select changes */
+function updateZone(zone) {
+    document.getElementById('delivery_zone_hidden').value = zone;
+    currentZoneFee = ZONE_FEES[zone] || 1500;
+    logisticsDisplay.textContent = '₦' + currentZoneFee.toLocaleString();
+    const grand = Math.max(0, baseTotal - discountAmount) + currentZoneFee;
+    effectiveTotal = grand;
+    totalDisplay.textContent = '₦' + grand.toLocaleString('en-NG', {minimumFractionDigits: 2});
+    updateButtonState(effectiveTotal);
+}
+
+/* Called when store dropdown changes */
+function selectStore(storeId) {
+    const store = STORES.find(s => s.id === storeId);
+    const info  = document.getElementById('storeInfo');
+    const txt   = document.getElementById('storeInfoText');
+    if (!store) { info.style.display = 'none'; return; }
+    document.getElementById('shipping_address').value        = store.address;
+    document.getElementById('delivery_zone_hidden').value    = store.zone;
+    txt.textContent = store.address;
+    info.style.display = 'block';
+    updateZone(store.zone);
+}
+
+/* Delivery type toggle (Home / Pickup) */
+(function() {
+    const typeInputs = document.querySelectorAll('input[name="_delivery_type"]');
+    const panelHome   = document.getElementById('panel-home');
+    const panelPickup = document.getElementById('panel-pickup');
+    const btnHome     = document.getElementById('btn-home');
+    const btnPickup   = document.getElementById('btn-pickup');
+    const pickupIcon  = document.getElementById('pickup-icon');
+
+    function switchType(type) {
+        if (type === 'home') {
+            panelHome.style.display   = '';
+            panelPickup.style.display = 'none';
+            btnHome.style.borderColor   = 'var(--purple-mid)';
+            btnHome.style.background    = 'var(--purple-pale)';
+            btnPickup.style.borderColor = 'var(--gray-200)';
+            btnPickup.style.background  = 'var(--white)';
+            pickupIcon.style.color      = 'var(--gray-500)';
+            /* Restore home address + zone */
+            const addr = document.getElementById('homeAddress').value;
+            const zone = document.getElementById('homeZone').value;
+            syncHomeAddress(addr);
+            updateZone(zone);
+        } else {
+            panelHome.style.display   = 'none';
+            panelPickup.style.display = '';
+            btnPickup.style.borderColor = 'var(--purple-mid)';
+            btnPickup.style.background  = 'var(--purple-pale)';
+            btnHome.style.borderColor   = 'var(--gray-200)';
+            btnHome.style.background    = 'var(--white)';
+            pickupIcon.style.color      = 'var(--purple-mid)';
+            /* Reset hidden fields until user picks a store */
+            document.getElementById('shipping_address').value     = '';
+            document.getElementById('delivery_zone_hidden').value = 'others';
+            document.getElementById('storeInfo').style.display    = 'none';
+        }
+    }
+
+    typeInputs.forEach(inp => inp.addEventListener('change', () => switchType(inp.value)));
+    /* Init hidden address from saved */
+    syncHomeAddress(document.getElementById('homeAddress').value);
+})();
 
 function currentPaymentMethod() {
     const selected = document.querySelector('input[name="payment_method"]:checked');
@@ -300,7 +450,7 @@ function currentPaymentMethod() {
 function updateButtonState(effectiveTotal) {
     if (currentPaymentMethod() === 'vulnbank_card') {
         placeBtn.disabled = false;
-        placeLabel.textContent = 'Pay with Vulnbank — ₦' + effectiveTotal.toFixed(2);
+        placeLabel.textContent = 'Pay with Vulnbank - ₦' + effectiveTotal.toFixed(2);
         alertBox.style.display = 'none';
         return;
     }
@@ -311,7 +461,7 @@ function updateButtonState(effectiveTotal) {
         alertBox.style.display = 'flex';
     } else {
         placeBtn.disabled = false;
-        placeLabel.textContent = 'Place Order — ₦' + effectiveTotal.toFixed(2);
+        placeLabel.textContent = 'Place Order - ₦' + effectiveTotal.toFixed(2);
         alertBox.style.display = 'none';
     }
 }
@@ -351,15 +501,15 @@ applyBtn.addEventListener('click', async () => {
             couponMsg.className = 'coupon-msg ok';
             couponMsg.textContent = data.message;
             couponCode.value = code.toUpperCase();
-            totalDisplay.textContent = '₦' + data.new_total;
+            discountAmount = baseTotal - parseFloat(data.new_total);
+            const grandWithDiscount = parseFloat(data.new_total) + currentZoneFee;
+            totalDisplay.textContent = '₦' + grandWithDiscount.toLocaleString('en-NG', {minimumFractionDigits: 2});
             discountRow.style.display = 'flex';
             discountLbl.textContent = data.discount_percent + '% off';
             discountAmt.textContent = '−₦' + data.discount_amount;
             applyBtn.textContent = '✓ Applied';
             couponInput.disabled = true;
-
-
-            effectiveTotal = parseFloat(data.new_total);
+            effectiveTotal = grandWithDiscount;
             updateButtonState(effectiveTotal);
         } else {
             couponMsg.className = 'coupon-msg err';

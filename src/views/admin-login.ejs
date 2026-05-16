@@ -6,27 +6,17 @@
     <title>Admin Login - Pwnshop</title>
     <link href="/css/bootstrap.min.css" rel="stylesheet">
     <link href="/css/bootstrap-icons.min.css" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
     <link rel="icon" type="image/x-icon" href="/favicon.ico">
     <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
     <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
     <link rel="apple-touch-icon" href="/apple-touch-icon.png">
     <link rel="manifest" href="/site.webmanifest">
+    <link rel="stylesheet" href="/css/style.css">
     <style>
-        :root {
-            --purple-deep:  #3B0764;
-            --purple-mid:   #6D28D9;
-            --purple-light: #A855F7;
-            --purple-pale:  #F3E8FF;
-            --black:        #0D0D0D;
-            --white:        #FFFFFF;
-            --gray-100:     #F8F5FF;
-            --gray-200:     #EDE9F6;
-            --gray-500:     #6B7280;
-            --accent:       #C026D3;
-        }
-        * { box-sizing: border-box; margin: 0; padding: 0; }
-        body { font-family:'DM Sans',sans-serif; background:var(--gray-100); min-height:100vh; display:flex; align-items:center; justify-content:center; padding:24px; }
+        body { min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 24px; }
 
         .auth-card { background:var(--white); border-radius:20px; box-shadow:0 8px 40px rgba(59,7,100,0.13); width:100%; max-width:920px; display:grid; grid-template-columns:1fr 1fr; overflow:hidden; min-height:520px; }
 
@@ -47,7 +37,7 @@
         .perk-item i { color:var(--purple-light); font-size:1rem; flex-shrink:0; }
 
         .panel-right { padding:48px 44px; display:flex; flex-direction:column; justify-content:center; }
-        .panel-right h3 { font-family:'Syne',sans-serif; font-weight:800; font-size:1.5rem; color:var(--black); margin-bottom:6px; }
+        .panel-right h3 { font-family:'Syne',sans-serif; font-weight:800; font-size:1.25rem; color:var(--black); margin-bottom:6px; white-space:nowrap; }
         .subtitle { color:var(--gray-500); font-size:0.875rem; margin-bottom:24px; }
 
         .f-label { font-size:0.78rem; font-weight:600; color:var(--black); margin-bottom:6px; letter-spacing:0.3px; text-transform:uppercase; display:block; }
@@ -64,12 +54,10 @@
         .label-row .f-label { margin:0; }
         .label-row a { font-size:0.78rem; color:var(--purple-mid); font-weight:600; text-decoration:none; }
 
-        .alert-err { background:#fef2f2; border:1px solid #fecaca; color:#dc2626; border-radius:8px; padding:10px 14px; font-size:0.83rem; display:flex; align-items:center; gap:8px; margin-bottom:18px; }
-
         .btn-submit { background:var(--purple-deep); color:var(--white); border:none; border-radius:10px; padding:13px; font-size:0.9rem; font-weight:700; font-family:'DM Sans',sans-serif; width:100%; cursor:pointer; transition:background 0.2s,transform 0.15s; display:flex; align-items:center; justify-content:center; gap:8px; }
         .btn-submit:hover { background:var(--purple-mid); transform:translateY(-1px); }
 
-        .auth-footer { margin-top:18px; text-align:center; font-size:0.82rem; color:var(--gray-500); }
+        .auth-footer { margin-top:20px; font-size:0.85rem; color:var(--gray-500); }
         .auth-footer a { color:var(--purple-mid); font-weight:600; text-decoration:none; }
 
         @media (max-width:640px) { .auth-card { grid-template-columns:1fr; } .panel-left { display:none; } .panel-right { padding:36px 28px; } }
@@ -114,7 +102,12 @@
                 </div>
                 <div class="pw-wrap">
                     <input type="password" class="f-field" name="password" id="pwField" placeholder="••••••••" required>
-                    <button type="button" class="pw-toggle" id="pwToggle"><i class="bi bi-eye" id="pwIcon"></i></button>
+                    <button type="button" class="pw-toggle" id="pwToggle">
+                        <svg id="pwIcon" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                            <circle cx="12" cy="12" r="3"/>
+                        </svg>
+                    </button>
                 </div>
             </div>
             <button type="submit" class="btn-submit">
@@ -127,10 +120,12 @@
     </div>
 </div>
 <script>
+    const eyeOpen  = '<path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>';
+    const eyeClose = '<path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94"/><path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19"/><line x1="1" y1="1" x2="23" y2="23"/>';
     document.getElementById('pwToggle').addEventListener('click', function () {
-        const f = document.getElementById('pwField'), i = document.getElementById('pwIcon');
-        if (f.type === 'password') { f.type = 'text'; i.className = 'bi bi-eye-slash'; }
-        else { f.type = 'password'; i.className = 'bi bi-eye'; }
+        const f = document.getElementById('pwField'), icon = document.getElementById('pwIcon');
+        if (f.type === 'password') { f.type = 'text';     icon.innerHTML = eyeClose; }
+        else                       { f.type = 'password'; icon.innerHTML = eyeOpen;  }
     });
 </script>
     <%- include('chat-widget') %>

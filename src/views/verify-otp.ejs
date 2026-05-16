@@ -6,35 +6,17 @@
     <title>Verify Your Identity - Pwnshop</title>
     <link href="/css/bootstrap.min.css" rel="stylesheet">
     <link href="/css/bootstrap-icons.min.css" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
     <link rel="icon" type="image/x-icon" href="/favicon.ico">
     <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
     <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
     <link rel="apple-touch-icon" href="/apple-touch-icon.png">
     <link rel="manifest" href="/site.webmanifest">
+    <link rel="stylesheet" href="/css/style.css">
     <style>
-        :root {
-            --purple-deep:  #3B0764;
-            --purple-mid:   #6D28D9;
-            --purple-light: #A855F7;
-            --purple-pale:  #F3E8FF;
-            --black:        #0D0D0D;
-            --white:        #FFFFFF;
-            --gray-100:     #F8F5FF;
-            --gray-200:     #EDE9F6;
-            --gray-500:     #6B7280;
-            --accent:       #C026D3;
-        }
-        * { box-sizing: border-box; margin: 0; padding: 0; }
-        body {
-            font-family: 'DM Sans', sans-serif;
-            background: var(--gray-100);
-            min-height: 100vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 24px;
-        }
+        body { min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 24px; }
 
         .auth-card {
             background: var(--white);
@@ -123,19 +105,6 @@
             gap: 8px;
         }
         .btn-submit:hover { background: var(--purple-mid); transform: translateY(-1px); }
-
-        .alert-err {
-            background: #fef2f2;
-            border: 1px solid #fecaca;
-            color: #dc2626;
-            border-radius: 8px;
-            padding: 10px 14px;
-            font-size: 0.83rem;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            margin-bottom: 20px;
-        }
 
         .btn-inbox { display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%; background: var(--purple-pale); color: var(--purple-deep); border: 1.5px solid rgba(109,40,217,0.25); border-radius: 10px; padding: 11px; font-size: 0.88rem; font-weight: 700; font-family: 'DM Sans', sans-serif; text-decoration: none; transition: all 0.2s; margin-top: 20px; }
         .btn-inbox:hover { background: var(--purple-deep); color: var(--white); border-color: var(--purple-deep); }

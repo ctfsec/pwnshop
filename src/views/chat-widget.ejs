@@ -1,6 +1,6 @@
 <style>
 /* ═══════════════════════════════════
-   PWNIE — CHAT WIDGET
+   PWNIE - CHAT WIDGET
 ═══════════════════════════════════ */
 
 /* FAB */
@@ -268,7 +268,13 @@
 
     <div class="pw-head">
         <div class="pw-head-left">
-            <div class="pw-logo">P</div>
+            <div class="pw-logo">
+                <svg viewBox="0 0 24 24" fill="none" stroke="#3B0764" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="20" height="20">
+                    <path d="M3 18v-6a9 9 0 0 1 18 0v6"/>
+                    <path d="M21 19a2 2 0 0 1-2 2h-1a2 2 0 0 1-2-2v-3a2 2 0 0 1 2-2h3z"/>
+                    <path d="M3 19a2 2 0 0 0 2 2h1a2 2 0 0 0 2-2v-3a2 2 0 0 0-2-2H3z"/>
+                </svg>
+            </div>
             <div>
                 <div class="pw-head-name">Pwnshop Support</div>
                 <div class="pw-head-status">Online now</div>
@@ -279,7 +285,7 @@
 
 
     <div class="pw-greet">
-        <h3>Hi there 👋</h3>
+        <h3>Hi there</h3>
         <p>We're here to help with your orders, products, and anything else.</p>
     </div>
 
@@ -357,7 +363,6 @@ window.pwStart=function(){
     .then(function(r){return r.json();})
     .then(function(d){
         uData=d.user||null;
-
         openChat(d.user, name, d.found);
     })
     .catch(function(){ openChat(null,name,false); });
@@ -377,7 +382,7 @@ function openChat(user, name, found) {
 
     var greet;
     if (user) {
-        greet = 'Hi ' + user.username + '! \uD83D\uDC4B Great to have you here. I can check your orders, track packages, help with products and more. What do you need?';
+        greet = 'Hi ' + user.username + '! Great to have you here. I can check your orders, track packages, help with products and more. What do you need?';
     } else if (found === false) {
         greet = 'Hi ' + name + '! I couldn\'t find a Pwnshop account linked to that email, so you\'re chatting as a guest. I can still help with products and general questions. To access your orders and account, please log in first.';
     } else {

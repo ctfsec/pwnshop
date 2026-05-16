@@ -6,27 +6,17 @@
     <title>Register - Pwnshop</title>
     <link href="/css/bootstrap.min.css" rel="stylesheet">
     <link href="/css/bootstrap-icons.min.css" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
     <link rel="icon" type="image/x-icon" href="/favicon.ico">
     <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
     <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
     <link rel="apple-touch-icon" href="/apple-touch-icon.png">
     <link rel="manifest" href="/site.webmanifest">
+    <link rel="stylesheet" href="/css/style.css">
     <style>
-        :root {
-            --purple-deep:  #3B0764;
-            --purple-mid:   #6D28D9;
-            --purple-light: #A855F7;
-            --purple-pale:  #F3E8FF;
-            --black:        #0D0D0D;
-            --white:        #FFFFFF;
-            --gray-100:     #F8F5FF;
-            --gray-200:     #EDE9F6;
-            --gray-500:     #6B7280;
-            --accent:       #C026D3;
-        }
-        * { box-sizing: border-box; margin: 0; padding: 0; }
-        body { font-family: 'DM Sans', sans-serif; background: var(--gray-100); min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 24px; }
+        body { min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 24px; }
         .auth-card { background: var(--white); border-radius: 20px; box-shadow: 0 8px 40px rgba(59,7,100,0.13); width: 100%; max-width: 920px; display: grid; grid-template-columns: 1fr 1fr; overflow: hidden; min-height: 600px; }
         .auth-panel-left { background: linear-gradient(145deg, var(--purple-deep), var(--purple-mid)); padding: 48px 40px; display: flex; flex-direction: column; justify-content: space-between; position: relative; overflow: hidden; }
         .auth-panel-left::before { content: ''; position: absolute; width: 260px; height: 260px; background: rgba(168,85,247,0.15); border-radius: 50%; top: -60px; right: -80px; }
@@ -57,14 +47,18 @@
         .role-toggle input[type="radio"]:checked + label { background: var(--purple-deep); color: var(--white); }
         .btn-auth-primary { background: var(--purple-deep); color: var(--white); border: none; border-radius: 10px; padding: 12px; font-size: 0.9rem; font-weight: 700; font-family: 'DM Sans', sans-serif; width: 100%; cursor: pointer; transition: background 0.2s, transform 0.15s; letter-spacing: 0.3px; margin-top: 4px; }
         .btn-auth-primary:hover { background: var(--purple-mid); transform: translateY(-1px); }
-        .alert-auth { background: #fef2f2; border: 1px solid #fecaca; color: #dc2626; border-radius: 8px; padding: 10px 14px; font-size: 0.83rem; display: flex; align-items: center; gap: 8px; margin-bottom: 16px; }
-        .auth-footer { margin-top: 18px; text-align: center; font-size: 0.82rem; color: var(--gray-500); }
+        .auth-
         .auth-footer a { color: var(--purple-mid); font-weight: 600; text-decoration: none; }
         .auth-footer a:hover { color: var(--accent); }
         .terms-note { font-size: 0.75rem; color: var(--gray-500); text-align: center; margin-top: 12px; line-height: 1.5; }
         .terms-note a { color: var(--purple-mid); font-weight: 600; text-decoration: none; }
         .row-half { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
         @media (max-width: 640px) { .auth-card { grid-template-columns: 1fr; } .auth-panel-left { display: none; } .auth-panel-right { padding: 36px 28px; } .row-half { grid-template-columns: 1fr; } }
+        .form-field.is-invalid { border-color: #ef4444; box-shadow: 0 0 0 3px rgba(239,68,68,0.1); }
+        .form-field.is-valid { border-color: #22c55e; box-shadow: 0 0 0 3px rgba(34,197,94,0.08); }
+        .field-hint { display: block; font-size: 0.72rem; margin-top: 4px; min-height: 16px; }
+        .field-hint.err { color: #ef4444; }
+        .field-hint.ok  { color: #16a34a; }
     </style>
     <link rel="stylesheet" href="/css/mobile-responsive.css">
 </head>
@@ -103,13 +97,15 @@
                 </div>
                 <div>
                     <label class="form-label">Phone Number</label>
-                    <input type="text" class="form-field" name="phone" placeholder="+234 800 000 0000" required>
+                    <input type="tel" class="form-field" id="phoneField" name="phone" placeholder="+234 800 000 0000" pattern="[\+]?[\d][\d\s\-\(\)]{6,19}" title="Enter a valid phone number (e.g. +234 800 000 0000)" required>
+                    <span class="field-hint" id="phoneHint"></span>
                 </div>
             </div>
 
             <div class="mb-3">
                 <label class="form-label">Email Address</label>
-                <input type="email" class="form-field" name="email" placeholder="you@example.com" required>
+                <input type="email" class="form-field" id="emailField" name="email" placeholder="you@example.com" required>
+                <span class="field-hint" id="emailHint"></span>
             </div>
 
             <div class="mb-3">
@@ -130,6 +126,14 @@
                 </div>
             </div>
 
+            <div class="mb-4">
+                <label class="form-label">Referral Code <span style="font-weight:400;text-transform:none;color:var(--gray-500);font-size:0.75rem;">(optional)</span></label>
+                <input type="text" class="form-field" name="referral_code" placeholder="e.g. PWNF3A82B1C" style="text-transform:uppercase;" oninput="this.value=this.value.toUpperCase()">
+                <p style="margin-top:6px;font-size:0.75rem;color:var(--gray-500);line-height:1.5;margin-bottom:0;">
+                    <i class="bi bi-gift" style="color:var(--purple-mid);margin-right:3px;"></i>Enter a friend's code and you both get rewarded — you get <strong style="color:var(--purple-mid);">&#8358;3,000</strong>, they get <strong style="color:var(--purple-mid);">&#8358;1,000</strong>
+                </p>
+            </div>
+
             <button type="submit" class="btn-auth-primary">Create Account</button>
         </form>
 
@@ -145,6 +149,35 @@
         if (field.type === 'password') { field.type = 'text'; icon.className = 'bi bi-eye-slash'; }
         else { field.type = 'password'; icon.className = 'bi bi-eye'; }
     });
+
+    function validateEmail(el) {
+        const hint = document.getElementById('emailHint');
+        const val  = el.value.trim();
+        if (!val) { el.classList.remove('is-valid','is-invalid'); hint.textContent=''; hint.className='field-hint'; return; }
+        const ok = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(val);
+        el.classList.toggle('is-valid', ok);
+        el.classList.toggle('is-invalid', !ok);
+        hint.className = 'field-hint ' + (ok ? 'ok' : 'err');
+        hint.textContent = ok ? '' : 'Please enter a valid email address (e.g. you@example.com)';
+    }
+    const emailField = document.getElementById('emailField');
+    emailField.addEventListener('input', function(){ validateEmail(this); });
+    emailField.addEventListener('blur',  function(){ validateEmail(this); });
+
+    function validatePhone(el) {
+        const hint = document.getElementById('phoneHint');
+        const val  = el.value.trim();
+        if (!val) { el.classList.remove('is-valid','is-invalid'); hint.textContent=''; hint.className='field-hint'; return; }
+        const digits = val.replace(/[\s\-\(\)\+]/g, '');
+        const ok = /^\d{7,15}$/.test(digits) && /^[\+\d][\d\s\-\(\)]{6,19}$/.test(val);
+        el.classList.toggle('is-valid', ok);
+        el.classList.toggle('is-invalid', !ok);
+        hint.className = 'field-hint ' + (ok ? 'ok' : 'err');
+        hint.textContent = ok ? '' : 'Enter a valid phone number (e.g. +234 800 000 0000 or +1 555 123 4567)';
+    }
+    const phoneField = document.getElementById('phoneField');
+    phoneField.addEventListener('input', function(){ validatePhone(this); });
+    phoneField.addEventListener('blur',  function(){ validatePhone(this); });
 </script>
     <%- include('chat-widget') %>
 <script src="/js/mobile-nav.js"></script>

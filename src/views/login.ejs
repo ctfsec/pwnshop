@@ -6,27 +6,17 @@
     <title>Login - Pwnshop</title>
     <link href="/css/bootstrap.min.css" rel="stylesheet">
     <link href="/css/bootstrap-icons.min.css" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
     <link rel="icon" type="image/x-icon" href="/favicon.ico">
     <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
     <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
     <link rel="apple-touch-icon" href="/apple-touch-icon.png">
     <link rel="manifest" href="/site.webmanifest">
+    <link rel="stylesheet" href="/css/style.css">
     <style>
-        :root {
-            --purple-deep:  #3B0764;
-            --purple-mid:   #6D28D9;
-            --purple-light: #A855F7;
-            --purple-pale:  #F3E8FF;
-            --black:        #0D0D0D;
-            --white:        #FFFFFF;
-            --gray-100:     #F8F5FF;
-            --gray-200:     #EDE9F6;
-            --gray-500:     #6B7280;
-            --accent:       #C026D3;
-        }
-        * { box-sizing: border-box; margin: 0; padding: 0; }
-        body { font-family: 'DM Sans', sans-serif; background: var(--gray-100); min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 24px; }
+        body { min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 24px; }
         .auth-card { background: var(--white); border-radius: 20px; box-shadow: 0 8px 40px rgba(59,7,100,0.13); width: 100%; max-width: 920px; display: grid; grid-template-columns: 1fr 1fr; overflow: hidden; min-height: 560px; }
         .auth-panel-left { background: linear-gradient(145deg, var(--purple-deep), var(--purple-mid)); padding: 48px 40px; display: flex; flex-direction: column; justify-content: space-between; position: relative; overflow: hidden; }
         .auth-panel-left::before { content: ''; position: absolute; width: 260px; height: 260px; background: rgba(168,85,247,0.15); border-radius: 50%; top: -60px; right: -80px; }
@@ -63,17 +53,31 @@
         .btn-social-fb:hover { background: #1560c9; color: var(--white); }
         .btn-social-google { background: var(--white); color: var(--black); border: 1.5px solid var(--gray-200); }
         .btn-social-google:hover { background: var(--gray-100); color: var(--black); }
-        .auth-footer { margin-top: 22px; text-align: center; font-size: 0.82rem; color: var(--gray-500); }
+        .auth-
         .auth-footer a { color: var(--purple-mid); font-weight: 600; text-decoration: none; }
         .auth-footer a:hover { color: var(--accent); }
         .terms-note { font-size: 0.75rem; color: var(--gray-500); text-align: center; margin-top: 14px; line-height: 1.5; }
         .terms-note a { color: var(--purple-mid); font-weight: 600; text-decoration: none; }
-        .alert-auth { background: #fef2f2; border: 1px solid #fecaca; color: #dc2626; border-radius: 8px; padding: 10px 14px; font-size: 0.83rem; display: flex; align-items: center; gap: 8px; margin-bottom: 16px; }
         @media (max-width: 640px) { .auth-card { grid-template-columns: 1fr; } .auth-panel-left { display: none; } .auth-panel-right { padding: 36px 28px; } }
+
+        /* Registration success toast */
+        .reg-toast { position: fixed; top: 24px; left: 50%; transform: translateX(-50%); background: #16a34a; color: #fff; padding: 14px 24px; border-radius: 12px; display: flex; align-items: center; gap: 10px; font-size: 0.9rem; font-weight: 600; font-family: 'DM Sans', sans-serif; box-shadow: 0 8px 32px rgba(22,163,74,0.35); z-index: 9999; white-space: nowrap; animation: toastIn 0.4s cubic-bezier(.22,1,.36,1) forwards; }
+        .reg-toast i { font-size: 1.2rem; }
+        .reg-toast-bar { position: absolute; bottom: 0; left: 0; height: 3px; background: rgba(255,255,255,0.5); border-radius: 0 0 12px 12px; animation: toastBar 4s linear forwards; }
+        @keyframes toastIn { from { opacity:0; top:0; } to { opacity:1; top:24px; } }
+        @keyframes toastBar { from { width:100%; } to { width:0%; } }
     </style>
     <link rel="stylesheet" href="/css/mobile-responsive.css">
 </head>
 <body>
+<% if (registered) { %>
+<div class="reg-toast" id="regToast">
+    <i class="bi bi-check-circle-fill"></i>
+    Account created successfully! Welcome to Pwnshop - sign in to get started.
+    <div class="reg-toast-bar"></div>
+</div>
+<% } %>
+
 <div class="auth-card">
     <div class="auth-panel-left">
         <a href="/" class="brand-logo">Pwnshop<span class="dot"></span></a>
@@ -141,6 +145,9 @@
 </div>
 
 <script>
+    const toast = document.getElementById('regToast');
+    if (toast) setTimeout(() => { toast.style.transition = 'opacity 0.5s'; toast.style.opacity = '0'; setTimeout(() => toast.remove(), 500); }, 4000);
+
     const usernameInput = document.querySelector('input[name="username"]');
     const countryCode   = document.getElementById('countryCode');
     usernameInput.addEventListener('input', function () {

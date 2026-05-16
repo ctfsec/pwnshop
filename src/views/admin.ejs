@@ -6,20 +6,55 @@
     <title>Admin - Pwnshop</title>
     <link href="/css/bootstrap.min.css" rel="stylesheet">
     <link href="/css/bootstrap-icons.min.css" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
     <link rel="icon" type="image/x-icon" href="/favicon.ico">
     <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
     <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
     <link rel="apple-touch-icon" href="/apple-touch-icon.png">
     <link rel="manifest" href="/site.webmanifest">
+    <link rel="stylesheet" href="/css/style.css">
     <style>
-        :root{--purple-deep:#3B0764;--purple-mid:#6D28D9;--purple-light:#A855F7;--purple-pale:#F3E8FF;--black:#0D0D0D;--white:#FFFFFF;--gray-100:#F8F5FF;--gray-200:#EDE9F6;--gray-500:#6B7280;--accent:#C026D3;--danger:#dc2626;}
         *{box-sizing:border-box;}
-        html { background: var(--gray-100); }
-        body{font-family:'DM Sans',sans-serif;background:var(--gray-100);color:var(--black);margin:0;display:flex;min-height:100vh;}
+
+        /* ── Admin layout (uses unique class names to avoid style.css conflicts) ── */
+        body {
+            display: flex;
+            flex-direction: row;
+            min-height: 100vh;
+            background: var(--gray-100);
+            padding: 0;
+            align-items: stretch;
+        }
+        .admin-sidebar {
+            width: 220px;
+            min-width: 220px;
+            background: var(--purple-deep);
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+            position: sticky;
+            top: 0;
+            height: 100vh;
+            overflow-y: auto;
+            flex-shrink: 0;
+        }
+        .admin-topbar {
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            background: var(--white);
+            border-bottom: 1.5px solid var(--gray-200);
+            padding: 0 28px;
+            height: 72px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        footer { display: none; }
 
         /* ── SIDEBAR ── */
-        .sidebar{width:220px;background:var(--purple-deep);flex-shrink:0;display:flex;flex-direction:column;position:sticky;top:0;height:100vh;overflow-y:auto;}
         .sb-brand{padding:18px 16px 14px;display:flex;align-items:center;gap:0;border-bottom:1px solid rgba(255,255,255,0.1);}
         .sb-brand-name{font-family:'Syne',sans-serif;font-weight:800;font-size:1.05rem;color:var(--white);white-space:nowrap;}
         .sb-brand .dot{width:6px;height:6px;background:var(--purple-light);border-radius:50%;margin:0 4px;}
@@ -39,7 +74,6 @@
 
         /* ── MAIN ── */
         .main-area{flex:1;display:flex;flex-direction:column;min-width:0;overflow-x:hidden;}
-        .topbar{background:var(--white);border-bottom:1.5px solid var(--gray-200);padding:14px 28px;display:flex;align-items:center;justify-content:space-between;position: fixed;top:0;z-index:100;}
         .topbar-title{font-family:'Syne',sans-serif;font-weight:800;font-size:1.1rem;color:var(--black);}
         .topbar-actions{display:flex;align-items:center;gap:10px;}
         .btn-tb{border-radius:8px;padding:7px 16px;font-size:0.82rem;font-weight:700;font-family:'DM Sans',sans-serif;border:none;cursor:pointer;transition:all 0.18s;text-decoration:none;display:inline-flex;align-items:center;gap:6px;}
@@ -54,14 +88,16 @@
         .btn-tb-amber{background:#fffbeb;color:#92400e;border:1px solid #fcd34d;}
         .btn-tb-amber:hover{background:#d97706;color:var(--white);}
 
-        .page-content{padding:28px;margin-top:72px;flex:1;}
+        .page-content{padding:28px;flex:1;}
 
         /* Flash */
         .flash-ok{background:#f0fdf4;border:1.5px solid #86efac;color:#15803d;border-radius:10px;padding:12px 16px;margin-bottom:20px;display:flex;align-items:center;gap:8px;font-size:0.85rem;}
         .flash-err{background:#fef2f2;border:1.5px solid #fecaca;color:#dc2626;border-radius:10px;padding:12px 16px;margin-bottom:20px;display:flex;align-items:center;gap:8px;font-size:0.85rem;}
 
         /* Stats cards */
-        .stats-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:28px;}
+        .stats-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:16px;margin-bottom:28px;}
+        @media(max-width:1100px){.stats-grid{grid-template-columns:repeat(3,1fr);}}
+        @media(max-width:700px){.stats-grid{grid-template-columns:repeat(2,1fr);}}
         .stat-card{background:var(--white);border-radius:14px;border:1.5px solid var(--gray-200);padding:20px 22px;}
         .stat-top{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:14px;}
         .stat-label{font-size:0.72rem;font-weight:700;color:var(--gray-500);text-transform:uppercase;letter-spacing:0.5px;}
@@ -163,7 +199,7 @@
 </head>
 <body>
 
-<nav class="sidebar">
+<nav class="admin-sidebar">
     <div class="sb-brand">
         <a href="/" style="text-decoration:none;display:flex;align-items:center;min-width:0;">
             <span class="sb-brand-name">Pwnshop</span><span class="dot"></span>
@@ -180,6 +216,7 @@
     <a href="/admin/products" class="sb-link <%= tab==='products' ? 'active':'' %>"><i class="bi bi-box-seam"></i> Products</a>
     <a href="/admin/reviews"  class="sb-link <%= tab==='reviews'  ? 'active':'' %>"><i class="bi bi-chat-square-text"></i> Reviews</a>
     <a href="/admin/coupons"  class="sb-link <%= tab==='coupons'  ? 'active':'' %>"><i class="bi bi-ticket-perforated"></i> Coupons</a>
+    <a href="/admin/deals"    class="sb-link <%= tab==='deals'    ? 'active':'' %>"><i class="bi bi-lightning-charge-fill"></i> Deals</a>
 
     <div class="sb-section">System</div>
     <a href="/admin/security" class="sb-link <%= tab==='security' ? 'active':'' %>"><i class="bi bi-shield-exclamation"></i> Security</a>
@@ -203,7 +240,7 @@
 <div class="main-area">
 
 
-    <div class="topbar">
+    <div class="admin-topbar">
         <div class="topbar-title">
             <% if(tab==='stats')    { %>Dashboard<% } %>
             <% if(tab==='users')    { %>Users<% } %>
@@ -212,6 +249,7 @@
             <% if(tab==='reviews')  { %>Reviews<% } %>
             <% if(tab==='security') { %>Security<% } %>
             <% if(tab==='coupons')  { %>Coupons<% } %>
+            <% if(tab==='deals')    { %>Deals<% } %>
         </div>
         <div class="topbar-actions">
             <button type="button" class="btn-tb btn-tb-danger" onclick="openLabResetModal()"><i class="bi bi-arrow-repeat"></i> Reset Lab</button>
@@ -248,9 +286,14 @@
                 <div class="stat-sub"><%= stats.active %> active listings</div>
             </div>
             <div class="stat-card">
-                <div class="stat-top"><span class="stat-label">Revenue</span><span class="stat-icon si-green"><i class="bi bi-graph-up-arrow"></i></span></div>
+                <div class="stat-top"><span class="stat-label">Platform Revenue</span><span class="stat-icon si-green"><i class="bi bi-graph-up-arrow"></i></span></div>
                 <div class="stat-value" style="font-size:1.4rem;">&#8358;<%= stats.revenue %></div>
-                <div class="stat-sub">from delivered orders</div>
+                <div class="stat-sub">Commission + logistics (delivered)</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-top"><span class="stat-label">VAT Collected</span><span class="stat-icon si-amber"><i class="bi bi-receipt-cutoff"></i></span></div>
+                <div class="stat-value" style="font-size:1.4rem;">&#8358;<%= stats.vatCollected %></div>
+                <div class="stat-sub">To be remitted to FIRS</div>
             </div>
         </div>
         <div class="section-card">
@@ -262,6 +305,93 @@
                 <a href="/admin/export-orders" class="btn-tb btn-tb-green"><i class="bi bi-download"></i> Export Orders CSV</a>
             </div>
         </div>
+
+        <% if (recentOrders && recentOrders.length > 0) { %>
+        <div class="section-card">
+            <div class="section-head">
+                <h3><i class="bi bi-clock-history"></i> Recent Transactions</h3>
+                <div style="display:flex;align-items:center;gap:10px;">
+                    <span id="txPageInfo" style="font-size:0.75rem;color:var(--gray-500);"></span>
+                    <button onclick="txChangePage(-1)" id="txPrev" class="btn-tb btn-tb-outline" style="font-size:0.75rem;padding:5px 12px;">&#8249; Prev</button>
+                    <button onclick="txChangePage(1)"  id="txNext" class="btn-tb btn-tb-outline" style="font-size:0.75rem;padding:5px 12px;">Next &#8250;</button>
+                    <a href="/admin/orders" class="btn-tb btn-tb-primary" style="font-size:0.75rem;padding:5px 14px;">View All</a>
+                </div>
+            </div>
+            <div style="overflow-x:auto;">
+                <table style="width:100%;border-collapse:collapse;" id="txTable">
+                    <thead>
+                        <tr>
+                            <th style="padding:10px 16px;text-align:left;font-size:0.68rem;font-weight:700;color:var(--gray-500);text-transform:uppercase;letter-spacing:0.5px;background:var(--gray-100);border-bottom:1.5px solid var(--gray-200);white-space:nowrap;">Order</th>
+                            <th style="padding:10px 16px;text-align:left;font-size:0.68rem;font-weight:700;color:var(--gray-500);text-transform:uppercase;letter-spacing:0.5px;background:var(--gray-100);border-bottom:1.5px solid var(--gray-200);">Buyer</th>
+                            <th style="padding:10px 16px;text-align:left;font-size:0.68rem;font-weight:700;color:var(--gray-500);text-transform:uppercase;letter-spacing:0.5px;background:var(--gray-100);border-bottom:1.5px solid var(--gray-200);">Date</th>
+                            <th style="padding:10px 16px;text-align:right;font-size:0.68rem;font-weight:700;color:var(--gray-500);text-transform:uppercase;letter-spacing:0.5px;background:var(--gray-100);border-bottom:1.5px solid var(--gray-200);">Gross</th>
+                            <th style="padding:10px 16px;text-align:right;font-size:0.68rem;font-weight:700;color:var(--gray-500);text-transform:uppercase;letter-spacing:0.5px;background:var(--gray-100);border-bottom:1.5px solid var(--gray-200);">Commission</th>
+                            <th style="padding:10px 16px;text-align:right;font-size:0.68rem;font-weight:700;color:var(--gray-500);text-transform:uppercase;letter-spacing:0.5px;background:var(--gray-100);border-bottom:1.5px solid var(--gray-200);">VAT</th>
+                            <th style="padding:10px 16px;text-align:right;font-size:0.68rem;font-weight:700;color:var(--gray-500);text-transform:uppercase;letter-spacing:0.5px;background:var(--gray-100);border-bottom:1.5px solid var(--gray-200);">Net to Sellers</th>
+                            <th style="padding:10px 16px;text-align:center;font-size:0.68rem;font-weight:700;color:var(--gray-500);text-transform:uppercase;letter-spacing:0.5px;background:var(--gray-100);border-bottom:1.5px solid var(--gray-200);">Status</th>
+                        </tr>
+                    </thead>
+                    <tbody id="txBody">
+                        <% recentOrders.forEach(function(o) {
+                            const gross = parseFloat(o.total_amount || 0);
+                            const comm  = parseFloat(o.commission_amt || 0);
+                            const vat   = parseFloat(o.vat_amt || 0);
+                            const net   = gross - comm - vat;
+                            const statusColors = {
+                                pending:    { bg:'#fffbeb', color:'#92400e' },
+                                processing: { bg:'#eff6ff', color:'#1d4ed8' },
+                                shipped:    { bg:'#ecfeff', color:'#0e7490' },
+                                delivered:  { bg:'#f0fdf4', color:'#15803d' },
+                                cancelled:  { bg:'#fef2f2', color:'#dc2626' }
+                            };
+                            const sc = statusColors[o.status] || { bg:'#f3f4f6', color:'#374151' };
+                        %>
+                        <tr class="tx-row" style="border-bottom:1px solid var(--gray-200);">
+                            <td style="padding:12px 16px;font-family:monospace;font-size:0.8rem;color:var(--gray-500);">#<%= o.id %></td>
+                            <td style="padding:12px 16px;font-size:0.84rem;font-weight:600;color:var(--black);"><%= o.buyer %></td>
+                            <td style="padding:12px 16px;font-size:0.82rem;color:var(--gray-500);white-space:nowrap;"><%= new Date(o.created_at).toLocaleDateString('en-NG',{day:'numeric',month:'short',year:'numeric'}) %></td>
+                            <td style="padding:12px 16px;text-align:right;font-family:'Syne',sans-serif;font-weight:700;font-size:0.88rem;color:var(--purple-mid);">&#8358;<%= gross.toLocaleString('en-NG',{minimumFractionDigits:2}) %></td>
+                            <td style="padding:12px 16px;text-align:right;font-size:0.84rem;color:#dc2626;font-weight:600;">-&#8358;<%= comm.toLocaleString('en-NG',{minimumFractionDigits:2}) %></td>
+                            <td style="padding:12px 16px;text-align:right;font-size:0.84rem;color:#d97706;font-weight:600;">-&#8358;<%= vat.toLocaleString('en-NG',{minimumFractionDigits:2}) %></td>
+                            <td style="padding:12px 16px;text-align:right;font-family:'Syne',sans-serif;font-weight:700;font-size:0.88rem;color:#16a34a;">&#8358;<%= net.toLocaleString('en-NG',{minimumFractionDigits:2}) %></td>
+                            <td style="padding:12px 16px;text-align:center;">
+                                <span style="display:inline-block;padding:3px 10px;border-radius:20px;font-size:0.65rem;font-weight:700;text-transform:uppercase;letter-spacing:0.3px;background:<%= sc.bg %>;color:<%= sc.color %>;">
+                                    <%= o.status.toUpperCase() %>
+                                </span>
+                            </td>
+                        </tr>
+                        <% }); %>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        <script>
+        (function() {
+            const PER_PAGE = 5;
+            let page = 0;
+            const rows = document.querySelectorAll('.tx-row');
+            const total = rows.length;
+            const pages = Math.ceil(total / PER_PAGE);
+
+            function render() {
+                rows.forEach(function(r, i) {
+                    r.style.display = (i >= page * PER_PAGE && i < (page + 1) * PER_PAGE) ? '' : 'none';
+                });
+                document.getElementById('txPageInfo').textContent = 'Page ' + (page + 1) + ' of ' + pages;
+                document.getElementById('txPrev').disabled = page === 0;
+                document.getElementById('txNext').disabled = page >= pages - 1;
+            }
+
+            window.txChangePage = function(dir) {
+                page = Math.max(0, Math.min(pages - 1, page + dir));
+                render();
+            };
+
+            render();
+        })();
+        </script>
+        <% } %>
+
         <% } %>
 
 
@@ -281,7 +411,7 @@
                 </form>
             </div>
             <div class="action-panel" style="border-top:1.5px solid var(--gray-200);">
-                <div class="ap-label"><i class="bi bi-wallet2"></i> Top Up Wallet</div>
+                <div class="ap-label"><i class="bi bi-cart3"></i> Top Up Shopping Wallet</div>
                 <form method="POST" action="/admin/topup-wallet">
                     <div class="action-row">
                         <select class="ap-select" name="user_id" required>
@@ -290,6 +420,20 @@
                         </select>
                         <input type="number" class="ap-field" name="amount" placeholder="Amount (₦)" min="1" step="0.01" style="width:160px;" required>
                         <button type="submit" class="btn-tb btn-tb-primary"><i class="bi bi-plus-circle"></i> Add Funds</button>
+                    </div>
+                </form>
+            </div>
+            <div class="action-panel" style="border-top:1.5px solid var(--gray-200);">
+                <div class="ap-label"><i class="bi bi-cash-stack"></i> Credit Seller Earnings Wallet</div>
+                <form method="POST" action="/admin/topup-seller-wallet">
+                    <div class="action-row" style="flex-wrap:wrap;gap:8px;">
+                        <select class="ap-select" name="user_id" required>
+                            <option value="">Select seller…</option>
+                            <% users.filter(u=>u.isSeller).forEach(u=>{ %><option value="<%= u.id %>"><%= u.username %> - earnings ₦<%= parseFloat(u.seller_wallet||0).toFixed(2) %></option><% }); %>
+                        </select>
+                        <input type="number" class="ap-field" name="amount" placeholder="Amount (₦)" min="1" step="0.01" style="width:140px;" required>
+                        <input type="text" class="ap-field" name="reason" placeholder="Reason (required)" style="width:200px;" required>
+                        <button type="submit" class="btn-tb btn-tb-primary"><i class="bi bi-plus-circle"></i> Credit</button>
                     </div>
                 </form>
             </div>
@@ -309,13 +453,13 @@
             <div class="table-wrap">
                 <table>
                     <thead><tr><th>ID</th><th>Username</th><th>Email</th><th>Phone</th><th>Role</th><th>Wallet</th><th>Joined</th><th>Actions</th></tr></thead>
-                    <tbody>
+                    <tbody id="usersBody">
                         <% users.forEach(u=>{ %>
                         <tr>
                             <td class="td-id">#<%= u.id %></td>
                             <td class="td-bold"><%= u.username %></td>
                             <td class="td-mono"><%= u.email %></td>
-                            <td class="td-mono"><%= u.phone||'—' %></td>
+                            <td class="td-mono"><%= u.phone||'-' %></td>
                             <td>
                                 <%if(u.role==='admin'){%><span class="badge b-admin"><i class="bi bi-shield-fill"></i> Admin</span>
                                 <%}else if(u.isSeller){%><span class="badge b-seller"><i class="bi bi-shop"></i> Seller</span>
@@ -343,6 +487,37 @@
                     </tbody>
                 </table>
             </div>
+            <div id="usersPagination" style="display:flex;align-items:center;gap:8px;margin-top:14px;flex-wrap:wrap;"></div>
+            <script>
+                (function(){
+                    const PER = 10;
+                    const tbody = document.getElementById('usersBody');
+                    const pgWrap = document.getElementById('usersPagination');
+                    if (!tbody || !pgWrap) return;
+                    const rows = Array.from(tbody.querySelectorAll('tr'));
+                    const pages = Math.ceil(rows.length / PER);
+                    if (pages <= 1) return;
+                    let cur = 0;
+                    function render(p) {
+                        cur = p;
+                        rows.forEach((r, i) => { r.style.display = (i >= p*PER && i < (p+1)*PER) ? '' : 'none'; });
+                        pgWrap.querySelectorAll('.upg-btn').forEach((b, i) => {
+                            b.style.background = i===p ? 'var(--purple-deep)' : '';
+                            b.style.color = i===p ? '#fff' : '';
+                            b.style.borderColor = i===p ? 'var(--purple-deep)' : '';
+                        });
+                        document.getElementById('usrPrev').disabled = p===0;
+                        document.getElementById('usrNext').disabled = p===pages-1;
+                    }
+                    const btnStyle = 'border:1.5px solid var(--gray-200);background:#fff;border-radius:7px;padding:5px 13px;font-size:0.8rem;font-weight:600;cursor:pointer;';
+                    const prev = Object.assign(document.createElement('button'),{id:'usrPrev',textContent:'‹ Prev'});
+                    prev.style.cssText = btnStyle; prev.onclick = ()=>render(cur-1); pgWrap.appendChild(prev);
+                    for(let i=0;i<pages;i++){const b=document.createElement('button');b.textContent=i+1;b.className='upg-btn';b.style.cssText=btnStyle+'min-width:34px;';b.onclick=(()=>{const n=i;return()=>render(n);})();pgWrap.appendChild(b);}
+                    const next = Object.assign(document.createElement('button'),{id:'usrNext',textContent:'Next ›'});
+                    next.style.cssText = btnStyle; next.onclick = ()=>render(cur+1); pgWrap.appendChild(next);
+                    render(0);
+                })();
+            </script>
         </div>
         <% } %>
 
@@ -364,7 +539,7 @@
             <div class="table-wrap">
                 <table>
                     <thead><tr><th>Order ID</th><th>User ID</th><th>Amount</th><th>Status</th><th>Address</th><th>Date</th><th>Update</th><th></th></tr></thead>
-                    <tbody>
+                    <tbody id="ordersBody">
                         <%orders.forEach(o=>{%>
                         <tr>
                             <td class="td-bold">#<%= o.id %></td>
@@ -396,6 +571,37 @@
                     </tbody>
                 </table>
             </div>
+            <div id="ordersPagination" style="display:flex;align-items:center;gap:8px;margin-top:14px;flex-wrap:wrap;"></div>
+            <script>
+                (function(){
+                    const PER = 9;
+                    const tbody = document.getElementById('ordersBody');
+                    const pgWrap = document.getElementById('ordersPagination');
+                    if (!tbody || !pgWrap) return;
+                    const rows = Array.from(tbody.querySelectorAll('tr'));
+                    const pages = Math.ceil(rows.length / PER);
+                    if (pages <= 1) return;
+                    let cur = 0;
+                    function render(p) {
+                        cur = p;
+                        rows.forEach((r, i) => { r.style.display = (i >= p*PER && i < (p+1)*PER) ? '' : 'none'; });
+                        pgWrap.querySelectorAll('.opg-btn').forEach((b, i) => {
+                            b.style.background = i===p ? 'var(--purple-deep)' : '';
+                            b.style.color = i===p ? '#fff' : '';
+                            b.style.borderColor = i===p ? 'var(--purple-deep)' : '';
+                        });
+                        document.getElementById('ordPrev').disabled = p===0;
+                        document.getElementById('ordNext').disabled = p===pages-1;
+                    }
+                    const btnStyle = 'border:1.5px solid var(--gray-200);background:#fff;border-radius:7px;padding:5px 13px;font-size:0.8rem;font-weight:600;cursor:pointer;';
+                    const prev = Object.assign(document.createElement('button'),{id:'ordPrev',textContent:'‹ Prev'});
+                    prev.style.cssText = btnStyle; prev.onclick = ()=>render(cur-1); pgWrap.appendChild(prev);
+                    for(let i=0;i<pages;i++){const b=document.createElement('button');b.textContent=i+1;b.className='opg-btn';b.style.cssText=btnStyle+'min-width:34px;';b.onclick=(()=>{const n=i;return()=>render(n);})();pgWrap.appendChild(b);}
+                    const next = Object.assign(document.createElement('button'),{id:'ordNext',textContent:'Next ›'});
+                    next.style.cssText = btnStyle; next.onclick = ()=>render(cur+1); pgWrap.appendChild(next);
+                    render(0);
+                })();
+            </script>
         </div>
         <% } %>
 
@@ -417,7 +623,7 @@
             <div class="table-wrap">
                 <table>
                     <thead><tr><th>ID</th><th>Name</th><th>Category</th><th>Price</th><th>Stock</th><th>Seller</th><th>Status</th><th>Action</th></tr></thead>
-                    <tbody>
+                    <tbody id="productsBody">
                         <%products.forEach(p=>{%>
                         <tr>
                             <td class="td-id">#<%= p.id %></td>
@@ -425,7 +631,7 @@
                             <td><span style="font-size:0.78rem;background:var(--gray-100);border-radius:4px;padding:2px 8px;color:var(--gray-500);"><%= p.category %></span></td>
                             <td class="td-amount">&#8358;<%= parseFloat(p.price||0).toLocaleString() %></td>
                             <td class="td-mono"><%= p.stock||0 %> units</td>
-                            <td class="td-mono"><%= p.seller_username||'—' %></td>
+                            <td class="td-mono"><%= p.seller_username||'-' %></td>
                             <td><%if(p.available){%><span class="badge b-active"><i class="bi bi-eye"></i> Active</span><%}else{%><span class="badge b-inactive"><i class="bi bi-eye-slash"></i> Hidden</span><%}%></td>
                             <td>
                                 <form style="display:inline" method="POST" action="/admin/toggle-product">
@@ -440,6 +646,37 @@
                     </tbody>
                 </table>
             </div>
+            <div id="productsPagination" style="display:flex;align-items:center;gap:8px;margin-top:14px;flex-wrap:wrap;"></div>
+            <script>
+                (function(){
+                    const PER = 10;
+                    const tbody = document.getElementById('productsBody');
+                    const pgWrap = document.getElementById('productsPagination');
+                    if (!tbody || !pgWrap) return;
+                    const rows = Array.from(tbody.querySelectorAll('tr'));
+                    const pages = Math.ceil(rows.length / PER);
+                    if (pages <= 1) return;
+                    let cur = 0;
+                    function render(p) {
+                        cur = p;
+                        rows.forEach((r, i) => { r.style.display = (i >= p*PER && i < (p+1)*PER) ? '' : 'none'; });
+                        pgWrap.querySelectorAll('.ppg-btn').forEach((b, i) => {
+                            b.style.background = i===p ? 'var(--purple-deep)' : '';
+                            b.style.color = i===p ? '#fff' : '';
+                            b.style.borderColor = i===p ? 'var(--purple-deep)' : '';
+                        });
+                        document.getElementById('prdPrev').disabled = p===0;
+                        document.getElementById('prdNext').disabled = p===pages-1;
+                    }
+                    const btnStyle = 'border:1.5px solid var(--gray-200);background:#fff;border-radius:7px;padding:5px 13px;font-size:0.8rem;font-weight:600;cursor:pointer;';
+                    const prev = Object.assign(document.createElement('button'),{id:'prdPrev',textContent:'‹ Prev'});
+                    prev.style.cssText = btnStyle; prev.onclick = ()=>render(cur-1); pgWrap.appendChild(prev);
+                    for(let i=0;i<pages;i++){const b=document.createElement('button');b.textContent=i+1;b.className='ppg-btn';b.style.cssText=btnStyle+'min-width:34px;';b.onclick=(()=>{const n=i;return()=>render(n);})();pgWrap.appendChild(b);}
+                    const next = Object.assign(document.createElement('button'),{id:'prdNext',textContent:'Next ›'});
+                    next.style.cssText = btnStyle; next.onclick = ()=>render(cur+1); pgWrap.appendChild(next);
+                    render(0);
+                })();
+            </script>
         </div>
         <% } %>
 
@@ -458,7 +695,7 @@
             <div class="table-wrap">
                 <table>
                     <thead><tr><th>ID</th><th>Product</th><th>Reviewer</th><th>Rating</th><th>Comment</th><th>Date</th><th></th></tr></thead>
-                    <tbody>
+                    <tbody id="reviewsBody">
                         <% reviews.forEach(r => { %>
                         <tr>
                             <td class="td-id">#<%= r.id %></td>
@@ -478,6 +715,37 @@
                     </tbody>
                 </table>
             </div>
+            <div id="reviewsPagination" style="display:flex;align-items:center;gap:8px;margin-top:14px;flex-wrap:wrap;"></div>
+            <script>
+                (function(){
+                    const PER = 10;
+                    const tbody = document.getElementById('reviewsBody');
+                    const pgWrap = document.getElementById('reviewsPagination');
+                    if (!tbody || !pgWrap) return;
+                    const rows = Array.from(tbody.querySelectorAll('tr'));
+                    const pages = Math.ceil(rows.length / PER);
+                    if (pages <= 1) return;
+                    let cur = 0;
+                    function render(p) {
+                        cur = p;
+                        rows.forEach((r, i) => { r.style.display = (i >= p*PER && i < (p+1)*PER) ? '' : 'none'; });
+                        pgWrap.querySelectorAll('.rpg-btn').forEach((b, i) => {
+                            b.style.background = i===p ? 'var(--purple-deep)' : '';
+                            b.style.color = i===p ? '#fff' : '';
+                            b.style.borderColor = i===p ? 'var(--purple-deep)' : '';
+                        });
+                        document.getElementById('revPrev').disabled = p===0;
+                        document.getElementById('revNext').disabled = p===pages-1;
+                    }
+                    const btnStyle = 'border:1.5px solid var(--gray-200);background:#fff;border-radius:7px;padding:5px 13px;font-size:0.8rem;font-weight:600;cursor:pointer;';
+                    const prev = Object.assign(document.createElement('button'),{id:'revPrev',textContent:'‹ Prev'});
+                    prev.style.cssText = btnStyle; prev.onclick = ()=>render(cur-1); pgWrap.appendChild(prev);
+                    for(let i=0;i<pages;i++){const b=document.createElement('button');b.textContent=i+1;b.className='rpg-btn';b.style.cssText=btnStyle+'min-width:34px;';b.onclick=(()=>{const n=i;return()=>render(n);})();pgWrap.appendChild(b);}
+                    const next = Object.assign(document.createElement('button'),{id:'revNext',textContent:'Next ›'});
+                    next.style.cssText = btnStyle; next.onclick = ()=>render(cur+1); pgWrap.appendChild(next);
+                    render(0);
+                })();
+            </script>
             <% } %>
         </div>
         <% } %>
@@ -559,12 +827,12 @@
                                     </span>
                                 </td>
                                 <td class="td-mono" style="font-size:0.78rem;">
-                                    <%= log.username || (log.user_id ? '#'+log.user_id : '—') %>
+                                    <%= log.username || (log.user_id ? '#'+log.user_id : '-') %>
                                 </td>
                                 <td style="font-size:0.78rem;color:var(--gray-500);max-width:340px;word-break:break-all;">
                                     <%= log.detail %>
                                 </td>
-                                <td class="td-mono" style="font-size:0.75rem;"><%= log.ip || '—' %></td>
+                                <td class="td-mono" style="font-size:0.75rem;"><%= log.ip || '-' %></td>
                             </tr>
                             <% }); %>
                         </tbody>
@@ -652,7 +920,7 @@
                         <th>Actions</th>
                     </tr>
                 </thead>
-                <tbody>
+                <tbody id="couponsBody">
                     <% coupons.forEach(c => { %>
                     <tr>
                         <td style="font-family:'JetBrains Mono',monospace;font-weight:700;font-size:0.82rem;color:var(--purple-mid);"><%= c.code %></td>
@@ -692,7 +960,177 @@
                 </tbody>
             </table>
         </div>
+        <div id="couponsPagination" style="display:flex;align-items:center;gap:8px;margin-top:14px;flex-wrap:wrap;"></div>
+        <script>
+            (function(){
+                const PER = 5;
+                const tbody = document.getElementById('couponsBody');
+                const pgWrap = document.getElementById('couponsPagination');
+                if (!tbody || !pgWrap) return;
+                const rows = Array.from(tbody.querySelectorAll('tr'));
+                const pages = Math.ceil(rows.length / PER);
+                if (pages <= 1) return;
+                let cur = 0;
+                function render(p) {
+                    cur = p;
+                    rows.forEach((r, i) => { r.style.display = (i >= p*PER && i < (p+1)*PER) ? '' : 'none'; });
+                    pgWrap.querySelectorAll('.cpg-btn').forEach((b, i) => {
+                        b.style.background = i===p ? 'var(--purple-deep)' : '';
+                        b.style.color = i===p ? '#fff' : '';
+                        b.style.borderColor = i===p ? 'var(--purple-deep)' : '';
+                    });
+                    document.getElementById('cpnPrev').disabled = p===0;
+                    document.getElementById('cpnNext').disabled = p===pages-1;
+                }
+                const btnStyle = 'border:1.5px solid var(--gray-200);background:#fff;border-radius:7px;padding:5px 13px;font-size:0.8rem;font-weight:600;cursor:pointer;';
+                const prev = Object.assign(document.createElement('button'),{id:'cpnPrev',textContent:'‹ Prev'});
+                prev.style.cssText = btnStyle; prev.onclick = ()=>render(cur-1); pgWrap.appendChild(prev);
+                for(let i=0;i<pages;i++){const b=document.createElement('button');b.textContent=i+1;b.className='cpg-btn';b.style.cssText=btnStyle+'min-width:34px;';b.onclick=(()=>{const n=i;return()=>render(n);})();pgWrap.appendChild(b);}
+                const next = Object.assign(document.createElement('button'),{id:'cpnNext',textContent:'Next ›'});
+                next.style.cssText = btnStyle; next.onclick = ()=>render(cur+1); pgWrap.appendChild(next);
+                render(0);
+            })();
+        </script>
         <% } %>
+    </div>
+    <% } %>
+
+    <% if (tab === 'deals') { %>
+    <div class="sec-card" style="margin-bottom:20px;">
+        <h3 style="font-family:'Syne',sans-serif;font-weight:800;font-size:0.95rem;margin-bottom:16px;display:flex;align-items:center;gap:8px;">
+            <i class="bi bi-lightning-charge-fill" style="color:#f59e0b;"></i> Set / Update a Deal
+        </h3>
+        <form method="POST" action="/admin/deals/set" style="display:grid;grid-template-columns:2fr 1fr 1fr 1fr 1fr;gap:14px;align-items:flex-end;">
+            <div>
+                <label style="font-size:0.72rem;font-weight:700;text-transform:uppercase;letter-spacing:0.3px;color:var(--gray-700);display:block;margin-bottom:5px;">Product</label>
+                <select name="product_id" class="search-input" style="width:100%;" required>
+                    <option value="">- Select product -</option>
+                    <% products.forEach(p => { %>
+                    <option value="<%= p.id %>"><%= p.name %> (₦<%= parseFloat(p.price).toLocaleString() %>)<%= p.deal_price ? ' [DEAL ACTIVE]' : '' %></option>
+                    <% }); %>
+                </select>
+            </div>
+            <div>
+                <label style="font-size:0.72rem;font-weight:700;text-transform:uppercase;letter-spacing:0.3px;color:var(--gray-700);display:block;margin-bottom:5px;">Deal Price (₦)</label>
+                <input type="number" name="deal_price" class="search-input" placeholder="e.g. 45000" min="1" step="0.01" required style="width:100%;">
+            </div>
+            <div>
+                <label style="font-size:0.72rem;font-weight:700;text-transform:uppercase;letter-spacing:0.3px;color:var(--gray-700);display:block;margin-bottom:5px;">Label</label>
+                <select name="deal_label" class="search-input" style="width:100%;">
+                    <option value="Flash Sale">Flash Sale</option>
+                    <option value="Hot Deal">Hot Deal</option>
+                    <option value="Clearance">Clearance</option>
+                    <option value="Sale">Sale</option>
+                    <option value="Special Offer">Special Offer</option>
+                </select>
+            </div>
+            <div>
+                <label style="font-size:0.72rem;font-weight:700;text-transform:uppercase;letter-spacing:0.3px;color:var(--gray-700);display:block;margin-bottom:5px;">Expires (optional)</label>
+                <input type="date" name="deal_expires_at" class="search-input" style="width:100%;">
+            </div>
+            <div>
+                <button type="submit" class="btn-tb btn-tb-primary" style="width:100%;padding:10px 16px;">
+                    <i class="bi bi-lightning-charge-fill"></i> Save Deal
+                </button>
+            </div>
+        </form>
+    </div>
+
+    <div class="sec-card">
+        <h3 style="font-family:'Syne',sans-serif;font-weight:800;font-size:0.95rem;margin-bottom:16px;display:flex;align-items:center;gap:8px;">
+            <i class="bi bi-tag-fill" style="color:var(--purple-mid);"></i> Active &amp; Available Products
+        </h3>
+        <div class="table-wrap">
+            <table>
+                <thead>
+                    <tr><th>Product</th><th>Category</th><th>Original Price</th><th>Deal Price</th><th>Discount</th><th>Label</th><th>Action</th></tr>
+                </thead>
+                <tbody id="dealsBody">
+                    <% products.forEach(p => {
+                        const hasDeal = p.deal_price != null;
+                        const discount = hasDeal ? Math.round((1 - parseFloat(p.deal_price)/parseFloat(p.price)) * 100) : null;
+                    %>
+                    <tr>
+                        <td class="td-bold"><a href="/product/<%= p.id %>" style="color:var(--purple-mid);text-decoration:none;"><%= p.name %></a></td>
+                        <td><span style="font-size:0.78rem;background:var(--gray-100);border-radius:4px;padding:2px 8px;color:var(--gray-500);"><%= p.category %></span></td>
+                        <td class="td-amount">₦<%= parseFloat(p.price).toLocaleString() %></td>
+                        <td>
+                            <% if (hasDeal) { %>
+                                <span style="font-family:'Syne',sans-serif;font-weight:800;color:#16a34a;">₦<%= parseFloat(p.deal_price).toLocaleString() %></span>
+                            <% } else { %>
+                                <span style="color:var(--gray-500);font-size:0.8rem;">No deal</span>
+                            <% } %>
+                        </td>
+                        <td>
+                            <% if (hasDeal) { %>
+                                <span style="background:#fef9c3;color:#854d0e;font-size:0.72rem;font-weight:800;padding:2px 8px;border-radius:12px;"><%= discount %>% off</span>
+                            <% } else { %>
+                                <span style="color:var(--gray-500);">-</span>
+                            <% } %>
+                        </td>
+                        <td>
+                            <% if (hasDeal && p.deal_label) { %>
+                                <span style="background:#fff7ed;color:#c2410c;font-size:0.72rem;font-weight:700;padding:2px 8px;border-radius:12px;"><%= p.deal_label %></span>
+                            <% } else { %>-<% } %>
+                        </td>
+                        <td>
+                            <% if (hasDeal) { %>
+                            <form method="POST" action="/admin/deals/remove" style="display:inline;">
+                                <input type="hidden" name="product_id" value="<%= p.id %>">
+                                <button type="submit" class="btn-tbl btn-tbl-red"><i class="bi bi-x-circle"></i> Remove</button>
+                            </form>
+                            <% } else { %>
+                                <span style="color:var(--gray-500);font-size:0.78rem;">-</span>
+                            <% } %>
+                        </td>
+                    </tr>
+                    <% }); %>
+                </tbody>
+            </table>
+        </div>
+        <div id="dealsPagination" style="display:flex;align-items:center;gap:8px;margin-top:14px;flex-wrap:wrap;"></div>
+        <script>
+            (function(){
+                const DEALS_PER_PAGE = 5;
+                const tbody = document.getElementById('dealsBody');
+                const pgWrap = document.getElementById('dealsPagination');
+                const rows = Array.from(tbody.querySelectorAll('tr'));
+                const total = rows.length;
+                const pages = Math.ceil(total / DEALS_PER_PAGE);
+                if (pages <= 1) return;
+                let cur = 0;
+                function render(page) {
+                    cur = page;
+                    rows.forEach((r, i) => {
+                        r.style.display = (i >= page * DEALS_PER_PAGE && i < (page + 1) * DEALS_PER_PAGE) ? '' : 'none';
+                    });
+                    pgWrap.querySelectorAll('.dpg-btn').forEach((b, i) => {
+                        b.style.background = i === page ? 'var(--purple-deep)' : '';
+                        b.style.color = i === page ? '#fff' : '';
+                        b.style.borderColor = i === page ? 'var(--purple-deep)' : '';
+                    });
+                    document.getElementById('dealsPrev').disabled = page === 0;
+                    document.getElementById('dealsNext').disabled = page === pages - 1;
+                }
+                const prevBtn = Object.assign(document.createElement('button'), {id:'dealsPrev', textContent:'‹ Prev'});
+                prevBtn.style.cssText = 'border:1.5px solid var(--gray-200);background:#fff;border-radius:7px;padding:5px 13px;font-size:0.8rem;font-weight:600;cursor:pointer;';
+                prevBtn.onclick = () => render(cur - 1);
+                pgWrap.appendChild(prevBtn);
+                for (let p = 0; p < pages; p++) {
+                    const b = document.createElement('button');
+                    b.textContent = p + 1;
+                    b.className = 'dpg-btn';
+                    b.style.cssText = 'border:1.5px solid var(--gray-200);background:#fff;border-radius:7px;padding:5px 11px;font-size:0.8rem;font-weight:600;cursor:pointer;min-width:34px;';
+                    b.onclick = () => render(p);
+                    pgWrap.appendChild(b);
+                }
+                const nextBtn = Object.assign(document.createElement('button'), {id:'dealsNext', textContent:'Next ›'});
+                nextBtn.style.cssText = 'border:1.5px solid var(--gray-200);background:#fff;border-radius:7px;padding:5px 13px;font-size:0.8rem;font-weight:600;cursor:pointer;';
+                nextBtn.onclick = () => render(cur + 1);
+                pgWrap.appendChild(nextBtn);
+                render(0);
+            })();
+        </script>
     </div>
     <% } %>
 
