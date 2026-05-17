@@ -24,7 +24,7 @@ const db = mysql.createPool({
     password: process.env.DB_PASSWORD,
     database: process.env.DB_NAME     || 'pwnshop',
     waitForConnections: true,
-    connectionLimit: parseInt(process.env.DB_POOL_LIMIT || '3', 10),
+    connectionLimit: parseInt(process.env.DB_POOL_LIMIT || '2', 10),
     queueLimit: 0
 });
 
@@ -456,7 +456,7 @@ const metaDb = mysql.createPool({
     password: process.env.DB_PASSWORD,
     database: process.env.DB_META_NAME || 'pwnshop_meta',
     waitForConnections: true,
-    connectionLimit: 2,
+    connectionLimit: 1,
     queueLimit: 0
 });
 
