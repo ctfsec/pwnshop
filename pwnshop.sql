@@ -545,4 +545,20 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
+-- Schema migrations: columns added after initial dump
+ALTER TABLE `users`          ADD COLUMN IF NOT EXISTS `pending_balance`          DECIMAL(12,2) DEFAULT 0;
+ALTER TABLE `users`          ADD COLUMN IF NOT EXISTS `referral_code`             VARCHAR(16)   DEFAULT NULL;
+ALTER TABLE `users`          ADD COLUMN IF NOT EXISTS `default_shipping_address`  TEXT          DEFAULT NULL;
+ALTER TABLE `users`          ADD COLUMN IF NOT EXISTS `default_zone`              VARCHAR(20)   DEFAULT 'others';
+ALTER TABLE `users`          ADD COLUMN IF NOT EXISTS `seller_wallet`             DECIMAL(12,2) DEFAULT 0;
+ALTER TABLE `orders`         ADD COLUMN IF NOT EXISTS `delivery_zone`             VARCHAR(20)   DEFAULT 'others';
+ALTER TABLE `orders`         ADD COLUMN IF NOT EXISTS `logistics_fee`             DECIMAL(10,2) DEFAULT 0;
+ALTER TABLE `orders`         ADD COLUMN IF NOT EXISTS `commission_amt`            DECIMAL(10,2) DEFAULT 0;
+ALTER TABLE `orders`         ADD COLUMN IF NOT EXISTS `vat_amt`                   DECIMAL(10,2) DEFAULT 0;
+ALTER TABLE `products`       ADD COLUMN IF NOT EXISTS `deal_price`                DECIMAL(10,2) DEFAULT NULL;
+ALTER TABLE `products`       ADD COLUMN IF NOT EXISTS `deal_label`                VARCHAR(100)  DEFAULT NULL;
+ALTER TABLE `products`       ADD COLUMN IF NOT EXISTS `deal_expires_at`           DATE          DEFAULT NULL;
+ALTER TABLE `seller_earnings` ADD COLUMN IF NOT EXISTS `vat_amount`              DECIMAL(10,2) DEFAULT 0;
+UPDATE `users` SET `referral_code` = CONCAT('PWN', UPPER(SUBSTRING(MD5(`id`), 1, 8))) WHERE `referral_code` IS NULL;
+
 -- Dump completed on 2026-04-29 13:06:52
