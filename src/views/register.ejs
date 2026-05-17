@@ -53,7 +53,15 @@
         .terms-note { font-size: 0.75rem; color: var(--gray-500); text-align: center; margin-top: 12px; line-height: 1.5; }
         .terms-note a { color: var(--purple-mid); font-weight: 600; text-decoration: none; }
         .row-half { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
-        @media (max-width: 640px) { .auth-card { grid-template-columns: 1fr; } .auth-panel-left { display: none; } .auth-panel-right { padding: 36px 28px; } .row-half { grid-template-columns: 1fr; } }
+        @media (max-width: 640px) {
+            .auth-card { grid-template-columns: 1fr; }
+            .auth-panel-left { display: none; }
+            .auth-panel-right { padding: 24px 20px; }
+            .row-half { grid-template-columns: 1fr; }
+            .mb-3 { margin-bottom: 10px !important; }
+            .mb-4 { margin-bottom: 12px !important; }
+            body { padding: 12px; align-items: flex-start; }
+        }
         .form-field.is-invalid { border-color: #ef4444; box-shadow: 0 0 0 3px rgba(239,68,68,0.1); }
         .form-field.is-valid { border-color: #22c55e; box-shadow: 0 0 0 3px rgba(34,197,94,0.08); }
         .field-hint { display: block; font-size: 0.72rem; margin-top: 4px; min-height: 16px; }

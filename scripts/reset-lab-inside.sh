@@ -2,6 +2,7 @@
 set -euo pipefail
 
 DB_HOST="${DB_HOST:-db}"
+DB_PORT="${DB_PORT:-3306}"
 DB_USER="${DB_USER:-root}"
 DB_PASSWORD="${DB_PASSWORD:-password}"
 DB_NAME="${DB_NAME:-pwnshop}"
@@ -15,7 +16,7 @@ wait_for_mysql() {
   local i
 
   for ((i=1; i<=attempts; i++)); do
-    if mysql --protocol=tcp --ssl=0 -h "$DB_HOST" -u "$DB_USER" -p"$DB_PASSWORD" -e "SELECT 1" >/dev/null 2>&1; then
+    if mysql --protocol=tcp --ssl=0 -h "$DB_HOST" -P "$DB_PORT" -u "$DB_USER" -p"$DB_PASSWORD" -e "SELECT 1" >/dev/null 2>&1; then
       return 0
     fi
     echo "Waiting for MySQL at $DB_HOST ($i/$attempts)..."
@@ -33,17 +34,17 @@ fi
 
 wait_for_mysql
 
-mysql --protocol=tcp --ssl=0 -h "$DB_HOST" -u "$DB_USER" -p"$DB_PASSWORD" \
+mysql --protocol=tcp --ssl=0 -h "$DB_HOST" -P "$DB_PORT" -u "$DB_USER" -p"$DB_PASSWORD" \
   -e "DROP DATABASE IF EXISTS \`$DB_NAME\`; CREATE DATABASE \`$DB_NAME\`;"
 
-mysql --protocol=tcp --ssl=0 -h "$DB_HOST" -u "$DB_USER" -p"$DB_PASSWORD" "$DB_NAME" < "$SQL_FILE"
+mysql --protocol=tcp --ssl=0 -h "$DB_HOST" -P "$DB_PORT" -u "$DB_USER" -p"$DB_PASSWORD" "$DB_NAME" < "$SQL_FILE"
 
 # ── Clear runtime-accumulated data so every reset is a clean slate ──────────
 # audit_log / audit_logs  : action history from student activity
 # transactions            : payment records (prevents replay artifacts carrying over)
 # otp_codes               : stale one-time passwords
 # vulnbank_tx_log         : already wiped by DROP/CREATE above, listed here for clarity
-mysql --protocol=tcp --ssl=0 -h "$DB_HOST" -u "$DB_USER" -p"$DB_PASSWORD" "$DB_NAME" <<'SQL'
+mysql --protocol=tcp --ssl=0 -h "$DB_HOST" -P "$DB_PORT" -u "$DB_USER" -p"$DB_PASSWORD" "$DB_NAME" <<'SQL'
 SET FOREIGN_KEY_CHECKS = 0;
 TRUNCATE TABLE audit_log;
 TRUNCATE TABLE audit_logs;
