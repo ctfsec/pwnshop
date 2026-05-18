@@ -575,12 +575,16 @@ app.use((req, res, next) => {
     // Only track meaningful routes
     if (isTrackedRoute(req.path)) {
         const rawIp = (req.headers['x-forwarded-for'] || req.ip || '').toString().split(',')[0].trim();
+        console.log('[visitor] path:', req.path, '| ip:', rawIp || '(empty)', '| xff:', req.headers['x-forwarded-for'] || '(none)', '| req.ip:', req.ip);
         if (rawIp) {
             metaDb.query(
                 `INSERT INTO visitor_stats (ip, visit_count) VALUES (?, 1)
                  ON DUPLICATE KEY UPDATE last_seen = NOW(), visit_count = visit_count + 1`,
                 [rawIp],
-                (err) => { if (err) console.error('[metaDb] visitor insert error:', err.message); }
+                (err) => {
+                    if (err) console.error('[metaDb] visitor insert error:', err.message);
+                    else console.log('[visitor] insert OK for ip:', rawIp);
+                }
             );
         }
     }
