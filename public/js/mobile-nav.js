@@ -305,7 +305,7 @@
         gap: 8px !important;
         align-items: center !important;
     }
-    .navbar-brand { flex: 1 !important; font-size: 1.2rem !important; white-space: nowrap; min-width: 0; overflow: hidden; }
+    .navbar-brand { flex: 1 !important; font-size: 1.2rem !important; white-space: nowrap; min-width: 0 !important; overflow: hidden; }
 
     /* Cart in topbar — icon only */
     #pw-topbar-cart {
