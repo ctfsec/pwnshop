@@ -107,12 +107,23 @@ img, video, iframe, canvas, svg { max-width: 100%; }
    MOBILE  (≤576px)
 ══════════════════════════════════════════════════════════════ */
 @media (max-width: 576px) {
+    /* Carousel: match container height to image so no white gap below */
+    .carousel-inner, .carousel-item { min-height: 0 !important; }
     .carousel-item img { height: 190px; }
     .carousel-caption h2 { font-size: 1.15rem; }
     .carousel-caption p { font-size: 0.85rem; }
     .sidebar, .info-panel, .review-form-card,
     .review-card, .product-card, .seller-card {
         border-radius: 10px;
+    }
+
+    /* Product grid buttons: keep text on one line */
+    .btn-addcart, .btn-view { font-size: 0.78rem !important; padding: 7px 0 !important; }
+
+    /* Chat widget: nudge up so it clears the bottom nav */
+    .chat-widget-btn, #chat-widget-btn, .chat-fab {
+        bottom: 76px !important;
+        right: 14px !important;
     }
 }
 
