@@ -545,6 +545,15 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
+-- Persistent visitor tracking (survives lab resets via backup/restore in reset script)
+CREATE TABLE IF NOT EXISTS `visitor_stats` (
+  `ip` varchar(120) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `first_seen` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
+  `last_seen` timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  `visit_count` int(11) DEFAULT '1',
+  PRIMARY KEY (`ip`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
 -- Schema migrations: columns added after initial dump
 ALTER TABLE `users`          ADD COLUMN `pending_balance`          DECIMAL(12,2) DEFAULT 0;
 ALTER TABLE `users`          ADD COLUMN `referral_code`             VARCHAR(16)   DEFAULT NULL;

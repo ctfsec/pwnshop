@@ -454,7 +454,7 @@ const metaDb = mysql.createPool({
     port:     parseInt(process.env.DB_PORT || '3306', 10),
     user:     process.env.DB_USER     || 'root',
     password: process.env.DB_PASSWORD,
-    database: process.env.DB_META_NAME || 'pwnshop_meta',
+    database: process.env.DB_META_NAME || process.env.DB_NAME || 'pwnshop',
     waitForConnections: true,
     connectionLimit: 1,
     queueLimit: 0

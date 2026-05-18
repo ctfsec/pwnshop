@@ -34,6 +34,11 @@ fi
 
 wait_for_mysql
 
+# Backup visitor_stats so persistent counters survive the reset
+VS_BACKUP="/tmp/visitor_stats_backup.sql"
+mysqldump --protocol=tcp --ssl=0 -h "$DB_HOST" -P "$DB_PORT" -u "$DB_USER" -p"$DB_PASSWORD" \
+  --no-create-info --skip-triggers "$DB_NAME" visitor_stats > "$VS_BACKUP" 2>/dev/null || true
+
 mysql --protocol=tcp --ssl=0 -h "$DB_HOST" -P "$DB_PORT" -u "$DB_USER" -p"$DB_PASSWORD" \
   -e "DROP DATABASE IF EXISTS \`$DB_NAME\`; CREATE DATABASE \`$DB_NAME\`;"
 
@@ -54,6 +59,12 @@ SET FOREIGN_KEY_CHECKS = 1;
 SQL
 
 echo "Runtime tables cleared (audit_log, audit_logs, transactions, otp_codes)."
+
+# Restore visitor_stats
+if [[ -f "$VS_BACKUP" ]] && [[ -s "$VS_BACKUP" ]]; then
+  mysql --protocol=tcp --ssl=0 -h "$DB_HOST" -P "$DB_PORT" -u "$DB_USER" -p"$DB_PASSWORD" "$DB_NAME" < "$VS_BACKUP" || true
+  echo "Visitor stats restored."
+fi
 
 mkdir -p "$UPLOADS_DIR"
 find "$UPLOADS_DIR" -mindepth 1 -delete
