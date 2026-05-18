@@ -108,7 +108,7 @@
         <div class="preview-info">
             <div class="product-name"><%= product.name %></div>
             <div class="product-meta"><%= product.category %> · ID #<%= product.id %></div>
-            <div class="product-price">₦<%= parseFloat(product.price).toLocaleString() %></div>
+            <div class="product-price">₦<%= fmtPrice(product.price) %></div>
         </div>
     </div>
 

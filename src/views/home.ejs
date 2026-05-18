@@ -138,12 +138,12 @@
                                         <div class="seller-product-name"><%= sellerProduct.name %></div>
                                         <% if (sellerProduct.deal_price != null) { %>
                                         <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:0.88rem;color:var(--purple-mid);margin-bottom:2px;">
-                                            ₦<%= parseFloat(sellerProduct.deal_price).toLocaleString() %>
-                                            <span style="font-size:0.72rem;font-weight:400;color:var(--gray-500);text-decoration:line-through;font-family:'DM Sans',sans-serif;">₦<%= parseFloat(sellerProduct.price).toLocaleString() %></span>
+                                            ₦<%= fmtPrice(sellerProduct.deal_price) %>
+                                            <span style="font-size:0.72rem;font-weight:400;color:var(--gray-500);text-decoration:line-through;font-family:'DM Sans',sans-serif;">₦<%= fmtPrice(sellerProduct.price) %></span>
                                         </div>
                                         <% } else { %>
                                         <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:0.88rem;color:var(--purple-mid);margin-bottom:2px;">
-                                            ₦<%= parseFloat(sellerProduct.price).toLocaleString() %>
+                                            ₦<%= fmtPrice(sellerProduct.price) %>
                                         </div>
                                         <% } %>
                                     <% } else { %>
@@ -177,9 +177,9 @@
                             <div class="product-card-body">
                                 <div class="product-name"><%= product.name %></div>
                                 <% if (product.deal_price != null) { %>
-                                <div class="product-price deal-price">₦<%= parseFloat(product.deal_price).toLocaleString() %> <span class="original-price">₦<%= product.price.toLocaleString() %></span></div>
+                                <div class="product-price deal-price">₦<%= fmtPrice(product.deal_price) %> <span class="original-price">₦<%= fmtPrice(product.price) %></span></div>
                                 <% } else { %>
-                                <div class="product-price">₦<%= product.price.toLocaleString() %></div>
+                                <div class="product-price">₦<%= fmtPrice(product.price) %></div>
                                 <% } %>
                                 <span class="product-category"><%= product.category %></span>
                                 <div class="product-actions">

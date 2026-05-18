@@ -111,7 +111,7 @@
                         <div class="product-name"><%= product.name || product.username || 'Unknown' %></div>
                         <div class="product-price">
                             <% if (product.deal_price != null) { %>
-                                ₦<%= parseFloat(product.deal_price).toLocaleString() %> <span class="original-price">₦<%= parseFloat(product.price).toLocaleString() %></span>
+                                ₦<%= fmtPrice(product.deal_price) %> <span class="original-price">₦<%= fmtPrice(product.price) %></span>
                             <% } else if (product.price) { %>
                                 ₦<%= parseFloat(product.price).toFixed(2) %>
                             <% } else if (product.email) { %>

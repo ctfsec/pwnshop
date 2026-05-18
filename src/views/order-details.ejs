@@ -147,16 +147,16 @@
                 <div class="order-item">
                     <div>
                         <div class="item-name"><%= item.name %></div>
-                        <div class="item-qty">Qty: <%= item.quantity %> × ₦<%= parseFloat(item.price).toFixed(2) %></div>
+                        <div class="item-qty">Qty: <%= item.quantity %> × ₦<%= fmtPrice(item.price) %></div>
                     </div>
-                    <div class="item-price">₦<%= (parseFloat(item.price) * item.quantity).toFixed(2) %></div>
+                    <div class="item-price">₦<%= fmtPrice(parseFloat(item.price) * item.quantity) %></div>
                 </div>
             <% }); %>
         </div>
 
         <div class="total-row">
             <span>Total Amount</span>
-            <span>₦<%= parseFloat(order.total_amount).toFixed(2) %></span>
+            <span>₦<%= fmtPrice(order.total_amount) %></span>
         </div>
     </div>
 

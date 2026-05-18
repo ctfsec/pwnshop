@@ -132,9 +132,9 @@
                                 <%= item.name %>
                             </div>
                             <% if (item.deal_price != null) { %>
-                            <div class="item-unit-price">₦<%= parseFloat(item.effective_price).toLocaleString() %> each <span style="text-decoration:line-through;color:#9ca3af;font-size:0.8rem;">₦<%= parseFloat(item.price).toLocaleString() %></span></div>
+                            <div class="item-unit-price">₦<%= fmtPrice(item.effective_price) %> each <span style="text-decoration:line-through;color:#9ca3af;font-size:0.8rem;">₦<%= fmtPrice(item.price) %></span></div>
                             <% } else { %>
-                            <div class="item-unit-price">₦<%= parseFloat(item.price).toLocaleString() %> each</div>
+                            <div class="item-unit-price">₦<%= fmtPrice(item.price) %> each</div>
                             <% } %>
                         </div>
 

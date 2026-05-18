@@ -155,9 +155,9 @@
                         <div class="product-card-body">
                             <div class="product-name"><%= product.name %></div>
                             <% if (product.deal_price != null) { %>
-                            <div class="product-price deal-price">₦<%= parseFloat(product.deal_price).toLocaleString() %> <span class="original-price">₦<%= product.price.toLocaleString() %></span></div>
+                            <div class="product-price deal-price">₦<%= fmtPrice(product.deal_price) %> <span class="original-price">₦<%= fmtPrice(product.price) %></span></div>
                             <% } else { %>
-                            <div class="product-price">₦<%= product.price.toLocaleString() %></div>
+                            <div class="product-price">₦<%= fmtPrice(product.price) %></div>
                             <% } %>
                             <div class="product-actions">
                                 <a href="/product/<%= product.id %>" class="btn-view">View</a>

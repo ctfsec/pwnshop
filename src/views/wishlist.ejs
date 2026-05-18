@@ -110,7 +110,7 @@
                     <% } %>
                     <div class="wl-card-body">
                         <div class="wl-name"><%= item.name %></div>
-                        <div class="wl-price">₦<%= parseFloat(item.price).toLocaleString() %></div>
+                        <div class="wl-price">₦<%= fmtPrice(item.price) %></div>
                         <span class="wl-cat"><%= item.category %></span>
                         <a href="/product/<%= item.product_id %>" class="btn-wl-view">View Product</a>
                     </div>

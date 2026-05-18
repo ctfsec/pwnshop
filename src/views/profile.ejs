@@ -380,7 +380,7 @@
                             <% } %>
                             <div class="wl-card-body">
                                 <div class="wl-name"><%= item.name %></div>
-                                <div class="wl-price">₦<%= parseFloat(item.price).toLocaleString() %></div>
+                                <div class="wl-price">₦<%= fmtPrice(item.price) %></div>
                                 <div class="wl-actions">
                                     <a href="/product/<%= item.product_id %>" class="btn-wl-view">View</a>
                                     <form method="POST" action="/wishlist/remove" style="display:inline">

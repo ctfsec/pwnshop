@@ -272,7 +272,7 @@
                         </td>
                         <td class="td-bold"><%= p.name %></td>
                         <td><span style="font-size:0.78rem;background:var(--gray-100);border-radius:4px;padding:2px 8px;color:var(--gray-500);"><%= p.category %></span></td>
-                        <td class="td-amount">₦<%= parseFloat(p.price).toLocaleString() %></td>
+                        <td class="td-amount">₦<%= fmtPrice(p.price) %></td>
                         <td><%= p.stock || 0 %> units</td>
                         <td>
                             <% if (p.available) { %>

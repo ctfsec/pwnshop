@@ -379,7 +379,7 @@ function syncHomeAddress(val) {
 function updateZone(zone) {
     document.getElementById('delivery_zone_hidden').value = zone;
     currentZoneFee = ZONE_FEES[zone] || 1500;
-    logisticsDisplay.textContent = '₦' + currentZoneFee.toLocaleString();
+    logisticsDisplay.textContent = '₦' + currentZoneFee.toLocaleString('en-NG');
     const grand = Math.max(0, baseTotal - discountAmount) + currentZoneFee;
     effectiveTotal = grand;
     totalDisplay.textContent = '₦' + grand.toLocaleString('en-NG', {minimumFractionDigits: 2});

@@ -84,6 +84,9 @@ app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'ejs');
 app.use(express.static(path.join(__dirname, '../public')));
 
+app.locals.fmtPrice = (v) =>
+    parseFloat(v || 0).toLocaleString('en-NG', { minimumFractionDigits: 0, maximumFractionDigits: 0 });
+
 function generateResetToken() {
     return Math.floor(100000 + Math.random() * 900000).toString();
 }

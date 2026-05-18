@@ -629,7 +629,7 @@
                             <td class="td-id">#<%= p.id %></td>
                             <td class="td-bold"><a href="/product/<%= p.id %>" style="color:var(--purple-mid);text-decoration:none;"><%= p.name %></a></td>
                             <td><span style="font-size:0.78rem;background:var(--gray-100);border-radius:4px;padding:2px 8px;color:var(--gray-500);"><%= p.category %></span></td>
-                            <td class="td-amount">&#8358;<%= parseFloat(p.price||0).toLocaleString() %></td>
+                            <td class="td-amount">&#8358;<%= fmtPrice(p.price||0) %></td>
                             <td class="td-mono"><%= p.stock||0 %> units</td>
                             <td class="td-mono"><%= p.seller_username||'-' %></td>
                             <td><%if(p.available){%><span class="badge b-active"><i class="bi bi-eye"></i> Active</span><%}else{%><span class="badge b-inactive"><i class="bi bi-eye-slash"></i> Hidden</span><%}%></td>
@@ -1006,7 +1006,7 @@
                 <select name="product_id" class="search-input" style="width:100%;" required>
                     <option value="">- Select product -</option>
                     <% products.forEach(p => { %>
-                    <option value="<%= p.id %>"><%= p.name %> (₦<%= parseFloat(p.price).toLocaleString() %>)<%= p.deal_price ? ' [DEAL ACTIVE]' : '' %></option>
+                    <option value="<%= p.id %>"><%= p.name %> (₦<%= fmtPrice(p.price) %>)<%= p.deal_price ? ' [DEAL ACTIVE]' : '' %></option>
                     <% }); %>
                 </select>
             </div>
@@ -1053,10 +1053,10 @@
                     <tr>
                         <td class="td-bold"><a href="/product/<%= p.id %>" style="color:var(--purple-mid);text-decoration:none;"><%= p.name %></a></td>
                         <td><span style="font-size:0.78rem;background:var(--gray-100);border-radius:4px;padding:2px 8px;color:var(--gray-500);"><%= p.category %></span></td>
-                        <td class="td-amount">₦<%= parseFloat(p.price).toLocaleString() %></td>
+                        <td class="td-amount">₦<%= fmtPrice(p.price) %></td>
                         <td>
                             <% if (hasDeal) { %>
-                                <span style="font-family:'Syne',sans-serif;font-weight:800;color:#16a34a;">₦<%= parseFloat(p.deal_price).toLocaleString() %></span>
+                                <span style="font-family:'Syne',sans-serif;font-weight:800;color:#16a34a;">₦<%= fmtPrice(p.deal_price) %></span>
                             <% } else { %>
                                 <span style="color:var(--gray-500);font-size:0.8rem;">No deal</span>
                             <% } %>
