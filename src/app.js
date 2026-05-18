@@ -574,10 +574,15 @@ app.use((req, res, next) => {
 app.get('/', (req, res) => {
     db.query('SELECT * FROM products WHERE available = TRUE', (err, products) => {
         if (err) return res.status(500).send('Database error: ' + err.message);
-        db.query('SELECT id, username, isSeller, seller_tagline FROM users WHERE isSeller = TRUE ORDER BY RAND() LIMIT 4', (err, users) => {
-            if (err) return res.status(500).send('Database error: ' + err.message);
-            res.render('home', { user: req.session.user, products, users });
-        });
+        db.query(
+            `SELECT p.*, u.username AS seller_name, u.seller_tagline
+             FROM products p JOIN users u ON p.seller_id = u.id
+             WHERE p.available = TRUE ORDER BY RAND() LIMIT 4`,
+            (err, featuredProducts) => {
+                if (err) return res.status(500).send('Database error: ' + err.message);
+                res.render('home', { user: req.session.user, products, featuredProducts });
+            }
+        );
     });
 });
 

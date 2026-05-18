@@ -112,52 +112,40 @@
 
             <h2 class="section-heading">Featured Sellers</h2>
             <div class="row g-3 mb-5">
-                <% if (users && users.length > 0) { %>
-                    <% users.forEach(function(seller) {
-                        const sellerProducts = products.filter(p => p.seller_id === seller.id);
-                        const sellerProduct = sellerProducts.length > 0 ? sellerProducts[Math.floor(Math.random() * sellerProducts.length)] : null;
-                        const cardHref = sellerProduct ? '/product/' + sellerProduct.id : null;
-                    %>
+                <% if (featuredProducts && featuredProducts.length > 0) { %>
+                    <% featuredProducts.forEach(function(fp) { %>
                         <div class="col-md-3 col-sm-6">
-                            <% if (cardHref) { %>
-                            <a href="<%= cardHref %>" style="text-decoration:none;display:block;">
-                            <% } %>
-                            <div class="seller-card" style="<%= cardHref ? 'cursor:pointer;transition:transform 0.18s,box-shadow 0.18s;' : '' %>">
-                                <% if (sellerProduct && sellerProduct.image) { %>
+                            <a href="/product/<%= fp.id %>" style="text-decoration:none;display:block;">
+                            <div class="seller-card" style="cursor:pointer;transition:transform 0.18s,box-shadow 0.18s;">
+                                <% if (fp.image) { %>
                                     <div class="product-card-img-wrap" style="border-radius:12px 12px 0 0;overflow:hidden;">
-                                        <img src="<%= sellerProduct.image %>" alt="<%= sellerProduct.name %>" class="seller-card-img">
-                                        <% if (sellerProduct.deal_price != null) { %>
-                                        <span class="deal-pct-badge">-<%= Math.round((1 - parseFloat(sellerProduct.deal_price)/parseFloat(sellerProduct.price))*100) %>%</span>
+                                        <img src="<%= fp.image %>" alt="<%= fp.name %>" class="seller-card-img">
+                                        <% if (fp.deal_price != null) { %>
+                                        <span class="deal-pct-badge">-<%= Math.round((1 - parseFloat(fp.deal_price)/parseFloat(fp.price))*100) %>%</span>
                                         <% } %>
                                     </div>
                                 <% } else { %>
                                     <div class="seller-card-img-placeholder">🛍️</div>
                                 <% } %>
                                 <div class="seller-card-body">
-                                    <% if (sellerProduct) { %>
-                                        <div class="seller-product-name"><%= sellerProduct.name %></div>
-                                        <% if (sellerProduct.deal_price != null) { %>
-                                        <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:0.88rem;color:var(--purple-mid);margin-bottom:2px;">
-                                            ₦<%= fmtPrice(sellerProduct.deal_price) %>
-                                            <span style="font-size:0.72rem;font-weight:400;color:var(--gray-500);text-decoration:line-through;font-family:'DM Sans',sans-serif;">₦<%= fmtPrice(sellerProduct.price) %></span>
-                                        </div>
-                                        <% } else { %>
-                                        <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:0.88rem;color:var(--purple-mid);margin-bottom:2px;">
-                                            ₦<%= fmtPrice(sellerProduct.price) %>
-                                        </div>
-                                        <% } %>
+                                    <div class="seller-product-name"><%= fp.name %></div>
+                                    <% if (fp.deal_price != null) { %>
+                                    <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:0.88rem;color:var(--purple-mid);margin-bottom:2px;">
+                                        ₦<%= fmtPrice(fp.deal_price) %>
+                                        <span style="font-size:0.72rem;font-weight:400;color:var(--gray-500);text-decoration:line-through;font-family:'DM Sans',sans-serif;">₦<%= fmtPrice(fp.price) %></span>
+                                    </div>
                                     <% } else { %>
-                                        <div class="seller-product-name" style="color:var(--gray-500);">No product yet</div>
+                                    <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:0.88rem;color:var(--purple-mid);margin-bottom:2px;">
+                                        ₦<%= fmtPrice(fp.price) %>
+                                    </div>
                                     <% } %>
-                                    <div class="seller-name"><%= seller.username %></div>
-                                    <% if (seller.seller_tagline) { %>
-                                        <div class="seller-tagline"><%= seller.seller_tagline %></div>
+                                    <div class="seller-name"><%= fp.seller_name %></div>
+                                    <% if (fp.seller_tagline) { %>
+                                        <div class="seller-tagline"><%= fp.seller_tagline %></div>
                                     <% } %>
                                 </div>
                             </div>
-                            <% if (cardHref) { %>
                             </a>
-                            <% } %>
                         </div>
                     <% }); %>
                 <% } %>
