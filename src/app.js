@@ -465,7 +465,7 @@ metaDb.query(`CREATE TABLE IF NOT EXISTS visitor_stats (
     first_seen TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     last_seen TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     visit_count INT DEFAULT 1
-)`, () => {});
+)`, (err) => { if (err) console.error('[metaDb] visitor_stats create error:', err.message); });
 
 // Rate limiter factory - hybrid IP + user ID
 const rateLimitMaps = new Map();
@@ -577,7 +577,7 @@ app.use((req, res, next) => {
                 `INSERT INTO visitor_stats (ip, visit_count) VALUES (?, 1)
                  ON DUPLICATE KEY UPDATE last_seen = NOW(), visit_count = visit_count + 1`,
                 [rawIp],
-                () => {}
+                (err) => { if (err) console.error('[metaDb] visitor insert error:', err.message); }
             );
         }
     }
@@ -3559,6 +3559,7 @@ app.get('/admin/lab-stats', requireAdmin, (req, res) => {
     metaDb.query(
         'SELECT COUNT(*) AS uniqueVisitors, SUM(visit_count) AS totalVisits FROM visitor_stats',
         (err, rows) => {
+            if (err) console.error('[metaDb] visitor stats query error:', err.message);
             const stats = (!err && rows[0]) ? rows[0] : { uniqueVisitors: 0, totalVisits: 0 };
             res.json({
                 uniqueVisitors: stats.uniqueVisitors || 0,
