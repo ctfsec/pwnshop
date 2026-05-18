@@ -55,6 +55,7 @@ TRUNCATE TABLE audit_log;
 TRUNCATE TABLE audit_logs;
 TRUNCATE TABLE transactions;
 TRUNCATE TABLE otp_codes;
+TRUNCATE TABLE mail_inbox;
 SET FOREIGN_KEY_CHECKS = 1;
 SQL
 
