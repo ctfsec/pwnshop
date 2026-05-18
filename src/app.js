@@ -451,24 +451,7 @@ app.use((req, res, next) => {
     }
 });
 
-// Meta DB connection - persists across lab resets
-const metaDb = mysql.createPool({
-    host:     process.env.DB_HOST     || 'localhost',
-    port:     parseInt(process.env.DB_PORT || '3306', 10),
-    user:     process.env.DB_USER     || 'root',
-    password: process.env.DB_PASSWORD,
-    database: process.env.DB_META_NAME || process.env.DB_NAME || 'pwnshop',
-    waitForConnections: true,
-    connectionLimit: 1,
-    queueLimit: 0
-});
-
-metaDb.query(`CREATE TABLE IF NOT EXISTS visitor_stats (
-    ip VARCHAR(120) PRIMARY KEY,
-    first_seen TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    last_seen TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    visit_count INT DEFAULT 1
-)`, (err) => { if (err) console.error('[metaDb] visitor_stats create error:', err.message); });
+// visitor_stats uses the main db pool (metaDb pool caused a stall on Filess.io)
 
 // Rate limiter factory - hybrid IP + user ID
 const rateLimitMaps = new Map();
@@ -575,16 +558,12 @@ app.use((req, res, next) => {
     // Only track meaningful routes
     if (isTrackedRoute(req.path)) {
         const rawIp = (req.headers['x-forwarded-for'] || req.ip || '').toString().split(',')[0].trim();
-        console.log('[visitor] path:', req.path, '| ip:', rawIp || '(empty)', '| xff:', req.headers['x-forwarded-for'] || '(none)', '| req.ip:', req.ip);
         if (rawIp) {
-            metaDb.query(
+            db.query(
                 `INSERT INTO visitor_stats (ip, visit_count) VALUES (?, 1)
                  ON DUPLICATE KEY UPDATE last_seen = NOW(), visit_count = visit_count + 1`,
                 [rawIp],
-                (err) => {
-                    if (err) console.error('[metaDb] visitor insert error:', err.message);
-                    else console.log('[visitor] insert OK for ip:', rawIp);
-                }
+                (err) => { if (err) console.error('[visitor] insert error:', err.message); }
             );
         }
     }
@@ -3563,10 +3542,10 @@ app.post('/lab/reset', (req, res) => {
 
 // Admin lab-stats endpoint
 app.get('/admin/lab-stats', requireAdmin, (req, res) => {
-    metaDb.query(
+    db.query(
         'SELECT COUNT(*) AS uniqueVisitors, SUM(visit_count) AS totalVisits FROM visitor_stats',
         (err, rows) => {
-            if (err) console.error('[metaDb] visitor stats query error:', err.message);
+            if (err) console.error('[visitor] stats query error:', err.message);
             const stats = (!err && rows[0]) ? rows[0] : { uniqueVisitors: 0, totalVisits: 0 };
             res.json({
                 uniqueVisitors: stats.uniqueVisitors || 0,
