@@ -3548,8 +3548,8 @@ app.get('/admin/lab-stats', requireAdmin, (req, res) => {
             if (err) console.error('[visitor] stats query error:', err.message);
             const stats = (!err && rows[0]) ? rows[0] : { uniqueVisitors: 0, totalVisits: 0 };
             res.json({
-                uniqueVisitors: stats.uniqueVisitors || 0,
-                totalVisits: stats.totalVisits || 0,
+                uniqueVisitors: parseInt(stats.uniqueVisitors) || 0,
+                totalVisits: parseInt(stats.totalVisits) || 0,
                 labIsDirty,
                 lastActivityMinsAgo: lastActivityMs
                     ? Math.floor((Date.now() - lastActivityMs) / 60000)
