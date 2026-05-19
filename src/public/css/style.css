@@ -120,6 +120,9 @@ body { background: #f8f9fa; }
 .product-card:hover {
     box-shadow: 0 4px 16px rgba(153,76,141,0.12);
 }
+.product-card-body {
+    min-width: 0;
+}
 .product-name {
     white-space: nowrap;
     overflow: hidden;
