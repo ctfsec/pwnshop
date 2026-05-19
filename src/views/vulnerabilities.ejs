@@ -360,6 +360,7 @@
                 <span class="meta-item"><strong>Endpoint:</strong> POST /profile/upload-avatar</span>
                 <span class="meta-item"><strong>Technique:</strong> Stored XSS via file upload</span>
                 <span class="meta-item"><strong>Payload:</strong> &lt;svg onload="alert(1)"&gt;</span>
+                <span class="meta-item"><strong>Note:</strong> Trigger requires the uploaded file to be accessible via URL. Verify your deployment serves <code>/uploads/</code> as a static path before attempting.</span>
             </div>
         </div>
     </div>
@@ -602,6 +603,7 @@
                 <span class="meta-item"><strong>Endpoint:</strong> POST /profile/upload-avatar</span>
                 <span class="meta-item"><strong>Technique:</strong> MIME type spoofing</span>
                 <span class="meta-item"><strong>Chains with:</strong> PWN-012 (SVG XSS)</span>
+                <span class="meta-item"><strong>Note:</strong> The bypass and file storage work on any deployment. Full chain impact (XSS execution) depends on whether uploaded files are accessible via URL — confirm <code>/uploads/</code> is reachable first.</span>
             </div>
         </div>
     </div>
@@ -952,6 +954,7 @@
                 <span class="meta-item"><strong>Endpoint:</strong> POST /wallet/topup/vulnbank</span>
                 <span class="meta-item"><strong>Technique:</strong> Amount override / parameter tampering</span>
                 <span class="meta-item"><strong>Lab toggle:</strong> VULNBANK_LAB_VULN=1</span>
+                <span class="meta-item"><strong>Note:</strong> Requires a self-hosted deployment with <code>VULNBANK_LAB_VULN=1</code> set in <code>.env.lab</code> and valid Vulnbank credentials configured.</span>
             </div>
         </div>
     </div>
@@ -970,6 +973,7 @@
                 <span class="meta-item"><strong>Endpoint:</strong> POST /wallet/topup/vulnbank</span>
                 <span class="meta-item"><strong>Technique:</strong> Value validation bypass</span>
                 <span class="meta-item"><strong>Lab toggle:</strong> VULNBANK_LAB_VULN=1</span>
+                <span class="meta-item"><strong>Note:</strong> Requires a self-hosted deployment with <code>VULNBANK_LAB_VULN=1</code> set in <code>.env.lab</code> and valid Vulnbank credentials configured.</span>
             </div>
         </div>
     </div>
@@ -988,6 +992,7 @@
                 <span class="meta-item"><strong>Endpoints:</strong> POST /wallet/topup/vulnbank, POST /checkout</span>
                 <span class="meta-item"><strong>Technique:</strong> Verification / settlement bypass</span>
                 <span class="meta-item"><strong>Lab toggle:</strong> VULNBANK_LAB_VULN=1</span>
+                <span class="meta-item"><strong>Note:</strong> Requires a self-hosted deployment with <code>VULNBANK_LAB_VULN=1</code> set in <code>.env.lab</code> and valid Vulnbank credentials configured.</span>
             </div>
         </div>
     </div>
@@ -1006,6 +1011,7 @@
                 <span class="meta-item"><strong>Endpoints:</strong> POST /wallet/topup/vulnbank, POST /checkout</span>
                 <span class="meta-item"><strong>Technique:</strong> Null-amount verification fallback</span>
                 <span class="meta-item"><strong>Mode:</strong> Always on</span>
+                <span class="meta-item"><strong>Note:</strong> Requires a self-hosted deployment with Vulnbank configured. Exploit depends on crafting or intercepting a Vulnbank response that omits the amount field.</span>
             </div>
         </div>
     </div>

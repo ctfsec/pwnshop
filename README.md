@@ -417,8 +417,8 @@ Set `HEAL_EVERY_MINUTES=0` to disable the healer entirely.
 
 All 51 vulnerabilities are documented in-app at `/vulnerabilities` with descriptions, affected endpoints, and hints. The table below is a summary.
 
-| ID | Title | Severity | Category |
-|---|---|---|---|
+| ID | Title | Severity | Category | |
+|---|---|---|---|---|
 | PWN-001 | IDOR - Order Details | High | A01:2025 |
 | PWN-002 | IDOR - Order Tracking (No Auth) | High | A01:2025 |
 | PWN-003 | IDOR - Wishlist | Medium | A01:2025 |
@@ -430,7 +430,7 @@ All 51 vulnerabilities are documented in-app at `/vulnerabilities` with descript
 | PWN-009 | SQL Injection - Admin Login | Critical | A05:2025 |
 | PWN-010 | SQL Injection - Product Search | High | A05:2025 |
 | PWN-011 | Stored XSS - Product Reviews | High | A05:2025 |
-| PWN-012 | Stored XSS via SVG Avatar Upload | Medium | A05:2025 |
+| PWN-012 | Stored XSS via SVG Avatar Upload | Medium | A05:2025 | ¹ |
 | PWN-013 | CSV Injection - Order Export | Medium | A05:2025 |
 | PWN-014 | Second-Order SQLi - Audit Log Search | Medium | A05:2025 |
 | PWN-015 | Predictable OTP - Brute-Forceable 2FA | High | A06:2025 |
@@ -443,7 +443,7 @@ All 51 vulnerabilities are documented in-app at `/vulnerabilities` with descript
 | PWN-022 | No Account Lockout or Rate Limiting | Medium | A07:2025 |
 | PWN-023 | No Password Policy | Info | A07:2025 |
 | PWN-024 | OTP Not Invalidated on New Request | Medium | A07:2025 |
-| PWN-025 | File Upload - MIME Type Spoofing | High | A08:2025 |
+| PWN-025 | File Upload - MIME Type Spoofing | High | A08:2025 | ¹ |
 | PWN-026 | CSRF - Account Self-Deletion | Medium | A08:2025 |
 | PWN-027 | Plaintext Passwords Written to Audit Log | Medium | A09:2025 |
 | PWN-028 | Spoofable IP Addresses in Audit Log | Info | A09:2025 |
@@ -460,16 +460,20 @@ All 51 vulnerabilities are documented in-app at `/vulnerabilities` with descript
 | PWN-039 | HTTP Parameter Pollution - Coupon Bypass | Medium | A06:2025 |
 | PWN-040 | SSTI to RCE - Seller Storefront Preview | Critical | A05:2025 |
 | PWN-041 | Prototype Pollution - Lodash Dependency | High | A03:2025 |
-| PWN-042 | Vulnbank Wallet Funding - Credited Amount Override | High | Payments |
-| PWN-043 | Vulnbank Wallet Funding - Tiny / Negative Amount Abuse | High | Payments |
-| PWN-044 | Vulnbank Payment - Unverified Settlement Bypass | High | Payments |
-| PWN-045 | Vulnbank Verification - Null Amount Fallback | Medium | Payments |
+| PWN-042 | Vulnbank Wallet Funding - Credited Amount Override | High | Payments | ² |
+| PWN-043 | Vulnbank Wallet Funding - Tiny / Negative Amount Abuse | High | Payments | ² |
+| PWN-044 | Vulnbank Payment - Unverified Settlement Bypass | High | Payments | ² |
+| PWN-045 | Vulnbank Verification - Null Amount Fallback | Medium | Payments | ² |
 | PWN-046 | Multi-Vuln Chain → Agent Command Injection (Wallet Credit) | Critical | LLM01 |
 | PWN-047 | Multi-Vuln Chain → Agent Command Injection (Free Order) | Critical | LLM01 |
 | PWN-048 | Unvalidated Third-Party LLM API - Supply Chain Trust Abuse | Medium | LLM03 |
 | PWN-049 | Steganographic Prompt Injection via Poisoned Product Listings | High | LLM04 |
 | PWN-050 | Classified Section Extraction via Multi-Turn Persona Injection | High | LLM07 |
 | PWN-051 | Model Misinformation - False Policy Confirmation via Leading Questions | Medium | LLM09 |
+
+> ¹ Upload and storage work on any deployment. Full exploit impact (XSS execution) requires the `/uploads/` path to be publicly accessible via URL — confirm this before attempting the chain.
+>
+> ² Requires a self-hosted deployment with `VULNBANK_LAB_VULN=1` set in `.env.lab` and valid Vulnbank credentials configured.
 
 ---
 
