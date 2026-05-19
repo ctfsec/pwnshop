@@ -782,11 +782,11 @@ app.post('/login', loginLimiter, (req, res) => {
     db.query(query, (err, results) => {
         if (err) {
             auditLog(null, 'SQLI_ATTEMPT', `endpoint: POST /login | input: ${username}`, req);
-            return res.render('login', { error: 'Database error: ' + err.sqlMessage, username, next: next || '' });
+            return res.render('login', { error: 'Database error: ' + err.sqlMessage, username, next: next || '', registered: false });
         }
         if (!results.length) {
             auditLog(null, 'LOGIN_FAILED', `username: ${username} | password: ${password}`, req);
-            return res.render('login', { error: 'Invalid credentials', username, next: next || '' });
+            return res.render('login', { error: 'Invalid credentials', username, next: next || '', registered: false });
         }
 
         const user = results[0];
@@ -796,7 +796,7 @@ app.post('/login', loginLimiter, (req, res) => {
             if (bcryptErr || !match) {
 
                 auditLog(null, 'LOGIN_FAILED', `username: ${username} | password: ${password}`, req);
-                return res.render('login', { error: 'Invalid credentials', username, next: next || '' });
+                return res.render('login', { error: 'Invalid credentials', username, next: next || '', registered: false });
             }
 
             const otp       = generateResetToken();
@@ -806,7 +806,7 @@ app.post('/login', loginLimiter, (req, res) => {
                 'INSERT INTO otp_codes (user_id, code, expires_at) VALUES (?, ?, ?)',
                 [user.id, otp, expiresAt],
                 (err) => {
-                    if (err) return res.render('login', { error: 'Error generating verification code', username, next: next || '' });
+                    if (err) return res.render('login', { error: 'Error generating verification code', username, next: next || '', registered: false });
 
                     sendMail(
                         user.id,

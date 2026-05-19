@@ -220,11 +220,11 @@
             <i class="bi bi-chevron-down chevron"></i>
         </div>
         <div class="vuln-card-body">
-            <p class="vuln-desc"><code>GET /logs</code> returns the full security audit log as JSON with no authentication required. Contains all login attempts, failed passwords, SSRF targets, XSS payloads, and admin actions.</p>
+            <p class="vuln-desc"><code>GET /api/v1/events</code> returns the full security audit log as JSON with no authentication required. Contains all login attempts, failed passwords (plaintext), SSRF targets, XSS payloads, and admin actions.</p>
             <div class="vuln-meta">
-                <span class="meta-item"><strong>Endpoint:</strong> /logs</span>
+                <span class="meta-item"><strong>Endpoint:</strong> /api/v1/events</span>
                 <span class="meta-item"><strong>Auth required:</strong> No</span>
-                <span class="meta-item"><strong>Technique:</strong> IDOR / Unauthenticated Access</span>
+                <span class="meta-item"><strong>Technique:</strong> Unauthenticated Access</span>
             </div>
         </div>
     </div>
@@ -254,16 +254,17 @@
     <div class="vuln-card" data-type="web" data-sev="medium">
         <div class="vuln-card-head" onclick="toggle(this)">
             <span class="vuln-id">PWN-007</span>
-            <span class="vuln-title">Session Cookie Missing HttpOnly & Secure Flags</span>
+            <span class="vuln-title">Session Cookie Missing Secure Flag</span>
             <span class="owasp-tag">A04:2025</span>
             <span class="sev-badge sev-medium">Medium</span>
             <i class="bi bi-chevron-down chevron"></i>
         </div>
         <div class="vuln-card-body">
-            <p class="vuln-desc">The session cookie is set with <code>secure: false</code> and no <code>httpOnly</code> flag. This makes the cookie readable by JavaScript - any XSS payload can exfiltrate it. It is also transmitted over plain HTTP.</p>
+            <p class="vuln-desc">The session cookie is set with <code>secure: false</code>, meaning it is transmitted over plain HTTP with no TLS enforcement. The <code>HttpOnly</code> flag is present (express-session default), but without <code>Secure</code> the cookie can be intercepted by a network-level attacker. Combined with any XSS vulnerability the session token can still be exfiltrated via <code>document.cookie</code>.</p>
             <div class="vuln-meta">
+                <span class="meta-item"><strong>Missing flag:</strong> Secure</span>
                 <span class="meta-item"><strong>Chains with:</strong> PWN-011, PWN-012 (XSS)</span>
-                <span class="meta-item"><strong>Impact:</strong> Session hijacking</span>
+                <span class="meta-item"><strong>Impact:</strong> Session interception over HTTP</span>
             </div>
         </div>
     </div>
@@ -541,9 +542,10 @@
             <i class="bi bi-chevron-down chevron"></i>
         </div>
         <div class="vuln-card-body">
-            <p class="vuln-desc">Failed login attempts, OTP guesses, and password reset token submissions are not rate-limited or counted. There is no lockout mechanism anywhere in the application. Automated credential stuffing and brute-force attacks proceed without friction. Coupon codes can also be brute-forced - per-user limits prevent reuse of the same code but do not prevent probing for valid codes.</p>
+            <p class="vuln-desc">There is no account lockout mechanism anywhere in the application. OTP verification at <code>POST /verify-otp</code> has no rate limiter at all - the full 900,000-code keyspace can be exhausted without triggering a single 429. While <code>/login</code>, <code>/forgot-password</code>, <code>/reset-password</code>, and <code>/apply-coupon</code> have soft in-memory rate limits, these are per-IP and trivially bypassed by rotating the <code>X-Forwarded-For</code> header (see PWN-028). Coupon codes can also be probed - per-user reuse limits do not prevent scanning for valid codes across different accounts.</p>
             <div class="vuln-meta">
-                <span class="meta-item"><strong>Affects:</strong> /login, /verify-otp, /reset-password, /apply-coupon</span>
+                <span class="meta-item"><strong>Unprotected:</strong> POST /verify-otp (no rate limit at all)</span>
+                <span class="meta-item"><strong>Bypassable:</strong> /login, /forgot-password, /reset-password, /apply-coupon (IP-based limits, spoof with X-Forwarded-For)</span>
                 <span class="meta-item" style="color:#6D28D9"><strong>💡 Smarter path:</strong> For OTP bypass specifically, brute-forcing is the hard way. Check whether the inbox delivering the OTP enforces ownership before reading it. See PWN-004.</span>
             </div>
         </div>
@@ -637,7 +639,7 @@
             <p class="vuln-desc">Every failed login attempt records the submitted password in plaintext in the audit log. When users accidentally type their password into the username field - which is extremely common - it is permanently stored in the log and exposed at <code>/logs</code>.</p>
             <div class="vuln-meta">
                 <span class="meta-item"><strong>Location:</strong> audit_log table, action: LOGIN_FAILED</span>
-                <span class="meta-item"><strong>Chains with:</strong> PWN-005 (public /logs)</span>
+                <span class="meta-item"><strong>Chains with:</strong> PWN-005 (public /api/v1/events)</span>
             </div>
         </div>
     </div>
