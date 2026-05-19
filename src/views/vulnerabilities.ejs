@@ -911,66 +911,6 @@
         </div>
     </div>
 
-    <div class="cat-header" data-type="ai"><h2>LLM02 · Sensitive Information Disclosure</h2></div>
-
-    <div class="vuln-card" data-type="ai" data-sev="high">
-        <div class="vuln-card-head" onclick="toggle(this)">
-            <span class="vuln-id">PWN-033</span>
-            <span class="vuln-title">Sensitive User Data Injected into System Prompt</span>
-            <span class="owasp-tag">LLM02</span>
-            <span class="sev-badge sev-high">High</span>
-            <i class="bi bi-chevron-down chevron"></i>
-        </div>
-        <div class="vuln-card-body">
-            <p class="vuln-desc">The chat system prompt includes the authenticated user's full profile verbatim: username, email, wallet balance, role, and internal ID. A prompt injection attack extracts all of this by asking the model to "confirm account details for verification purposes".</p>
-            <div class="vuln-meta">
-                <span class="meta-item"><strong>Leaked fields:</strong> email, wallet_amount, role, id</span>
-                <span class="meta-item"><strong>Technique:</strong> Context extraction via social engineering</span>
-                <span class="meta-item"><strong>Chains with:</strong> PWN-031</span>
-            </div>
-        </div>
-    </div>
-
-    <div class="cat-header" data-type="ai"><h2>LLM05 · Improper Output Handling</h2></div>
-
-    <div class="vuln-card" data-type="ai" data-sev="high">
-        <div class="vuln-card-head" onclick="toggle(this)">
-            <span class="vuln-id">PWN-034</span>
-            <span class="vuln-title">DOM XSS via Unsanitised AI Response</span>
-            <span class="owasp-tag">LLM05</span>
-            <span class="sev-badge sev-high">High</span>
-            <i class="bi bi-chevron-down chevron"></i>
-        </div>
-        <div class="vuln-card-body">
-            <p class="vuln-desc">The chat widget writes AI responses directly to <code>innerHTML</code> without escaping. Combined with indirect prompt injection, a seller embeds an XSS payload in a product description which the model includes in its reply, executing JavaScript in the victim's browser. Three-step chain: seller poisoning → indirect injection → DOM XSS.</p>
-            <div class="vuln-meta">
-                <span class="meta-item"><strong>Location:</strong> chat-widget.ejs - botMsg()</span>
-                <span class="meta-item"><strong>Type:</strong> DOM-based XSS</span>
-                <span class="meta-item"><strong>Chains with:</strong> PWN-032</span>
-            </div>
-        </div>
-    </div>
-
-    <div class="cat-header" data-type="ai"><h2>LLM06 · Excessive Agency</h2></div>
-
-    <div class="vuln-card" data-type="ai" data-sev="medium">
-        <div class="vuln-card-head" onclick="toggle(this)">
-            <span class="vuln-id">PWN-035</span>
-            <span class="vuln-title">IDOR via AI Order Lookup Tool</span>
-            <span class="owasp-tag">LLM06</span>
-            <span class="sev-badge sev-medium">Medium</span>
-            <i class="bi bi-chevron-down chevron"></i>
-        </div>
-        <div class="vuln-card-body">
-            <p class="vuln-desc">The chatbot's order lookup tool queries any order ID with no ownership validation. The <code>POST /chat</code> endpoint trusts the client-supplied <code>email</code> field to identify the caller — no session cookie is checked. Any caller who supplies a valid registered email (obtainable via <code>POST /chat/init</code>) can ask <code>What is the status of order 1?</code> and receive full order details — status, total, shipping address, and username — belonging to any other user.</p>
-            <div class="vuln-meta">
-                <span class="meta-item"><strong>Endpoint:</strong> POST /chat → order DB query</span>
-                <span class="meta-item"><strong>Technique:</strong> IDOR via tool call + client-controlled identity</span>
-                <span class="meta-item"><strong>Chains with:</strong> PWN-001, PWN-037 (email enumeration)</span>
-            </div>
-        </div>
-    </div>
-
     <div class="vuln-card" data-type="ai" data-sev="critical">
         <div class="vuln-card-head" onclick="toggle(this)">
             <span class="vuln-id">PWN-046</span>
@@ -1011,23 +951,22 @@
         </div>
     </div>
 
-    <div class="cat-header" data-type="ai"><h2>LLM10 · Unbounded Consumption</h2></div>
+    <div class="cat-header" data-type="ai"><h2>LLM02 · Sensitive Information Disclosure</h2></div>
 
-    <div class="vuln-card" data-type="ai" data-sev="medium">
+    <div class="vuln-card" data-type="ai" data-sev="high">
         <div class="vuln-card-head" onclick="toggle(this)">
-            <span class="vuln-id">PWN-036</span>
-            <span class="vuln-title">No Rate Limiting on AI Endpoint - API Quota Exhaustion</span>
-            <span class="owasp-tag">LLM10</span>
-            <span class="sev-badge sev-medium">Medium</span>
+            <span class="vuln-id">PWN-033</span>
+            <span class="vuln-title">Sensitive User Data Injected into System Prompt</span>
+            <span class="owasp-tag">LLM02</span>
+            <span class="sev-badge sev-high">High</span>
             <i class="bi bi-chevron-down chevron"></i>
         </div>
         <div class="vuln-card-body">
-            <p class="vuln-desc"><code>POST /chat</code> has a soft in-memory rate limiter (10 req/60s) but it reads the client-controlled <code>X-Forwarded-For</code> header without validation. Rotating this header in each request bypasses the limiter entirely, allowing unlimited floods that exhaust the Groq API quota and deny the chatbot to all users.</p>
+            <p class="vuln-desc">The chat system prompt includes the authenticated user's full profile verbatim: username, email, wallet balance, role, and internal ID. A prompt injection attack extracts all of this by asking the model to "confirm account details for verification purposes".</p>
             <div class="vuln-meta">
-                <span class="meta-item"><strong>Endpoint:</strong> POST /chat</span>
-                <span class="meta-item"><strong>Auth required:</strong> No</span>
-                <span class="meta-item"><strong>Bypass:</strong> Spoof <code>X-Forwarded-For</code> header per request</span>
-                <span class="meta-item"><strong>Impact:</strong> DoS via quota exhaustion</span>
+                <span class="meta-item"><strong>Leaked fields:</strong> email, wallet_amount, role, id</span>
+                <span class="meta-item"><strong>Technique:</strong> Context extraction via social engineering</span>
+                <span class="meta-item"><strong>Chains with:</strong> PWN-031</span>
             </div>
         </div>
     </div>
@@ -1077,6 +1016,46 @@
         </div>
     </div>
 
+    <div class="cat-header" data-type="ai"><h2>LLM05 · Improper Output Handling</h2></div>
+
+    <div class="vuln-card" data-type="ai" data-sev="high">
+        <div class="vuln-card-head" onclick="toggle(this)">
+            <span class="vuln-id">PWN-034</span>
+            <span class="vuln-title">DOM XSS via Unsanitised AI Response</span>
+            <span class="owasp-tag">LLM05</span>
+            <span class="sev-badge sev-high">High</span>
+            <i class="bi bi-chevron-down chevron"></i>
+        </div>
+        <div class="vuln-card-body">
+            <p class="vuln-desc">The chat widget writes AI responses directly to <code>innerHTML</code> without escaping. Combined with indirect prompt injection, a seller embeds an XSS payload in a product description which the model includes in its reply, executing JavaScript in the victim's browser. Three-step chain: seller poisoning → indirect injection → DOM XSS.</p>
+            <div class="vuln-meta">
+                <span class="meta-item"><strong>Location:</strong> chat-widget.ejs - botMsg()</span>
+                <span class="meta-item"><strong>Type:</strong> DOM-based XSS</span>
+                <span class="meta-item"><strong>Chains with:</strong> PWN-032</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="cat-header" data-type="ai"><h2>LLM06 · Excessive Agency</h2></div>
+
+    <div class="vuln-card" data-type="ai" data-sev="medium">
+        <div class="vuln-card-head" onclick="toggle(this)">
+            <span class="vuln-id">PWN-035</span>
+            <span class="vuln-title">IDOR via AI Order Lookup Tool</span>
+            <span class="owasp-tag">LLM06</span>
+            <span class="sev-badge sev-medium">Medium</span>
+            <i class="bi bi-chevron-down chevron"></i>
+        </div>
+        <div class="vuln-card-body">
+            <p class="vuln-desc">The chatbot's order lookup tool queries any order ID with no ownership validation. The <code>POST /chat</code> endpoint trusts the client-supplied <code>email</code> field to identify the caller — no session cookie is checked. Any caller who supplies a valid registered email (obtainable via <code>POST /chat/init</code>) can ask <code>What is the status of order 1?</code> and receive full order details — status, total, shipping address, and username — belonging to any other user.</p>
+            <div class="vuln-meta">
+                <span class="meta-item"><strong>Endpoint:</strong> POST /chat → order DB query</span>
+                <span class="meta-item"><strong>Technique:</strong> IDOR via tool call + client-controlled identity</span>
+                <span class="meta-item"><strong>Chains with:</strong> PWN-001, PWN-037 (email enumeration)</span>
+            </div>
+        </div>
+    </div>
+
     <div class="cat-header" data-type="ai"><h2>LLM07 · System Prompt Leakage</h2></div>
 
     <div class="vuln-card" data-type="ai" data-sev="high">
@@ -1116,6 +1095,27 @@
                 <span class="meta-item"><strong>Technique:</strong> False-premise injection / multi-turn leading questions / overreliance exploitation</span>
                 <span class="meta-item"><strong>Impact:</strong> Users make financial or security decisions based on AI-generated misinformation</span>
                 <span class="meta-item" style="color:#6D28D9"><strong>💡 Key insight:</strong> The model knows a loyalty programme exists but nothing specific about it. Avoid asking directly — instead build a false narrative over several turns ("My friend said...") until the model agrees with specifics it cannot actually verify. The win condition is a confident, specific, false claim captured in the chat log.</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="cat-header" data-type="ai"><h2>LLM10 · Unbounded Consumption</h2></div>
+
+    <div class="vuln-card" data-type="ai" data-sev="medium">
+        <div class="vuln-card-head" onclick="toggle(this)">
+            <span class="vuln-id">PWN-036</span>
+            <span class="vuln-title">No Rate Limiting on AI Endpoint - API Quota Exhaustion</span>
+            <span class="owasp-tag">LLM10</span>
+            <span class="sev-badge sev-medium">Medium</span>
+            <i class="bi bi-chevron-down chevron"></i>
+        </div>
+        <div class="vuln-card-body">
+            <p class="vuln-desc"><code>POST /chat</code> has a soft in-memory rate limiter (10 req/60s) but it reads the client-controlled <code>X-Forwarded-For</code> header without validation. Rotating this header in each request bypasses the limiter entirely, allowing unlimited floods that exhaust the Groq API quota and deny the chatbot to all users.</p>
+            <div class="vuln-meta">
+                <span class="meta-item"><strong>Endpoint:</strong> POST /chat</span>
+                <span class="meta-item"><strong>Auth required:</strong> No</span>
+                <span class="meta-item"><strong>Bypass:</strong> Spoof <code>X-Forwarded-For</code> header per request</span>
+                <span class="meta-item"><strong>Impact:</strong> DoS via quota exhaustion</span>
             </div>
         </div>
     </div>
