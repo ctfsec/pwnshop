@@ -120,9 +120,6 @@ body { background: #f8f9fa; }
 .product-card:hover {
     box-shadow: 0 4px 16px rgba(153,76,141,0.12);
 }
-.product-name {
-    min-height: 2.6em;
-}
 .product-actions {
     position: absolute;
     bottom: 20px;
