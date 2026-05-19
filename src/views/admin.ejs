@@ -1026,7 +1026,11 @@
             </div>
             <div>
                 <label style="font-size:0.72rem;font-weight:700;text-transform:uppercase;letter-spacing:0.3px;color:var(--gray-700);display:block;margin-bottom:5px;">Expires (optional)</label>
-                <input type="date" name="deal_expires_at" class="search-input" style="width:100%;">
+                <input type="date" name="deal_expires_at" id="deal_expires_at" class="search-input" style="width:100%;margin-bottom:7px;">
+                <label style="display:flex;align-items:center;gap:7px;font-size:0.82rem;color:var(--gray-600);cursor:pointer;">
+                    <input type="checkbox" id="deal_never_expires" onchange="document.getElementById('deal_expires_at').disabled=this.checked;if(this.checked)document.getElementById('deal_expires_at').value='';">
+                    Never expires
+                </label>
             </div>
             <div>
                 <button type="submit" class="btn-tb btn-tb-primary" style="width:100%;padding:10px 16px;">

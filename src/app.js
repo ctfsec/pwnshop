@@ -87,6 +87,19 @@ app.use(express.static(path.join(__dirname, '../public')));
 app.locals.fmtPrice = (v) =>
     parseFloat(v || 0).toLocaleString('en-NG', { minimumFractionDigits: 0, maximumFractionDigits: 0 });
 
+function resolveDeals(products) {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const list = Array.isArray(products) ? products : [products];
+    list.forEach(p => {
+        if (p && p.deal_expires_at && new Date(p.deal_expires_at) < today) {
+            p.deal_price = null;
+            p.deal_label = null;
+        }
+    });
+    return products;
+}
+
 function generateResetToken() {
     return Math.floor(100000 + Math.random() * 900000).toString();
 }
@@ -580,7 +593,7 @@ app.get('/', (req, res) => {
              WHERE p.available = TRUE ORDER BY RAND() LIMIT 4`,
             (err, featuredProducts) => {
                 if (err) return res.status(500).send('Database error: ' + err.message);
-                res.render('home', { user: req.session.user, products, featuredProducts });
+                res.render('home', { user: req.session.user, products: resolveDeals(products), featuredProducts: resolveDeals(featuredProducts) });
             }
         );
     });
@@ -591,7 +604,7 @@ app.get('/search', searchLimiter, (req, res) => {
     const sqlQuery = `SELECT * FROM products WHERE name LIKE '%${query}%' OR description LIKE '%${query}%'`;
     db.query(sqlQuery, (err, products) => {
         if (err) return res.send('Database error: ' + err.sqlMessage);
-        res.render('search-results', { user: req.session.user, products, query });
+        res.render('search-results', { user: req.session.user, products: resolveDeals(products), query });
     });
 });
 
@@ -610,7 +623,7 @@ app.get('/category/:category', (req, res) => {
     const params = category === 'all' ? [] : [category];
     db.query(sql, params, (err, products) => {
         if (err) return res.send('Database error');
-        res.render('category', { user: req.session.user, products, currentCategory: category, currentSort: sort || 'relevance' });
+        res.render('category', { user: req.session.user, products: resolveDeals(products), currentCategory: category, currentSort: sort || 'relevance' });
     });
 });
 
@@ -650,6 +663,7 @@ app.get('/product/:id', (req, res) => {
                 (err, reviews) => {
                     if (err) reviews = [];
 
+                    const product = resolveDeals(products[0]);
                     if (req.session.user) {
                         db.query(
                             'SELECT id FROM wishlists WHERE user_id = ? AND product_id = ?',
@@ -657,7 +671,7 @@ app.get('/product/:id', (req, res) => {
                             (err, wl) => {
                                 res.render('product-details', {
                                     user: req.session.user,
-                                    product: products[0],
+                                    product,
                                     reviews,
                                     wishlisted: wl && wl.length > 0
                                 });
@@ -666,7 +680,7 @@ app.get('/product/:id', (req, res) => {
                     } else {
                         res.render('product-details', {
                             user: null,
-                            product: products[0],
+                            product,
                             reviews,
                             wishlisted: false
                         });
@@ -1305,11 +1319,16 @@ app.get('/cart', (req, res) => {
     if (!req.session.user) return res.redirect('/login');
     const userId = req.session.user.id;
     db.query(
-        'SELECT c.*, p.name, p.price, p.deal_price, p.deal_label, p.image, COALESCE(p.deal_price, p.price) AS effective_price, (c.quantity * COALESCE(p.deal_price, p.price)) AS subtotal FROM cart_items c JOIN products p ON c.product_id = p.id WHERE c.user_id = ?',
+        'SELECT c.*, p.name, p.price, p.deal_price, p.deal_label, p.deal_expires_at, p.image FROM cart_items c JOIN products p ON c.product_id = p.id WHERE c.user_id = ?',
         [userId],
         (err, items) => {
             if (err) return res.send('Database error');
-            const total = items.reduce((s, i) => s + parseFloat(i.subtotal), 0);
+            resolveDeals(items);
+            items.forEach(i => {
+                i.effective_price = i.deal_price != null ? parseFloat(i.deal_price) : parseFloat(i.price);
+                i.subtotal = i.quantity * i.effective_price;
+            });
+            const total = items.reduce((s, i) => s + i.subtotal, 0);
             res.render('cart', { user: req.session.user, items, total: total.toFixed(2) });
         }
     );
