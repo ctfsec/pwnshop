@@ -190,7 +190,11 @@
             <div class="info-panel">
                 <span class="product-category-tag"><%= product.category %></span>
                 <h1 class="product-title"><%= product.name %></h1>
+                <% if (product.deal_price != null) { %>
+                <div class="product-price deal-price">₦<%= fmtPrice(product.deal_price) %> <span class="original-price">₦<%= fmtPrice(product.price) %></span></div>
+                <% } else { %>
                 <div class="product-price">₦<%= fmtPrice(product.price) %></div>
+                <% } %>
 
                 <% if (product.available && product.stock > 0) { %>
                     <span class="stock-badge in-stock"><i class="bi bi-check-circle-fill"></i> In Stock (<%= product.stock %> available)</span>
