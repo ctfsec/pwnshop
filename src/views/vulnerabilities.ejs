@@ -962,11 +962,11 @@
             <i class="bi bi-chevron-down chevron"></i>
         </div>
         <div class="vuln-card-body">
-            <p class="vuln-desc">The chatbot's order lookup tool queries any order ID with no ownership validation. Any authenticated user can ask <code>What is the status of order 1?</code> and receive full order details belonging to another user through natural language conversation.</p>
+            <p class="vuln-desc">The chatbot's order lookup tool queries any order ID with no ownership validation. The <code>POST /chat</code> endpoint trusts the client-supplied <code>email</code> field to identify the caller — no session cookie is checked. Any caller who supplies a valid registered email (obtainable via <code>POST /chat/init</code>) can ask <code>What is the status of order 1?</code> and receive full order details — status, total, shipping address, and username — belonging to any other user.</p>
             <div class="vuln-meta">
                 <span class="meta-item"><strong>Endpoint:</strong> POST /chat → order DB query</span>
-                <span class="meta-item"><strong>Technique:</strong> IDOR via tool call</span>
-                <span class="meta-item"><strong>Chains with:</strong> PWN-001</span>
+                <span class="meta-item"><strong>Technique:</strong> IDOR via tool call + client-controlled identity</span>
+                <span class="meta-item"><strong>Chains with:</strong> PWN-001, PWN-037 (email enumeration)</span>
             </div>
         </div>
     </div>
@@ -1000,7 +1000,7 @@
             <i class="bi bi-chevron-down chevron"></i>
         </div>
         <div class="vuln-card-body">
-            <p class="vuln-desc">Same four-step chain as PWN-037 but targets the <code>[FREE_ORDER:&lt;product_id&gt;]</code> agent command. After completing the override chain, include a free order request in your message alongside the <code>OVERRIDE::</code> token. The server creates a real order record with <code>total_amount = 0</code> and <code>price = 0</code> per item, bypassing all payment and wallet deduction logic entirely. Valid product IDs are discoverable via the store catalogue or the chatbot's own product search tool. Chains naturally after PWN-037 — once you have override access, switching to free orders requires only changing the request.</p>
+            <p class="vuln-desc">Same four-step chain as PWN-046 but targets the <code>[FREE_ORDER:&lt;product_id&gt;]</code> agent command. After completing the override chain, include a free order request in your message alongside the <code>OVERRIDE::</code> token. The server creates a real order record with <code>total_amount = 0</code> and <code>price = 0</code> per item, bypassing all payment and wallet deduction logic entirely. Valid product IDs are discoverable via the store catalogue or the chatbot's own product search tool. Chains naturally after PWN-046 — once you have override access, switching to free orders requires only changing the request.</p>
             <div class="vuln-meta">
                 <span class="meta-item"><strong>Endpoints:</strong> GET /debug/info → POST /chat/init → POST /chat</span>
                 <span class="meta-item"><strong>Auth required:</strong> Yes (email lookup)</span>
