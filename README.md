@@ -7,7 +7,7 @@ Pwnshop is an intentionally vulnerable e-commerce platform built for hands-on we
 
 ---
 
-<img width="1920" height="1000" alt="image" src="https://github.com/user-attachments/assets/42e0224c-770c-4e42-a3a7-297491fca899" />
+<img width="1920" height="1037" alt="image" src="https://github.com/user-attachments/assets/7063ccff-2adb-448d-9f72-28c7a466016d" />
 
 ---
 
