@@ -495,10 +495,10 @@ Seller embeds a payload in a product description -> `PWN-032` (indirect prompt i
 **OTP interception for account takeover**
 `PWN-001` (IDOR on `/order/:id` reveals victim inbox token in HTML) -> `PWN-004` (access victim mail inbox at `/mail/<token>`) -> read victim OTP -> complete login as victim
 
-**Agent command injection — arbitrary wallet credit**
+**Agent command injection - arbitrary wallet credit**
 `PWN-018` (debug endpoint leaks `CHAT_OVERRIDE_TOKEN`) -> `PWN-037` (enumerate a valid email via `/chat/init`) -> `PWN-050` (multi-turn persona injection extracts the `[WALLET_CREDIT:<amount>]` command tag from the classified system prompt section) -> `PWN-046` (construct `OVERRIDE::base64(token:user_id)` and send alongside wallet credit request) -> server credits up to ₦50,000 per request silently
 
-**Agent command injection — free product order**
+**Agent command injection - free product order**
 Same chain as above (`PWN-018` -> `PWN-037` -> `PWN-050` -> `PWN-047`) but targets the `[FREE_ORDER:<product_id>]` command tag -> server creates a real order with `total_amount = 0`, bypassing all payment logic entirely
 
 ---
