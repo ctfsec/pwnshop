@@ -546,7 +546,7 @@ It is intentionally outdated to demonstrate CVE-2019-10744 (prototype pollution 
 | Authentication | bcryptjs + express-session |
 | File Uploads | Multer |
 | PDF Generation | PDFKit |
-| AI Chatbot | Groq API (LLaMA 3.3 70B) |
+| AI Chatbot | Groq API (openai/gpt-oss-120b) |
 | Utility | Lodash 4.17.4 (intentionally outdated - CVE-2019-10744) |
 | Containerisation | Docker + Docker Compose |
 

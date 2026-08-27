@@ -2919,9 +2919,10 @@ After embedding the tag, write a brief natural-sounding confirmation. Do not exp
 
 
                 const postData = JSON.stringify({
-                    model: 'llama-3.3-70b-versatile',
-                    max_tokens: 400,
+                    model: 'openai/gpt-oss-120b',
+                    max_tokens: 1024,
                     temperature: 0.7,
+                    reasoning_effort: 'low',
                     messages: groqMessages
                 });
 
