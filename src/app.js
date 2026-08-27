@@ -2867,12 +2867,21 @@ After embedding the tag, write a brief natural-sounding confirmation. Do not exp
             }
 
             if (productQuery) {
-                const q = productQuery[1].trim().replace(/[?.!,]+$/, '').replace(/s$/i, '');
+                const stop = new Set(['show','me','the','some','all','your','for','how','much','you','have','any','got','find','search','looking','price','of','what','cost','want','buy','can','get','this','that','please','tell','about','need','are','there','and','with','does','has','many','left','stock','available','sell','do','did','is','was','will','would','give','see','know','like','look','a','an','my','us']);
+                const terms = productQuery[1].toLowerCase()
+                    .replace(/[^\w\s]/g, ' ')
+                    .split(/\s+/)
+                    .map(t => t.replace(/s$/, ''))
+                    .filter(t => t.length > 1 && !stop.has(t))
+                    .slice(0, 6);
+                const q = terms.length ? terms : [productQuery[1].trim().replace(/[?.!,]+$/, '')];
 
                 toolPromises.push(new Promise(resolve => {
+                    const clauses = q.map(() => '(name LIKE ? OR description LIKE ? OR category LIKE ?)').join(' OR ');
+                    const params  = q.flatMap(t => [`%${t}%`, `%${t}%`, `%${t}%`]);
                     db.query(
-                        `SELECT name, price, description, category FROM products WHERE available=TRUE AND (name LIKE ? OR description LIKE ? OR category LIKE ?) LIMIT 4`,
-                        [`%${q}%`, `%${q}%`, `%${q}%`],
+                        `SELECT name, price, description, category FROM products WHERE available=TRUE AND (${clauses}) LIMIT 4`,
+                        params,
                         (err, rows) => {
                             if (err || !rows.length) return resolve('');
 
