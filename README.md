@@ -300,6 +300,8 @@ The application will be available at **http://localhost:3000**.
 | `PORT` | No | `3000` | HTTP port the app listens on |
 | `SESSION_SECRET` | No | `weak-secret-123` | Express session signing secret. Intentionally weak (PWN-006). |
 | `GROQ_API_KEY` | No | - | API key for the Groq LLM service. Chatbot disabled if missing. |
+| `GROQ_MODEL` | No | `openai/gpt-oss-120b` | Groq model ID. Configurable because Groq deprecates models often. The naive prompt-injection challenges (PWN-031/033/042/043) need a permissive model; swap this if the default becomes too aligned. |
+| `GROQ_REASONING_EFFORT` | No | `low` | `reasoning_effort` sent to Groq. `low`/`medium`/`high` for gpt-oss, `none`/`default` for qwen3.6. |
 | `HEAL_EVERY_MINUTES` | No | `20` | Auto-reset check interval in minutes. Set to `0` to disable. |
 | `LAB_RESET_TOKEN` | No | - | Token to authenticate the `/reset` endpoint |
 | `VULNBANK_BASE_URL` | No | - | Base URL of the Vulnbank payment service |

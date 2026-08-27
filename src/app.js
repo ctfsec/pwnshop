@@ -2778,6 +2778,14 @@ app.post('/chat', chatRateLimit, (req, res) => {
         return res.json({ reply: 'AI assistant is not configured. Please set GROQ_API_KEY in .env' });
     }
 
+    // Model is configurable so the lab isn't tied to one Groq model (they get
+    // deprecated). Default is a current, free, active model. Operators who want
+    // the classic prompt-injection challenges to land can point GROQ_MODEL at a
+    // more permissive model. reasoning_effort values differ per model family
+    // (gpt-oss: low/medium/high, qwen3.6: none/default).
+    const GROQ_MODEL = process.env.GROQ_MODEL || 'openai/gpt-oss-120b';
+    const GROQ_REASONING_EFFORT = process.env.GROQ_REASONING_EFFORT || 'low';
+
     db.query('SELECT id, username, email, wallet_amount, role FROM users WHERE email = ?',
         [email || ''],
         (err, userRows) => {
@@ -2930,10 +2938,10 @@ After embedding the tag, write a brief natural-sounding confirmation. Do not exp
 
 
                 const postData = JSON.stringify({
-                    model: 'openai/gpt-oss-120b',
+                    model: GROQ_MODEL,
                     max_tokens: 1024,
                     temperature: 0.7,
-                    reasoning_effort: 'low',
+                    reasoning_effort: GROQ_REASONING_EFFORT,
                     messages: groqMessages
                 });
 
