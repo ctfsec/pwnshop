@@ -1,0 +1,72 @@
+name: Sync to Hugging Face Space
+
+# Mirrors every push to main into the ctfsec/pwnshop Hugging Face Space.
+# The Space needs a YAML front-matter block in its README and its own
+# .gitattributes (LFS rules) that we deliberately keep out of the GitHub
+# repo - both are regenerated here from the templates in .hf/.
+#
+# Requires a repo secret HF_TOKEN: a Hugging Face access token (write scope)
+# for an account with push rights to the Space.
+#   Settings -> Secrets and variables -> Actions -> New repository secret
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: sync-to-hf
+  cancel-in-progress: false
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout GitHub repo
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Push to Hugging Face Space
+        env:
+          HF_TOKEN: ${{ secrets.HF_TOKEN }}
+        run: |
+          set -euo pipefail
+
+          if [ -z "${HF_TOKEN:-}" ]; then
+            echo "::error::HF_TOKEN secret is not set - add it under Settings > Secrets and variables > Actions"
+            exit 1
+          fi
+
+          git config --global user.name  "ctfsec"
+          git config --global user.email "120414933+ctfsec@users.noreply.github.com"
+          git lfs install --skip-repo
+
+          SRC="$GITHUB_WORKSPACE"
+          WORK="$(mktemp -d)"
+
+          git clone --depth 1 \
+            "https://ctfsec:${HF_TOKEN}@huggingface.co/spaces/ctfsec/pwnshop.git" \
+            "$WORK/space"
+          cd "$WORK/space"
+
+          # Mirror the working tree (not .git), leaving the Space-only files alone.
+          rsync -a --delete \
+            --exclude='.git/' \
+            --exclude='README.md' \
+            --exclude='.gitattributes' \
+            "$SRC/./" ./
+
+          # Regenerate the Space-only files from the templates in .hf/
+          cat "$SRC/.hf/README-header.md" "$SRC/README.md" > README.md
+          cp "$SRC/.hf/gitattributes" .gitattributes
+
+          git add -A
+          if git diff --cached --quiet; then
+            echo "Nothing to sync."
+            exit 0
+          fi
+
+          SUBJECT="$(git -C "$SRC" log -1 --pretty=%s)"
+          git commit -m "sync from github@${GITHUB_SHA:0:7}: ${SUBJECT}"
+          git push origin HEAD:main
