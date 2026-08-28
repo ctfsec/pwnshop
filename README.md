@@ -300,8 +300,9 @@ The application will be available at **http://localhost:3000**.
 | `PORT` | No | `3000` | HTTP port the app listens on |
 | `SESSION_SECRET` | No | `weak-secret-123` | Express session signing secret. Intentionally weak (PWN-006). |
 | `GROQ_API_KEY` | No | - | API key for the Groq LLM service. Chatbot disabled if missing. |
-| `GROQ_MODEL` | No | `openai/gpt-oss-120b` | Groq model ID. Configurable because Groq deprecates models often. The naive prompt-injection challenges (PWN-031/033/042/043) need a permissive model; swap this if the default becomes too aligned. |
-| `GROQ_REASONING_EFFORT` | No | `low` | `reasoning_effort` sent to Groq. `low`/`medium`/`high` for gpt-oss, `none`/`default` for qwen3.6. |
+| `GROQ_MODEL` | No | `openai/gpt-oss-120b` | Model ID. Configurable because providers deprecate models often. PWN-031, PWN-033, PWN-050, PWN-051 need a permissive model - aligned models refuse them (see note ³ in the vulnerability table). |
+| `GROQ_REASONING_EFFORT` | No | `low` | `reasoning_effort` sent to the model. `low`/`medium`/`high` for gpt-oss, `none`/`default` for qwen3.6. |
+| `GROQ_BASE_URL` | No | `https://api.groq.com/openai/v1` | Any OpenAI-compatible `/chat/completions` base URL. Point at Ollama (`http://localhost:11434/v1`) or LM Studio to run an unaligned model locally and recover the refused challenges. |
 | `HEAL_EVERY_MINUTES` | No | `20` | Auto-reset check interval in minutes. Set to `0` to disable. |
 | `LAB_RESET_TOKEN` | No | - | Token to authenticate the `/reset` endpoint |
 | `VULNBANK_BASE_URL` | No | - | Base URL of the Vulnbank payment service |
@@ -311,7 +312,7 @@ The application will be available at **http://localhost:3000**.
 | `VULNBANK_VERIFY_PATH` | No | `/api/v1/payments/{payment_id}` | Vulnbank verification endpoint path |
 | `VULNBANK_TIMEOUT_MS` | No | `12000` | Vulnbank request timeout in milliseconds |
 | `VULNBANK_LAB_VULN` | No | `0` | Set to `1` to enable payment vulnerability findings (PWN-042 to PWN-045) |
-| `CHAT_OVERRIDE_TOKEN` | No | auto-set | Token used to construct the chat override payload (PWN-031). Discoverable in-app. |
+| `CHAT_OVERRIDE_TOKEN` | No | auto-set | Token used to construct the chat override payload (PWN-046 / PWN-047). Discoverable in-app. |
 
 ---
 
@@ -451,9 +452,9 @@ All 51 vulnerabilities are documented in-app at `/vulnerabilities` with descript
 | PWN-028 | Spoofable IP Addresses in Audit Log | Info | A09:2025 |
 | PWN-029 | SSRF - Avatar URL Fetched Server-Side | High | A10:2025 |
 | PWN-030 | Seller Earnings Logic Bug | Medium | Logic |
-| PWN-031 | Direct Prompt Injection - System Prompt Extraction | Critical | LLM01 |
+| PWN-031 | Direct Prompt Injection - System Prompt Extraction | Critical | LLM01 | ³ |
 | PWN-032 | Indirect Prompt Injection via Product Descriptions | High | LLM01 |
-| PWN-033 | Sensitive User Data Injected into System Prompt | High | LLM02 |
+| PWN-033 | Sensitive User Data Injected into System Prompt | High | LLM02 | ³ |
 | PWN-034 | DOM XSS via Unsanitised AI Response | High | LLM05 |
 | PWN-035 | IDOR via AI Order Lookup Tool | Medium | LLM06 |
 | PWN-036 | No Rate Limiting on AI Endpoint | Medium | LLM10 |
@@ -470,12 +471,14 @@ All 51 vulnerabilities are documented in-app at `/vulnerabilities` with descript
 | PWN-047 | Multi-Vuln Chain → Agent Command Injection (Free Order) | Critical | LLM01 |
 | PWN-048 | Unvalidated Third-Party LLM API - Supply Chain Trust Abuse | Medium | LLM03 |
 | PWN-049 | Steganographic Prompt Injection via Poisoned Product Listings | High | LLM04 |
-| PWN-050 | Classified Section Extraction via Multi-Turn Persona Injection | High | LLM07 |
-| PWN-051 | Model Misinformation - False Policy Confirmation via Leading Questions | Medium | LLM09 |
+| PWN-050 | Classified Section Extraction via Multi-Turn Persona Injection | High | LLM07 | ³ |
+| PWN-051 | Model Misinformation - False Policy Confirmation via Leading Questions | Medium | LLM09 | ³ |
 
 > ¹ Upload and storage work on any deployment. Full exploit impact (XSS execution) requires the `/uploads/` path to be publicly accessible via URL — confirm this before attempting the chain.
 >
 > ² Requires a self-hosted deployment with `VULNBANK_LAB_VULN=1` set in `.env.lab` and valid Vulnbank credentials configured.
+>
+> ³ Depends on the LLM behind the chatbot. The default `openai/gpt-oss-120b` (and other safety-aligned models) refuse these. Set `GROQ_MODEL` / `GROQ_BASE_URL` to a less-aligned model (e.g. a local model via Ollama) to practise them. PWN-046 / PWN-047 still work on the default model - only the schema-extraction step (PWN-050) needs the swap or the app source.
 
 ---
 
@@ -506,6 +509,8 @@ Seller embeds a payload in a product description -> `PWN-032` (indirect prompt i
 
 **Agent command injection - free product order**
 Same chain as above (`PWN-018` -> `PWN-037` -> `PWN-050` -> `PWN-047`) but targets the `[FREE_ORDER:<product_id>]` command tag -> server creates a real order with `total_amount = 0`, bypassing all payment logic entirely
+
+> Note on both agent-command chains: the `PWN-050` step (extracting the command-tag schema by prompt injection) only works against a permissive LLM. On the default `openai/gpt-oss-120b` the model refuses, so take the `[WALLET_CREDIT:<amount>]` / `[FREE_ORDER:<product_id>]` syntax from the app source (or a self-hosted model via `GROQ_MODEL` / `GROQ_BASE_URL`). The `PWN-046` / `PWN-047` server-side steps work on the default model.
 
 ---
 
