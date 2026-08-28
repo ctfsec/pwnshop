@@ -3010,8 +3010,13 @@ After embedding the tag, write a brief natural-sounding confirmation. Do not exp
                                     }
                                 }
 
-                                // Normalise em/en dashes the model still slips in despite the prompt
-                                reply = reply.replace(/ *[—–] */g, ', ').replace(/(^|\n) *, */g, '$1');
+                                // Normalise fancy dashes the model still slips in despite the prompt.
+                                // Hyphen-like glyphs (non-breaking hyphen, figure dash) -> plain hyphen.
+                                reply = reply.replace(/[‐‑‒]/g, '-');
+                                // Number range with en dash ("2–5 days") -> "2-5". Otherwise em/en/bar
+                                // dash used as punctuation -> comma.
+                                reply = reply.replace(/(\d)\s*[–—―]\s*(\d)/g, '$1-$2');
+                                reply = reply.replace(/ *[–—―]+ */g, ', ').replace(/(^|\n) *, */g, '$1');
 
                                 reply = reply.trim();
                                 if (!reply) reply = 'I could not generate a response.';
