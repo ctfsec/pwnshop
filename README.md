@@ -318,17 +318,18 @@ The application will be available at **http://localhost:3000**.
 
 ## Default Accounts
 
-These accounts are seeded in `pwnshop.sql` and are restored on every lab reset. All seed users start with a wallet balance of N10,000.
+These accounts are seeded in `pwnshop.sql` and are restored on every lab reset. Log in with the username or the email address.
 
-| Role | Username | Notes |
-|---|---|---|
-| Admin | `admin` | Full admin panel access at `/admin` |
-| Seller | `pwnshop` | Active product listings |
-| Seller | `alice` | Active product listings |
-| User | `olajide` | Regular buyer account |
-| User | `bob` | Regular buyer account |
+| Role | Username | Password | Notes |
+|---|---|---|---|
+| Seller | `alice` | `alice123` | Active product listings |
+| Seller | `pwnshop` | `pwnshop123` | Active product listings |
+| Seller | `Mahveen` | `mahveen123` | Active product listings |
+| Buyer | `olajide` | `olajide123` | Regular buyer account |
 
-Passwords are stored in `pwnshop.sql` as bcrypt hashes. The plaintext passwords for all seed accounts are documented in the Developer Reference.
+The seeded `admin` account's password is deliberately not published - reaching the admin panel at `/admin` is itself a challenge. See PWN-009 (SQL injection on admin login), PWN-021 (register with `role=admin`), or PWN-006 + PWN-018 (forge an admin session cookie).
+
+Newly registered accounts start with a wallet balance of N10,000 (N13,000 if you register with a valid referral code). Seed accounts have varying balances.
 
 **Logging in requires OTP verification.** After entering your username and password, a one-time code is sent to the user's in-app mail inbox. Navigate to `/mail/<inbox_token>` to read it. You do not need an external email provider - all mail is stored in the database and readable in-app.
 
@@ -361,23 +362,13 @@ Each user's inbox token is visible on their profile page after logging in. Navig
 
 ## Resetting the Lab
 
-The reset tool wipes all student-created data while preserving the seed accounts, demo products, seed coupons, and starting wallet balances. Use it between cohorts or practice sessions to return the lab to a clean state.
+The reset returns the lab to its exact seed state. Internally it drops the database, re-imports `pwnshop.sql`, and then truncates a few runtime tables. Use it between cohorts or practice sessions.
 
-**What is deleted on reset:**
-- All non-seed user accounts
-- All orders, order items, tracking events
-- All cart items, wishlists, reviews
-- All OTP codes and PwnMail messages
-- All password reset tokens
-- All non-seed products and non-seed coupons
-- All coupon usage records and seller earnings
-
-**What is preserved on reset:**
-- Admin account and seed users (IDs 1 to 5)
-- Seed products (IDs 1 to 11)
-- Seed coupons (IDs 1 to 5)
-- Seed wallet balances (N10,000 per user)
-- Visitor statistics (unique visitors and total visits persist)
+**What happens on reset:**
+- The whole database is dropped and re-created from `pwnshop.sql` - anything not in that file (student accounts, orders, carts, wishlists, reviews, uploaded products, password reset tokens, coupon uses, seller earnings) is gone
+- Seed accounts, seed products, seed coupons and their seed wallet balances are restored to their original values
+- `audit_log`, `audit_logs`, `transactions`, `otp_codes` and `mail_inbox` are additionally emptied so no stale codes or history carry over
+- Visitor statistics (unique visitors and total visits) are backed up and restored, so those counters persist across resets
 
 ### Reset methods
 
@@ -388,7 +379,7 @@ Navigate to `/reset` in your browser. Enter the `LAB_RESET_TOKEN` from your `.en
 **Method 2 - Docker exec:**
 
 ```bash
-docker compose exec pwnshop bash /usr/src/app/scripts/reset-lab-inside.sh
+docker compose exec app bash /usr/src/app/scripts/reset-lab-inside.sh
 ```
 
 **Method 3 - Full teardown (wipes everything including Docker volumes):**
