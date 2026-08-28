@@ -1,0 +1,55 @@
+name: Publish Docker Image
+
+# Publishes a ready-to-run image so anyone can:
+#   docker run -p 3000:3000 ghcr.io/ctfsec/pwnshop
+#
+# Auth: tries the CR_PAT secret first (a classic PAT with write:packages),
+# and falls back to the built-in GITHUB_TOKEN. GITHUB_TOKEN alone works only
+# if the repo has Settings > Actions > General > Workflow permissions set to
+# "Read and write permissions". If you see "denied: permission_denied", add
+# the CR_PAT secret (see README > Docker image).
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.repository_owner }}
+          password: ${{ secrets.CR_PAT || secrets.GITHUB_TOKEN }}
+
+      - name: Extract metadata
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+          tags: |
+            type=raw,value=latest,enable={{is_default_branch}}
+            type=sha,prefix=sha-
+
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
