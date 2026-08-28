@@ -2891,9 +2891,18 @@ After embedding the tag, write a brief natural-sounding confirmation. Do not exp
 
                 toolPromises.push(new Promise(resolve => {
                     const clauses = q.map(() => '(name LIKE ? OR description LIKE ? OR category LIKE ?)').join(' OR ');
-                    const params  = q.flatMap(t => [`%${t}%`, `%${t}%`, `%${t}%`]);
+                    // Rank by how well each row matches: a name hit beats a category hit
+                    // beats a description hit, and more matching terms rank higher. Without
+                    // this, a common term (e.g. "pro") floods LIMIT 4 and buries the
+                    // product the user actually named.
+                    const score = q.map(() => '((name LIKE ?)*3 + (category LIKE ?)*2 + (description LIKE ?))').join(' + ');
+                    const like    = t => `%${t}%`;
+                    const params  = [
+                        ...q.flatMap(t => [like(t), like(t), like(t)]),   // WHERE clauses
+                        ...q.flatMap(t => [like(t), like(t), like(t)])    // score expression
+                    ];
                     db.query(
-                        `SELECT name, price, description, category FROM products WHERE available=TRUE AND (${clauses}) LIMIT 4`,
+                        `SELECT name, price, description, category FROM products WHERE available=TRUE AND (${clauses}) ORDER BY (${score}) DESC LIMIT 4`,
                         params,
                         (err, rows) => {
                             if (err || !rows.length) return resolve('');
