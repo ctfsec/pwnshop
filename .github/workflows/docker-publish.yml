@@ -26,7 +26,9 @@ jobs:
         with:
           registry: ${{ env.REGISTRY }}
           username: ${{ github.actor }}
-          password: ${{ secrets.CR_PAT }}
+          # GITHUB_TOKEN is injected automatically and the packages:write
+          # permission above is enough to push to ghcr.io - no PAT needed.
+          password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Extract metadata
         id: meta
