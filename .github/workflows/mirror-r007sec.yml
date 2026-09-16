@@ -1,0 +1,35 @@
+name: Mirror main branch
+
+# Fast-forwards r007sec/pwnshop:main to match this repo on every push.
+# Requires a repo secret R007SEC_MIRROR_KEY: an SSH private key whose
+# public half is added as a write-enabled deploy key on r007sec/pwnshop.
+#   Settings -> Secrets and variables -> Actions -> New repository secret
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: mirror-r007sec
+  cancel-in-progress: false
+
+jobs:
+  mirror:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up SSH
+        run: |
+          set -euo pipefail
+          mkdir -p ~/.ssh
+          echo "${{ secrets.R007SEC_MIRROR_KEY }}" > ~/.ssh/id_ed25519
+          chmod 600 ~/.ssh/id_ed25519
+          ssh-keyscan -H github.com >> ~/.ssh/known_hosts 2>/dev/null
+
+      - name: Push mirror
+        run: git push git@github.com:r007sec/pwnshop.git HEAD:main
