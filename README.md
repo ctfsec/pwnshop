@@ -585,4 +585,4 @@ Pwnshop is designed exclusively for security education in controlled lab environ
 
 ---
 
-*Built for the CTF Security training programme.*
+*Built for the CTF Security training programme.*.
