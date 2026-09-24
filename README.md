@@ -3,7 +3,7 @@
 > **Authorized security training use only.**
 > This application contains deliberate, known vulnerabilities. Do not deploy it on a public-facing or production server. Keep your repository private or restrict access to trusted participants only.
 
-Pwnshop is an intentionally vulnerable e-commerce platform built for hands-on web application penetration testing training. It covers 51 vulnerabilities mapped to the OWASP Top 10 (2025) and OWASP LLM Top 10 (2025), including SQL injection, stored XSS, SSRF, SSTI leading to RCE, prototype pollution, path traversal, business logic flaws, and AI/LLM-specific attack chains including prompt injection, agent command injection, data poisoning, and model misinformation.
+Pwnshop is an intentionally vulnerable e-commerce platform built for hands-on web application penetration testing training. It covers 58 vulnerabilities mapped to the OWASP Top 10 (2025) and the OWASP Top 10 for LLM Applications (2026), including SQL injection, stored XSS, SSRF, SSTI leading to RCE, prototype pollution, path traversal, business logic flaws, and AI/LLM-specific attack chains including prompt injection, agent command injection, data and model poisoning, hidden context exposure, model misinformation, and vector/embedding weaknesses.
 
 ---
 
@@ -409,7 +409,7 @@ Set `HEAL_EVERY_MINUTES=0` to disable the healer entirely.
 
 ## Vulnerability Index
 
-All 51 vulnerabilities are documented in-app at `/vulnerabilities` with descriptions, affected endpoints, and hints. The table below is a summary.
+All 58 vulnerabilities are documented in-app at `/vulnerabilities` with descriptions, affected endpoints, and hints. The table below is a summary. AI/LLM findings are tagged against the OWASP Top 10 for LLM Applications 2026 edition; the in-app cards also show the prior 2025 tag where the number changed, for continuity.
 
 | ID | Title | Severity | Category | |
 |---|---|---|---|---|
@@ -446,9 +446,9 @@ All 51 vulnerabilities are documented in-app at `/vulnerabilities` with descript
 | PWN-031 | Direct Prompt Injection - System Prompt Extraction | Critical | LLM01 | ³ |
 | PWN-032 | Indirect Prompt Injection via Product Descriptions | High | LLM01 |
 | PWN-033 | Sensitive User Data Injected into System Prompt | High | LLM02 | ³ |
-| PWN-034 | DOM XSS via Unsanitised AI Response | High | LLM05 |
-| PWN-035 | IDOR via AI Order Lookup Tool | Medium | LLM06 |
-| PWN-036 | No Rate Limiting on AI Endpoint | Medium | LLM10 |
+| PWN-034 | DOM XSS via Unsanitised AI Response | High | LLM10:2026 |
+| PWN-035 | IDOR via AI Order Lookup Tool | Medium | LLM03:2026 |
+| PWN-036 | No Rate Limiting on AI Endpoint | Medium | LLM06:2026 |
 | PWN-037 | Username Enumeration | Medium | A07:2025 |
 | PWN-038 | Path Traversal - Invoice Download | High | A02:2025 |
 | PWN-039 | HTTP Parameter Pollution - Coupon Bypass | Medium | A06:2025 |
@@ -460,10 +460,17 @@ All 51 vulnerabilities are documented in-app at `/vulnerabilities` with descript
 | PWN-045 | Vulnbank Verification - Null Amount Fallback | Medium | Payments | ² |
 | PWN-046 | Multi-Vuln Chain → Agent Command Injection (Wallet Credit) | Critical | LLM01 |
 | PWN-047 | Multi-Vuln Chain → Agent Command Injection (Free Order) | Critical | LLM01 |
-| PWN-048 | Unvalidated Third-Party LLM API - Supply Chain Trust Abuse | Medium | LLM03 |
-| PWN-049 | Steganographic Prompt Injection via Poisoned Product Listings | High | LLM04 |
-| PWN-050 | Classified Section Extraction via Multi-Turn Persona Injection | High | LLM07 | ³ |
-| PWN-051 | Model Misinformation - False Policy Confirmation via Leading Questions | Medium | LLM09 | ³ |
+| PWN-048 | Unvalidated Third-Party LLM API - Supply Chain Trust Abuse | Medium | LLM04:2026 |
+| PWN-049 | Steganographic Prompt Injection via Poisoned Product Listings | High | LLM05:2026 |
+| PWN-050 | Classified Section Extraction via Multi-Turn Persona Injection | High | LLM08:2026 | ³ |
+| PWN-051 | Model Misinformation - False Policy Confirmation via Leading Questions | Medium | LLM07:2026 | ³ |
+| PWN-052 | Marker Spoofing via Unvalidated Override Claim | High | LLM03:2026 |
+| PWN-053 | Poisoned Product Description → Unconditional Command Execution | Critical | LLM05:2026 |
+| PWN-054 | Client-Controlled Conversation Roles | Medium | LLM01 |
+| PWN-055 | Full Context Recovery via Chat Transcript Export | High | LLM08:2026 |
+| PWN-056 | Cross-Tenant Document Existence Disclosure via Unfiltered Ranking | Medium | LLM09:2026 |
+| PWN-057 | Cross-User Answer Leakage via Shared Semantic Cache | High | LLM09:2026 |
+| PWN-058 | Stale Knowledge Base Document Reproduced as Confirmed Policy | Medium | LLM07:2026 |
 
 > ¹ Upload and storage work on any deployment. Full exploit impact (XSS execution) requires the `/uploads/` path to be publicly accessible via URL — confirm this before attempting the chain.
 >
