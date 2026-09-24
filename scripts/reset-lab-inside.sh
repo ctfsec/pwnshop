@@ -48,6 +48,7 @@ mysql --protocol=tcp --ssl=0 -h "$DB_HOST" -P "$DB_PORT" -u "$DB_USER" -p"$DB_PA
 # audit_log / audit_logs  : action history from student activity
 # transactions            : payment records (prevents replay artifacts carrying over)
 # otp_codes               : stale one-time passwords
+# kb_query_cache          : cached answers accumulated by the /chat kb tool
 # vulnbank_tx_log         : already wiped by DROP/CREATE above, listed here for clarity
 mysql --protocol=tcp --ssl=0 -h "$DB_HOST" -P "$DB_PORT" -u "$DB_USER" -p"$DB_PASSWORD" "$DB_NAME" <<'SQL'
 SET FOREIGN_KEY_CHECKS = 0;
@@ -56,10 +57,11 @@ TRUNCATE TABLE audit_logs;
 TRUNCATE TABLE transactions;
 TRUNCATE TABLE otp_codes;
 TRUNCATE TABLE mail_inbox;
+TRUNCATE TABLE kb_query_cache;
 SET FOREIGN_KEY_CHECKS = 1;
 SQL
 
-echo "Runtime tables cleared (audit_log, audit_logs, transactions, otp_codes)."
+echo "Runtime tables cleared (audit_log, audit_logs, transactions, otp_codes, kb_query_cache)."
 
 # Restore visitor_stats
 if [[ -f "$VS_BACKUP" ]] && [[ -s "$VS_BACKUP" ]]; then
