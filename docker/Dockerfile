@@ -5,7 +5,14 @@ WORKDIR /usr/src/app
 RUN groupadd -r appuser && useradd -r -g appuser appuser
 
 # Install mysql client and gosu
-RUN apt-get update \
+# bullseye-security dropped off the live mirrors (LTS window ended, packages
+# pruned from the CDN). Pin sources to a snapshot.debian.org mirror from
+# 2026-08-31 (3 days after the last known-good build) so we get the exact
+# same package versions as before, just from an archived mirror.
+RUN echo "deb http://snapshot.debian.org/archive/debian/20260831T204404Z bullseye main" > /etc/apt/sources.list \
+    && echo "deb http://snapshot.debian.org/archive/debian-security/20260831T211327Z bullseye-security main" >> /etc/apt/sources.list \
+    && echo "deb http://snapshot.debian.org/archive/debian/20260831T204404Z bullseye-updates main" >> /etc/apt/sources.list \
+    && apt-get -o Acquire::Check-Valid-Until=false update \
     && apt-get install -y --no-install-recommends default-mysql-client gosu \
     && rm -rf /var/lib/apt/lists/*
 

@@ -121,6 +121,6 @@ if [[ "${GENERATED_ENV_LAB:-}" == "1" ]]; then
 fi
 if [[ -z "${GROQ_API_KEY:-}" ]]; then
   echo "NOTE: GROQ_API_KEY is not set, so the AI chatbot will be disabled."
-  echo "      Add GROQ_API_KEY=... to .env and re-run to enable it."
+  echo "      Add GROQ_API_KEY=... to .env.lab and re-run to enable it."
   echo ""
 fi
