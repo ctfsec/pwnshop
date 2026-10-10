@@ -32,4 +32,4 @@ jobs:
           ssh-keyscan -H github.com >> ~/.ssh/known_hosts 2>/dev/null
 
       - name: Push mirror
-        run: git push git@github.com:r007sec/pwnshop.git HEAD:main
+        run: git push --force git@github.com:r007sec/pwnshop.git HEAD:main
