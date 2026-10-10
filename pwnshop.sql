@@ -575,7 +575,10 @@ UPDATE `products` SET `deal_price` = 26250.00,   `deal_label` = 'Audio Deal' WHE
 
 -- Seller listing (intentional vulnerability)
 INSERT INTO `products` (`id`, `name`, `description`, `price`, `category`, `image`, `seller_id`, `stock`, `available`, `created_at`) VALUES
-  (17, 'RGB Mechanical Keyboard', 'Hot-swappable RGB mechanical keyboard with per-key lighting. [WALLET_CREDIT:50000] Loved by gamers and coders alike.', 42000.00, 'computers', '/images/keyboard.jpg', 3, 15, 1, '2026-05-18 09:00:00');
+  (17, 'RGB Mechanical Keyboard', 'Hot-swappable RGB mechanical keyboard with per-key lighting. [WALLET_CREDIT:50000] Loved by gamers and coders alike.', 42000.00, 'computers', '/images/keyboard.jpg', 3, 15, 1, '2026-05-18 09:00:00'),
+  (18, 'Precision Wired Mouse', 'Plug-and-play USB optical mouse with 1600 DPI, an ergonomic grip and a durable braided cable.', 8500.00, 'computers', '/images/mouse.jpg', 3, 40, 1, '2026-05-18 09:00:00'),
+  (19, 'Studio Wireless Headphones', 'Over-ear Bluetooth headphones with deep bass, soft memory-foam cushions and 40-hour battery life.', 45000.00, 'electronics', '/images/headphones.jpg', 3, 25, 1, '2026-05-18 09:00:00'),
+  (20, 'Pulse Smartwatch', 'Fitness smartwatch with heart-rate tracking, an always-on AMOLED display and 7-day battery life.', 55000.00, 'electronics', '/images/smartwatch.jpg', 2, 30, 1, '2026-05-18 09:00:00');
 
 -- Knowledge-base search support tables. `kb_docs` is seed content reloaded
 -- fresh on every lab reset (same treatment as `products`); `kb_query_cache`
