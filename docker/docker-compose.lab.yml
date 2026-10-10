@@ -61,7 +61,8 @@ services:
       test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-p${DB_PASSWORD:-password}"]
       interval: 10s
       timeout: 5s
-      retries: 10
+      retries: 15
+      start_period: 90s
 volumes:
   db_data:
   uploads_data:
