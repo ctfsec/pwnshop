@@ -1,19 +1,49 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-# ── Load environment ─────────────────────────────────────────
-if [[ -f .env.lab ]]; then
-  export $(grep -v '^#' .env.lab | xargs)
-fi
-
-DB_NAME="${DB_NAME:-pwnshop}"
-DB_PASSWORD="${DB_PASSWORD:-password}"
-
 echo ""
 echo "╔══════════════════════════════════════════╗"
 echo "║        PwnShop Local Setup               ║"
 echo "╚══════════════════════════════════════════╝"
 echo ""
+
+# ── Auto-generate the lab environment file on first run ──────
+if [[ ! -f .env.lab ]]; then
+  echo "[*] .env.lab not found - generating one with random secrets..."
+  GEN_DB_PASSWORD="$(openssl rand -hex 16)"
+  GEN_RESET_TOKEN="$(openssl rand -hex 16)"
+  cat > .env.lab <<EOF
+DB_NAME=pwnshop
+DB_PASSWORD=${GEN_DB_PASSWORD}
+LAB_RESET_TOKEN=${GEN_RESET_TOKEN}
+HEAL_EVERY_MINUTES=10
+VULNBANK_BASE_URL=https://vulnbank.org
+VULNBANK_AUTH_MODE=api_key_header
+VULNBANK_MERCHANT_API_KEY=
+VULNBANK_MERCHANT_JWT=
+VULNBANK_CHARGE_PATH=/api/v1/payments/charge
+VULNBANK_VERIFY_PATH=/api/v1/payments/{payment_id}
+VULNBANK_TIMEOUT_MS=12000
+VULNBANK_LAB_VULN=0
+EOF
+  GENERATED_ENV_LAB=1
+fi
+
+# ── Load environment ─────────────────────────────────────────
+if [[ -f .env.lab ]]; then
+  export $(grep -v '^#' .env.lab | xargs)
+fi
+
+# ── Pull the Groq key from .env so the chatbot works ─────────
+# README documents putting GROQ_API_KEY in .env, but the lab container
+# only sees variables that reach docker compose, so export it here.
+if [[ -z "${GROQ_API_KEY:-}" && -f .env ]]; then
+  GROQ_API_KEY="$(grep -E '^GROQ_API_KEY=' .env | head -n1 | cut -d= -f2- | tr -d "\"'")"
+  export GROQ_API_KEY
+fi
+
+DB_NAME="${DB_NAME:-pwnshop}"
+DB_PASSWORD="${DB_PASSWORD:-password}"
 
 # ── Tear down any existing containers and volumes ────────────
 echo "[1/5] Cleaning up existing containers and volumes..."
@@ -78,3 +108,19 @@ echo "║  PwnShop is ready!                       ║"
 echo "║  Visit: http://localhost:3000            ║"
 echo "╚══════════════════════════════════════════╝"
 echo ""
+echo "DATABASE CREDENTIALS (Internal Container):"
+echo "  Username : root"
+echo "  Password : ${DB_PASSWORD}"
+echo "  Database : ${DB_NAME}"
+echo "------------------------------------------------"
+echo "LAB RESET TOKEN: ${LAB_RESET_TOKEN:-<not set>}"
+echo ""
+if [[ "${GENERATED_ENV_LAB:-}" == "1" ]]; then
+  echo "(These were generated and saved to .env.lab - keep that file safe.)"
+  echo ""
+fi
+if [[ -z "${GROQ_API_KEY:-}" ]]; then
+  echo "NOTE: GROQ_API_KEY is not set, so the AI chatbot will be disabled."
+  echo "      Add GROQ_API_KEY=... to .env and re-run to enable it."
+  echo ""
+fi
