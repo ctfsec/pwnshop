@@ -13,7 +13,7 @@ const { execFile } = require('child_process');
 const http = require('http');
 const https = require('https');
 const { Resend } = require('resend');
-const resend = new Resend(process.env.RESEND_API_KEY);
+const resend = process.env.RESEND_API_KEY ? new Resend(process.env.RESEND_API_KEY) : null;
 const RESEND_FROM = process.env.RESEND_FROM || 'noreply@pwnshop.com';
 const app = express();
 
@@ -1820,7 +1820,7 @@ app.post('/forgot-password', forgotPasswordLimiter, (req, res) => {
                 const host     = req.headers['x-forwarded-host']  || req.get('host');
                 const resetUrl = `${proto}://${host}/reset-password?token=${token}`;
 
-                resend.emails.send({
+                if (resend) resend.emails.send({
                     from: RESEND_FROM,
                     to:   user.email,
                     subject: 'Reset your Pwnshop password',
